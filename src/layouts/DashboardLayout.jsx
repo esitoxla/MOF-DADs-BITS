@@ -8,7 +8,7 @@ export default function DashboardLayout() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
-    <div className="flex h-screen w-full bg-green-50 relative overflow-hidden">
+    <div className="flex h-screen w-full bg-green-50 relative">
       {isSidebarOpen && (
         <div
           className={`fixed md:relative z-20 h-full transition-transform duration-300 ${
@@ -30,7 +30,7 @@ export default function DashboardLayout() {
       )}
 
       <div
-        className={`flex-1 p-6 transition-all duration-300 ${
+        className={`flex-1 p-6 transition-all duration-300 overflow-y-auto ${
           isSidebarOpen ? "md:ml-68" : "ml-0"
         }`}
       >

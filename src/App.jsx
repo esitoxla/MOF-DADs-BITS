@@ -6,6 +6,9 @@ import Analytics from './pages/Analytics';
 import BudgetExpenditure from './pages/BudgetExpenditure';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import SummaryReport from './components/SummaryReport';
+import ReportLayout from './layouts/ReportLayout';
+import ReportPreview from './pages/ReportPreview';
 
 
 function App() {
@@ -28,7 +31,21 @@ function App() {
         },
         {
           path: "reports",
-          Component: Reports,
+          Component: ReportLayout,
+          children: [
+            {
+              index: true,
+              Component: Reports,
+            },
+            {
+              path: "summaryReport",
+              Component: SummaryReport,
+            },
+            {
+              path: "preview",
+              Component: ReportPreview
+            }
+          ],
         },
         {
           path: "settings",

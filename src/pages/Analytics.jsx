@@ -107,6 +107,7 @@ export default function Analytics() {
           </div>
         </div>
 
+
         {/*  Pie Chart - Category Breakdown */}
         <div className="bg-white p-4 sm:p-4 rounded-2xl shadow-md w-full">
           <h3 className="text-lg sm:text-xl font-semibold mb-4 text-green-700">
