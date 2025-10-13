@@ -58,41 +58,43 @@ export default function ReportPreview() {
           : `Economic Classification Summary - ${fundingSource}`}
       </h1> */}
 
-      <button
-        onClick={() => navigate(-1)}
-        className="mb-4 text-right text-green-700 underline cursor-pointer"
-      >
-        ← Back
-      </button>
+      <div className="flex justify-end items-center space-x-6 mb-4">
+        <button
+          onClick={() => navigate(-1)}
+          className="  bg-green-600 text-white px-4 py-2 rounded font-medium cursor-pointer shadow hover:bg-green-700"
+        >
+          ← Back
+        </button>
+
+        {/* Export Dropdown */}
+        <div className="relative ">
+          <details className="group">
+            <summary className="list-none bg-green-600 text-white px-4 py-2 rounded font-medium cursor-pointer shadow hover:bg-green-700 flex items-center">
+              Export ▼
+            </summary>
+            <div className="absolute right-0 mt-2 w-35 bg-white border rounded-lg shadow-lg overflow-hidden z-10 ">
+              <button
+                className="flex items-center gap-2 w-full px-4 py-2 hover:bg-green-50"
+                onClick={() => handleExport("pdf")}
+              >
+                <FaFilePdf className="text-red-600" /> PDF
+              </button>
+              <button
+                className="flex items-center gap-2 w-full px-4 py-2 hover:bg-green-50"
+                onClick={() => handleExport("excel")}
+              >
+                <FaFileExcel className="text-green-700" /> Excel
+              </button>
+            </div>
+          </details>
+        </div>
+      </div>
 
       {/* Table */}
       <div className=" flex-1 overflow-y-auto">
         {reportType === "EC" && (
           <EconomicClassificationTable data={filteredData} />
         )}
-      </div>
-
-      {/* Export Dropdown */}
-      <div className="relative self-end mt-6">
-        <details className="group">
-          <summary className="list-none bg-green-600 text-white px-4 py-2 rounded-lg font-medium cursor-pointer shadow hover:bg-green-700">
-            Export ▼
-          </summary>
-          <div className="absolute right-0 mt-2 w-35 bg-white border rounded-lg shadow-lg overflow-hidden z-10 ">
-            <button
-              className="flex items-center gap-2 w-full px-4 py-2 hover:bg-green-50"
-              onClick={() => handleExport("pdf")}
-            >
-              <FaFilePdf className="text-red-600" /> PDF
-            </button>
-            <button
-              className="flex items-center gap-2 w-full px-4 py-2 hover:bg-green-50"
-              onClick={() => handleExport("excel")}
-            >
-              <FaFileExcel className="text-green-700" /> Excel
-            </button>
-          </div>
-        </details>
       </div>
     </div>
   );

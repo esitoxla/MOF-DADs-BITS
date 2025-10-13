@@ -3,10 +3,32 @@ import { Fragment } from "react";
 
 const EconomicClassificationTable = ({ data }) => {
   return (
+    <>
     <div className="overflow-x-auto bg-white shadow-xl rounded-2xl p-4 sm:p-6 border border-gray-200">
-      <h2 className="text-xl font-bold text-center text-green-800 mb-6">
+      {/* <h2 className="text-xl font-bold text-center text-green-800 mb-6">
         Summary of Budget Performance by Economic Classification
-      </h2>
+      </h2> */}
+
+      {/* header */}
+      <div class=" flex justify-between items-center mb-2 bg-blue-50 w-full">
+        {/* <!-- Left Text Section --> */}
+        <div class=" flex flex-col space-y-1 pr-6 border-r-5 border-white p-4 font-bold text-lg w-[80%]">
+          <h1 class="">
+            Summary of Budget Performance by Economic Classification and funding
+          </h1>
+          <p class="text-sm">
+            DADs: The organisation of the user who runs the report
+          </p>
+          <p class="text-sm">Year: 2025</p>
+          <p class="text-sm">Currency: Ghana cedis (GHS)</p>
+        </div>
+
+        {/* <!-- Right Logo Section --> */}
+
+        <div class="flex items-center justify-center w-[20%]">
+          <span class="font-bold  text-[#03381E]">MoF Logo</span>
+        </div>
+      </div>
 
       <table className="min-w-full border border-gray-400 text-sm text-gray-800">
         <thead className="bg-gray-100">
@@ -72,7 +94,7 @@ const EconomicClassificationTable = ({ data }) => {
               {item.breakdown?.map((b, i) => (
                 <tr key={i} className="text-gray-700">
                   <td className="border border-gray-400 px-8 py-2 text-left italic">
-                     {b.source}
+                    {b.source}
                   </td>
                   <td className="border border-gray-400 px-4 py-2 text-right">
                     {b.totalBudget.toLocaleString()}
@@ -120,6 +142,9 @@ const EconomicClassificationTable = ({ data }) => {
         </tbody>
       </table>
     </div>
+
+    
+    </>
   );
 };
 

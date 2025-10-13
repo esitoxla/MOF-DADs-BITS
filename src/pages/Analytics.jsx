@@ -66,7 +66,7 @@ export default function Analytics() {
           </div>
         </div> */}
 
-        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md w-full">
+        <div className="bg-white p-4 sm:p-8 rounded-2xl shadow-md w-full">
           <h3 className="text-lg sm:text-xl font-semibold mb-4 text-green-700">
             Monthly Expenditure Overview (GHS)
           </h3>
@@ -76,7 +76,7 @@ export default function Analytics() {
                 width={730}
                 height={250}
                 data={monthlyData}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                margin={{ top: 5, right: 30, left: 5, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" stroke="#000" />
@@ -107,13 +107,12 @@ export default function Analytics() {
           </div>
         </div>
 
-
         {/*  Pie Chart - Category Breakdown */}
         <div className="bg-white p-4 sm:p-4 rounded-2xl shadow-md w-full">
           <h3 className="text-lg sm:text-xl font-semibold mb-4 text-green-700">
             Budget performance by source of funding (GHS)
           </h3>
-          <div className="w-full h-64 sm:h-80">
+          <div className="w-full h-70 sm:h-96 ">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -127,7 +126,6 @@ export default function Analytics() {
                     stroke: "#374151", // dark gray pointer color
                     strokeWidth: 1.5,
                     length: 40,
-                    
                   }}
                   label={({ value, x, y }) => (
                     <text
