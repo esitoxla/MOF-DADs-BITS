@@ -4,7 +4,9 @@ import {
   CartesianGrid,
   PieChart,
   LineChart,
+  BarChart,
   Pie,
+  Bar,
   Cell,
   XAxis,
   YAxis,
@@ -30,11 +32,20 @@ export default function Analytics() {
     { name: "DP Fund", value: 20500000 },
   ];
 
+  const bardata = [
+    {name: "Appropriation", expenditure: 50000000},
+    {name: "Releases", expenditure: 30000000},
+    {name: "Actual Expenditure", expenditure: 20000000},
+    {name: "Actual Payment", expenditure: 10000000},
+  ];
+
   const formatToMillions = (num) => {
     return `${Math.round(num / 1_000_000)}M`;
   };
 
- const COLORS = ["#16a34a", "#65a30d", "#ca8a04", "#facc15", "#a3e635"];
+  
+
+ const COLORS = ["#16a34a", "#65a30d", "#6d6a63ff", "#facc15", "#a3e635"];
 
 
   return (
@@ -124,9 +135,9 @@ export default function Analytics() {
                   fill="#16a34a"
                   dataKey="value"
                   labelLine={{
-                    stroke: "#374151", // dark gray pointer color
+                    stroke: "#455f88ff", // dark gray pointer color
                     strokeWidth: 1.5,
-                    length: 40,
+                    
                     
                   }}
                   label={({ value, x, y }) => (
@@ -161,6 +172,39 @@ export default function Analytics() {
                 />
               </PieChart>
             </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Bar Chart*/}
+        <div className="w-full p-4 bg-white rounded-2xl shadow-md">
+          <h3 className="text-xl font-semibold mb-4">Financial Summary</h3>
+          <div style={{ width: "100%", height: 360 }}>
+          <ResponsiveContainer>
+            <BarChart data={bardata} margin={{ top: 20, right: 24, left: 0 }}>
+                <XAxis dataKey="name"
+                  tick={{ fontSize: 13, angle: -5, textAnchor: "end" }} 
+                  interval={0}
+                />
+                <YAxis tickFormatter={(value) => `${(value / 1_000_000).toFixed(1)}M`}/>
+              <Tooltip formatter={(value) => formatToMillions(value)} />
+                <Bar
+                  dataKey="expenditure"
+                  fill="#16a34a"
+                  radius={[8, 8, 0, 0]}
+                  fillOpacity={1}
+                  isAnimationActive={false}
+                  onMouseEnter={(data, index) => {}}
+                  onMouseLeave={(data, index) => {}}
+                />
+              <Legend
+                  formatter={(value) => (
+                    <span style={{ color: "#374151", fontWeight: 600 }}>
+                      {value}
+                    </span>
+                  )}
+                />
+            </BarChart>
+          </ResponsiveContainer>
           </div>
         </div>
       </div>
