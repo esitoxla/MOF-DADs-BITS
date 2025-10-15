@@ -3,6 +3,7 @@ import { IoMdArrowDropdown } from "react-icons/io";
 import { useState } from "react";
 import Select from "react-select";
 import { useEffect } from "react";
+import BudgetTable from "../components/BudgetTable";
 
 export default function BudgetExpenditure() {
   const [selectedActivity, setSelectedActivity] = useState(null);
@@ -16,6 +17,10 @@ export default function BudgetExpenditure() {
   const [releases, setReleases] = useState("");
   const [payment, setPayment] = useState("");
   const [expenditure, setExpenditure] = useState("");
+
+  //BudgetTable
+  const [records, setRecords] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Create activities 1–20 as options for react-select
   const activityOptions = Array.from({ length: 20 }, (_, i) => ({
@@ -35,10 +40,11 @@ export default function BudgetExpenditure() {
   ];
 
   const capitalExpenditureAccounts = [
-    { value: "2310101", label: "2310101 - Residential Buildings" },
-    { value: "2310102", label: "2310102 - Office Buildings" },
-    { value: "2310103", label: "2310103 - Plant and Machinery" },
-    // ... add the rest of your Capital Expenditure accounts
+    { value: "3111102 ", label: "3111102 - Destitute Homes" },
+    { value: "3111103", label: "3111103 - Bungalows/Flats" },
+    { value: "3111104", label: "3111104 - Homes of Aged" },
+    { value: "3111105", label: "3111105 - Palace" },
+    { value: "3111106", label: "3111106 - Barracks" },
   ];
 
   const dataMap = {
@@ -74,8 +80,43 @@ export default function BudgetExpenditure() {
     }
   }, [economicClass, fundingSource]);
 
+   const handleSubmit = (e) => {
+     e.preventDefault();
+
+     // build the record
+     const newRecord = {
+       activity: selectedActivity?.label || "",
+       date: selectedDate,
+       economicClass,
+       fundingSource,
+       naturalAccount: selectedAccount?.label || "",
+       description,
+       appropriation,
+       allotment,
+       releases,
+       expenditure,
+       payment,
+     };
+
+     // add it to the table
+     setRecords([...records, newRecord]);
+
+     // clear fields
+     setSelectedActivity(null);
+     setSelectedDate("");
+     setEconomicClass("Select");
+     setFundingSource("select");
+     setSelectedAccount(null);
+     setDescription("");
+     setAppropriation("");
+     setAllotment("");
+     setReleases("");
+     setExpenditure("");
+     setPayment("");
+   };
+
   return (
-    <div className="flex justify-center lg:px-4">
+    <div className="flex flex-col gap-6 justify-center lg:px-4">
       <form className="min-h-screen w-full p-4 sm:p-6 flex flex-col">
         {/* --- ACTIVITIES FIELD --- */}
         <div className="flex flex-col sm:flex-row sm:items-center text-2xl font-bold text-green-800 mb-8 border-0 shadow bg-white px-4 py-4 w-full gap-4">
@@ -278,12 +319,27 @@ export default function BudgetExpenditure() {
         <div className="text-right">
           <button
             type="submit"
+            onClick={handleSubmit}
             className="bg-green-600 text-white px-4 py-2 font-semibold hover:bg-green-700 transition duration-300 shadow-md cursor-pointer    w-[10%]"
           >
             Submit
           </button>
         </div>
       </form>
+
+      {/* --- SEARCH BAR --- */}
+      <div className="flex items-center justify-between mb-4 w-full px-4">
+        <input
+          type="text"
+          placeholder="Search any field..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="border px-3 py-2 rounded-md w-1/3"
+        />
+      </div>
+
+      {/* --- TABLE COMPONENT --- */}
+      <BudgetTable records={records} searchQuery={searchQuery} />
     </div>
   );
 }
