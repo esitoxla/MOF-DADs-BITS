@@ -25,6 +25,7 @@ export default function BudgetTable({ records, searchQuery }) {
             <th className="border px-2 py-1">Description</th>
             <th className="border px-2 py-1">Appropriation</th>
             <th className="border px-2 py-1">Allotment</th>
+            <th className="border px-2 py-1">Allotment Balance</th>
             <th className="border px-2 py-1">Releases</th>
             <th className="border px-2 py-1">Expenditure</th>
             <th className="border px-2 py-1">Payment</th>
@@ -65,6 +66,7 @@ export default function BudgetTable({ records, searchQuery }) {
                 <td className="border px-2 py-1">{record.description}</td>
                 <td className="border px-2 py-1">{record.appropriation}</td>
                 <td className="border px-2 py-1">{record.allotment}</td>
+                <td className="border px-2 py-1">{record.allotmentBalance}</td>
                 <td className="border px-2 py-1">{record.releases}</td>
                 <td className="border px-2 py-1">{record.expenditure}</td>
                 <td className="border px-2 py-1">{record.payment}</td>

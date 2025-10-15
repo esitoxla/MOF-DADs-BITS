@@ -4,19 +4,21 @@ import { useState } from "react";
 import Select from "react-select";
 import { useEffect } from "react";
 import BudgetTable from "../components/BudgetTable";
+import { label } from "framer-motion/client";
 
 export default function BudgetExpenditure() {
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
-  const [economicClass, setEconomicClass] = useState("Select");
+  const [economicClass, setEconomicClass] = useState(null);
   const [selectedAccount, setSelectedAccount] = useState(null);
-  const [fundingSource, setFundingSource] = useState("select");
+  const [fundingSource, setFundingSource] = useState(null);
   const [description, setDescription] = useState("");
   const [appropriation, setAppropriation] = useState("");
   const [allotment, setAllotment] = useState("");
   const [releases, setReleases] = useState("");
   const [payment, setPayment] = useState("");
   const [expenditure, setExpenditure] = useState("");
+  const [allotmentBalance, setAllotmentBalance] = useState("");
 
   //BudgetTable
   const [records, setRecords] = useState([]);
@@ -62,14 +64,17 @@ export default function BudgetExpenditure() {
 
   //Dynamically switch accounts based on selected economic class
   const naturalAccountOptions =
-    economicClass === "goods & services"
+    economicClass?.value === "goods & services"
       ? goodsAndServicesAccounts
       : capitalExpenditureAccounts;
 
   // Auto-fill based on both selected fields
   useEffect(() => {
-    if (economicClass && fundingSource) {
-      const selectedData = dataMap[economicClass]?.[fundingSource];
+    const ecoValue = economicClass?.value;
+    const fundValue = fundingSource?.value;
+
+    if (ecoValue && fundValue) {
+      const selectedData = dataMap[ecoValue]?.[fundValue];
       if (selectedData) {
         setAppropriation(selectedData.appropriation);
         setAllotment(selectedData.allotment);
@@ -80,40 +85,87 @@ export default function BudgetExpenditure() {
     }
   }, [economicClass, fundingSource]);
 
-   const handleSubmit = (e) => {
-     e.preventDefault();
 
-     // build the record
-     const newRecord = {
-       activity: selectedActivity?.label || "",
-       date: selectedDate,
-       economicClass,
-       fundingSource,
-       naturalAccount: selectedAccount?.label || "",
-       description,
-       appropriation,
-       allotment,
-       releases,
-       expenditure,
-       payment,
-     };
+  
 
-     // add it to the table
-     setRecords([...records, newRecord]);
+  //
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-     // clear fields
-     setSelectedActivity(null);
-     setSelectedDate("");
-     setEconomicClass("Select");
-     setFundingSource("select");
-     setSelectedAccount(null);
-     setDescription("");
-     setAppropriation("");
-     setAllotment("");
-     setReleases("");
-     setExpenditure("");
-     setPayment("");
-   };
+    // build the record
+    const newRecord = {
+      activity: selectedActivity?.label || "",
+      date: selectedDate,
+      economicClass: economicClass?.label || "",
+      fundingSource: fundingSource?.label || "",
+      naturalAccount: selectedAccount?.label || "",
+      description,
+      appropriation,
+      allotment,
+      releases,
+      expenditure,
+      payment,
+      allotmentBalance,
+    };
+
+
+    // add it to the table
+    setRecords([...records, newRecord]);
+
+    // clear fields
+    setSelectedActivity(null);
+    setSelectedDate("");
+    setEconomicClass("Select");
+    setFundingSource("select");
+    setSelectedAccount(null);
+    setDescription("");
+    setAppropriation("");
+    setAllotment("");
+    setReleases("");
+    setExpenditure("");
+    setPayment("");
+    setAllotmentBalance("");
+  };
+
+  //This ensures your Allotment Balance updates automatically when releases, allotment, or the previous records change.
+ useEffect(() => {
+   const releaseNum = parseFloat(releases);
+   const allotmentNum = parseFloat(allotment);
+
+   // Don't calculate unless we have a valid allotment
+   if (isNaN(allotmentNum)) return;
+
+   // First record: allotment - release
+   if (records.length === 0) {
+     setAllotmentBalance(
+       isNaN(releaseNum) ? allotmentNum : allotmentNum - releaseNum
+     );
+   } else {
+     // For next records: previous balance - current release
+     const lastBalance = parseFloat(
+       records[records.length - 1].allotmentBalance
+     );
+     setAllotmentBalance(
+       isNaN(lastBalance)
+         ? allotmentNum
+         : lastBalance - (isNaN(releaseNum) ? 0 : releaseNum)
+     );
+   }
+ }, [releases, allotment, records]);
+
+
+
+  //
+  const economicClassOptions = [
+    { value: "goods & services", label: "Use of goods & services" },
+    { value: "capital expenditure", label: "Capital expenditure" },
+  ];
+
+  const sourceOfFundingOptions = [
+    { value: "GOG", label: "GOG" },
+    { value: "DPF", label: "DPF" },
+    { value: "IGF", label: "IGF" },
+  ];
 
   return (
     <div className="flex flex-col gap-6 justify-center lg:px-4">
@@ -131,9 +183,8 @@ export default function BudgetExpenditure() {
               styles={{
                 control: (base) => ({
                   ...base,
-                  borderColor: "#15803d", // Tailwind green-800
+                  borderColor: "black", // Tailwind green-800
                   boxShadow: "none",
-                  "&:hover": { borderColor: "#16a34a" }, // Tailwind green-600
                 }),
                 option: (base, state) => ({
                   ...base,
@@ -163,22 +214,37 @@ export default function BudgetExpenditure() {
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="input outline w-full py-3 px-2  rounded text-green-800 focus:input-primary"
+                  className="border w-full py-[0.7rem] px-2 rounded"
                 />
               </div>
             </div>
 
             <div className="flex flex-col gap-2">
               <label className="text-gray-500">ECONOMIC CLASSIFICATION</label>
-              <select
-                value={economicClass}
-                onChange={(e) => setEconomicClass(e.target.value)}
-                className="select select-bordered w-full outline focus:select-primary py-3 px-2 rounded"
-              >
-                <option value="select">Select Economic Classification</option>
-                <option value="goods & services">GOODS & SERVICES</option>
-                <option value="capital expenditure">CAPITAL EXPENDITURE</option>
-              </select>
+              <Select
+                options={economicClassOptions}
+                value={economicClass} // should be an object like {value, label}
+                onChange={setEconomicClass}
+                placeholder="Select economic classification"
+                isSearchable
+                filterOption={(option, inputValue) =>
+                  option.label.toLowerCase().includes(inputValue.toLowerCase())
+                }
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    padding: ".3rem .2rem",
+                    boxShadow: "none",
+                    borderColor: "black",
+                    fontSize: "1rem",
+                    fontWeight: 600,
+                  }),
+                  placeholder: (base) => ({
+                    ...base,
+                    color: "#000000",
+                  }),
+                }}
+              />
             </div>
 
             {/* <div className="flex items-center justify-center gap-4">
@@ -190,16 +256,30 @@ export default function BudgetExpenditure() {
 
             <div className="flex flex-col gap-2">
               <label className="text-gray-500">SOURCE OF FUNDING</label>
-              <select
-                value={fundingSource}
-                onChange={(e) => setFundingSource(e.target.value)}
-                className="select select-bordered w-full outline focus:select-primary py-3 px-2  rounded"
-              >
-                <option value="select">Select Source of Funding</option>
-                <option value="GOG">GOG</option>
-                <option value="DPF">DPF</option>
-                <option value="IGF">IGF</option>
-              </select>
+              <Select
+                options={sourceOfFundingOptions}
+                value={fundingSource} // should be an object like {value, label}
+                onChange={setFundingSource}
+                placeholder="Select source of funding"
+                isSearchable
+                filterOption={(option, inputValue) =>
+                  option.label.toLowerCase().includes(inputValue.toLowerCase())
+                }
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    padding: ".3rem .2rem",
+                    boxShadow: "none",
+                    borderColor: "black",
+                    fontSize: "1rem",
+                    fontWeight: 600,
+                  }),
+                  placeholder: (base) => ({
+                    ...base,
+                    color: "#000000",
+                  }),
+                }}
+              />
             </div>
           </div>
 
@@ -246,7 +326,7 @@ export default function BudgetExpenditure() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-10 w-full px-4 mb-8">
+          <div className="grid grid-cols-3 gap-10 w-full px-4 mb-8">
             <div className="flex flex-col gap-2">
               <label htmlFor="" className="text-gray-500">
                 APPROPRIATION
@@ -270,6 +350,18 @@ export default function BudgetExpenditure() {
                 value={allotment}
                 readOnly
                 disabled
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label htmlFor="" className="text-gray-500">
+                ALLOTMENT BALANCE
+              </label>
+              <input
+                type="number"
+                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
+                value={allotmentBalance}
+                readOnly
               />
             </div>
           </div>
@@ -328,7 +420,7 @@ export default function BudgetExpenditure() {
       </form>
 
       {/* --- SEARCH BAR --- */}
-      <div className="flex items-center justify-between mb-4 w-full px-4">
+      <div className="flex items-center justify-between mb-4 w-full px-6">
         <input
           type="text"
           placeholder="Search any field..."
