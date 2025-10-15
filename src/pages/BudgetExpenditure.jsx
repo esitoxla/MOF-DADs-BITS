@@ -1,10 +1,9 @@
 import React from "react";
-import { IoMdArrowDropdown } from "react-icons/io";
 import { useState } from "react";
 import Select from "react-select";
 import { useEffect } from "react";
 import BudgetTable from "../components/BudgetTable";
-import { label } from "framer-motion/client";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function BudgetExpenditure() {
   const [selectedActivity, setSelectedActivity] = useState(null);
@@ -19,6 +18,11 @@ export default function BudgetExpenditure() {
   const [payment, setPayment] = useState("");
   const [expenditure, setExpenditure] = useState("");
   const [allotmentBalance, setAllotmentBalance] = useState("");
+  const [isFormValid, setIsFormValid] = useState(true);
+
+  const [showExpenditureAlert, setShowExpenditureAlert] = useState(false);
+  const [showPaymentAlert, setShowPaymentAlert] = useState(false);
+  const [showReleasesAlert, setShowReleasesAlert] = useState(false);
 
   //BudgetTable
   const [records, setRecords] = useState([]);
@@ -62,6 +66,18 @@ export default function BudgetExpenditure() {
     },
   };
 
+  //
+  const economicClassOptions = [
+    { value: "goods & services", label: "Use of goods & services" },
+    { value: "capital expenditure", label: "Capital expenditure" },
+  ];
+
+  const sourceOfFundingOptions = [
+    { value: "GOG", label: "GOG" },
+    { value: "DPF", label: "DPF" },
+    { value: "IGF", label: "IGF" },
+  ];
+
   //Dynamically switch accounts based on selected economic class
   const naturalAccountOptions =
     economicClass?.value === "goods & services"
@@ -85,12 +101,14 @@ export default function BudgetExpenditure() {
     }
   }, [economicClass, fundingSource]);
 
-
-  
-
   //
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!isFormValid) {
+      toast.error("Cannot add record — please fix input errors!");
+      return;
+    }
 
     // build the record
     const newRecord = {
@@ -108,9 +126,9 @@ export default function BudgetExpenditure() {
       allotmentBalance,
     };
 
-
     // add it to the table
     setRecords([...records, newRecord]);
+     toast.success("Record submitted successfully!");
 
     // clear fields
     setSelectedActivity(null);
@@ -128,44 +146,90 @@ export default function BudgetExpenditure() {
   };
 
   //This ensures your Allotment Balance updates automatically when releases, allotment, or the previous records change.
- useEffect(() => {
-   const releaseNum = parseFloat(releases);
-   const allotmentNum = parseFloat(allotment);
+  useEffect(() => {
+    const releaseNum = parseFloat(releases);
+    const allotmentNum = parseFloat(allotment);
+    const expNum = parseFloat(expenditure);
+    const payNum = parseFloat(payment);
 
-   // Don't calculate unless we have a valid allotment
-   if (isNaN(allotmentNum)) return;
+    let newBalance = allotmentBalance;
 
-   // First record: allotment - release
-   if (records.length === 0) {
-     setAllotmentBalance(
-       isNaN(releaseNum) ? allotmentNum : allotmentNum - releaseNum
-     );
-   } else {
-     // For next records: previous balance - current release
-     const lastBalance = parseFloat(
-       records[records.length - 1].allotmentBalance
-     );
-     setAllotmentBalance(
-       isNaN(lastBalance)
-         ? allotmentNum
-         : lastBalance - (isNaN(releaseNum) ? 0 : releaseNum)
-     );
-   }
- }, [releases, allotment, records]);
+    // ---- 1 CALCULATE NEW BALANCE LOCALLY ----
+    if (!isNaN(allotmentNum)) {
+      if (records.length === 0) {
+        newBalance = isNaN(releaseNum)
+          ? allotmentNum
+          : allotmentNum - releaseNum;
+      } else {
+        const lastBalance = parseFloat(
+          records[records.length - 1].allotmentBalance
+        );
+        newBalance = isNaN(lastBalance)
+          ? allotmentNum
+          : lastBalance - (isNaN(releaseNum) ? 0 : releaseNum);
+      }
+      setAllotmentBalance(newBalance);
+    }
+
+    // ---- 2 VALIDATE RELATIONSHIPS ----
+    const exceedsAllotment = releaseNum > (parseFloat(newBalance) || 0);
+    const exceedsReleases = expNum > releaseNum;
+    const exceedsExpenditure = payNum > expNum;
+
+    setShowReleasesAlert(exceedsAllotment);
+    setShowExpenditureAlert(exceedsReleases);
+    setShowPaymentAlert(exceedsExpenditure);
+
+    // ---- 3 UPDATE FORM VALIDITY ----
+    const formValid =
+      !exceedsAllotment && !exceedsReleases && !exceedsExpenditure;
+    setIsFormValid(formValid);
+  }, [releases, expenditure, payment, allotment, records]);
 
 
+  // Handle releases input
+  const handleReleasesChange = (e) => {
+    const value = e.target.value;
+    setReleases(value);
 
-  //
-  const economicClassOptions = [
-    { value: "goods & services", label: "Use of goods & services" },
-    { value: "capital expenditure", label: "Capital expenditure" },
-  ];
+    const releaseNum = parseFloat(value);
+    const balanceNum = parseFloat(allotmentBalance || 0);
 
-  const sourceOfFundingOptions = [
-    { value: "GOG", label: "GOG" },
-    { value: "DPF", label: "DPF" },
-    { value: "IGF", label: "IGF" },
-  ];
+    if (releaseNum > balanceNum) {
+      toast.error("Releases cannot exceed the current allotment balance.");
+      setShowReleasesAlert(true);
+    } else {
+      setShowReleasesAlert(false);
+    }
+
+    setShowExpenditureAlert(false);
+  };
+
+  // Handle expenditure input
+  const handleExpenditureChange = (e) => {
+    const value = e.target.value;
+    setExpenditure(value);
+
+    if (parseFloat(value) > parseFloat(releases || 0)) {
+      toast.error("Actual expenditure cannot exceed releases.");
+      setShowExpenditureAlert(true);
+    } else {
+      setShowExpenditureAlert(false);
+    }
+  };
+
+  // Handle payment input
+  const handlePaymentChange = (e) => {
+    const value = e.target.value;
+    setPayment(value);
+
+    if (parseFloat(value) > parseFloat(expenditure || 0)) {
+      toast.error("Actual payment cannot exceed actual expenditure.");
+      setShowPaymentAlert(true);
+    } else {
+      setShowPaymentAlert(false);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6 justify-center lg:px-4">
@@ -205,7 +269,7 @@ export default function BudgetExpenditure() {
         </div>
 
         <div className="font-semibold cursor-pointer shadow bg-white h-[30rem] py-8 px-4 mb-6">
-          <div className="grid grid-cols-3 items-center justify-between gap-4 bg-white  w-full px-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-center justify-between gap-4 bg-white  w-full px-4 mb-8">
             {/* --- DATE FIELD --- */}
             <div className="flex flex-col gap-2">
               <label className="text-gray-500">DATE</label>
@@ -283,7 +347,7 @@ export default function BudgetExpenditure() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-10  w-full px-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
             <div className="flex flex-col gap-2">
               <label className="text-gray-500">NATURAL ACCOUNT</label>
               <Select
@@ -366,53 +430,75 @@ export default function BudgetExpenditure() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 bg-white  w-full px-4 mb-8">
+          <div className="grid grid-cols-3 gap-4 bg-white w-full px-4 mb-8">
+            {/* RELEASES */}
             <div className="flex flex-col gap-2">
-              <label htmlFor="" className="text-gray-500">
-                RELEASES
-              </label>
+              <label className="text-gray-500">RELEASES</label>
               <input
-                type="text"
+                type="number"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
                 value={releases}
-                onChange={(e) => setReleases(e.target.value)}
+                onChange={handleReleasesChange}
                 placeholder="Enter releases here..."
               />
             </div>
 
+            {/* ACTUAL EXPENDITURE */}
             <div className="flex flex-col gap-2">
-              <label htmlFor="" className="text-gray-500">
-                ACTUAL EXPENDITURE
-              </label>
+              <label className="text-gray-500">ACTUAL EXPENDITURE</label>
               <input
-                type="text"
+                type="number"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
                 value={expenditure}
-                onChange={(e) => setExpenditure(e.target.value)}
+                onChange={handleExpenditureChange}
                 placeholder="Enter actual expenditure here..."
               />
             </div>
 
+            {/* ACTUAL PAYMENT */}
             <div className="flex flex-col gap-2">
-              <label htmlFor="" className="text-gray-500">
-                ACTUAL PAYMENT
-              </label>
+              <label className="text-gray-500">ACTUAL PAYMENT</label>
               <input
-                type="text"
+                type="number"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
                 value={payment}
-                onChange={(e) => setPayment(e.target.value)}
+                onChange={handlePaymentChange}
                 placeholder="Enter actual payment here..."
               />
             </div>
           </div>
         </div>
 
-        <div className="text-right">
+        <div className="text-right flex justify-end gap-4">
+          {/* Back Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedActivity(null);
+              setSelectedDate("");
+              setEconomicClass(null);
+              setFundingSource(null);
+              setSelectedAccount(null);
+              setDescription("");
+              setAppropriation("");
+              setAllotment("");
+              setReleases("");
+              setExpenditure("");
+              setPayment("");
+              setAllotmentBalance("");
+              toast.success("Form reset successfully!");
+            }}
+            className="bg-gray-400 text-white px-4 py-2 font-semibold hover:bg-gray-500 transition duration-300 shadow-md cursor-pointer w-[10%]"
+          >
+            Cancel
+          </button>
+
+          {/* Submit Button */}
           <button
             type="submit"
             onClick={handleSubmit}
-            className="bg-green-600 text-white px-4 py-2 font-semibold hover:bg-green-700 transition duration-300 shadow-md cursor-pointer    w-[10%]"
+            disabled={!isFormValid}
+            className="bg-green-600 text-white px-4 py-2 font-semibold hover:bg-green-700 transition duration-300 shadow-md cursor-pointer w-[10%]"
           >
             Submit
           </button>
@@ -429,9 +515,23 @@ export default function BudgetExpenditure() {
           className="border px-3 py-2 rounded-md w-1/3"
         />
       </div>
-
-      {/* --- TABLE COMPONENT --- */}
       <BudgetTable records={records} searchQuery={searchQuery} />
+
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "#16a34a",
+            color: "#fff",
+            fontWeight: "600",
+            borderRadius: "8px",
+          },
+          error: {
+            style: { background: "#dc2626" },
+          },
+        }}
+      />
     </div>
   );
 }
