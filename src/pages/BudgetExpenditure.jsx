@@ -83,6 +83,26 @@ export default function BudgetExpenditure() {
     economicClass?.value === "goods & services"
       ? goodsAndServicesAccounts
       : capitalExpenditureAccounts;
+      
+
+  useEffect(() => {
+    if (!economicClass) return;
+
+    const validOptions =
+      economicClass.value === "goods & services"
+        ? goodsAndServicesAccounts
+        : capitalExpenditureAccounts;
+
+    const isStillValid = validOptions.some(
+      (opt) => opt.value === selectedAccount?.value
+    );
+
+    //if natural account selected does not correspond to that of the economic classification, set it to its default
+    if (!isStillValid) {
+      setSelectedAccount(null);
+    }
+  }, [economicClass]);
+
 
   // Auto-fill based on both selected fields
   useEffect(() => {
@@ -146,45 +166,61 @@ export default function BudgetExpenditure() {
   };
 
   //This ensures your Allotment Balance updates automatically when releases, allotment, or the previous records change.
-  useEffect(() => {
-    const releaseNum = parseFloat(releases);
-    const allotmentNum = parseFloat(allotment);
-    const expNum = parseFloat(expenditure);
-    const payNum = parseFloat(payment);
+ useEffect(() => {
+   const releaseNum = parseFloat(releases) || 0;
+   const expNum = parseFloat(expenditure) || 0;
+   const payNum = parseFloat(payment) || 0;
 
-    let newBalance = allotmentBalance;
+   const ecoValue = economicClass?.value?.toLowerCase();
+   const fundValue = fundingSource?.value?.toUpperCase(); // make sure this matches your keys (IGF, DPF, GOG)
 
-    // ---- 1 CALCULATE NEW BALANCE LOCALLY ----
-    if (!isNaN(allotmentNum)) {
-      if (records.length === 0) {
-        newBalance = isNaN(releaseNum)
-          ? allotmentNum
-          : allotmentNum - releaseNum;
-      } else {
-        const lastBalance = parseFloat(
-          records[records.length - 1].allotmentBalance
-        );
-        newBalance = isNaN(lastBalance)
-          ? allotmentNum
-          : lastBalance - (isNaN(releaseNum) ? 0 : releaseNum);
-      }
-      setAllotmentBalance(newBalance);
-    }
+   // --- Get the correct base allotment for the selected combo ---
+   const baseAllotment =
+     ecoValue && fundValue && dataMap[ecoValue]?.[fundValue]
+       ? dataMap[ecoValue][fundValue].allotment
+       : "";
 
-    // ---- 2 VALIDATE RELATIONSHIPS ----
-    const exceedsAllotment = releaseNum > (parseFloat(newBalance) || 0);
-    const exceedsReleases = expNum > releaseNum;
-    const exceedsExpenditure = payNum > expNum;
+   // If nothing is selected, clear the field
+   if (baseAllotment === "") {
+     setAllotmentBalance("");
+     return;
+   }
 
-    setShowReleasesAlert(exceedsAllotment);
-    setShowExpenditureAlert(exceedsReleases);
-    setShowPaymentAlert(exceedsExpenditure);
+   let newBalance = baseAllotment;
 
-    // ---- 3 UPDATE FORM VALIDITY ----
-    const formValid =
-      !exceedsAllotment && !exceedsReleases && !exceedsExpenditure;
-    setIsFormValid(formValid);
-  }, [releases, expenditure, payment, allotment, records]);
+   // --- Find existing records for the same category ---
+   const matchingRecords = records.filter(
+     (rec) =>
+       rec.economicClass.toLowerCase() ===
+         (economicClass?.label?.toLowerCase() || "") &&
+       rec.fundingSource.toUpperCase() ===
+         (fundingSource?.label?.toUpperCase() || "")
+   );
+
+   if (matchingRecords.length > 0) {
+     const lastBalance =
+       parseFloat(
+         matchingRecords[matchingRecords.length - 1].allotmentBalance
+       ) || baseAllotment;
+     newBalance = lastBalance - releaseNum;
+   } else {
+     newBalance = baseAllotment - releaseNum;
+   }
+
+   setAllotmentBalance(newBalance);
+
+   // --- Validate relationships ---
+   const exceedsAllotment = releaseNum > baseAllotment;
+   const exceedsReleases = expNum > releaseNum;
+   const exceedsExpenditure = payNum > expNum;
+
+   setShowReleasesAlert(exceedsAllotment);
+   setShowExpenditureAlert(exceedsReleases);
+   setShowPaymentAlert(exceedsExpenditure);
+
+   setIsFormValid(!exceedsAllotment && !exceedsReleases && !exceedsExpenditure);
+ }, [releases, expenditure, payment, economicClass, fundingSource, records]);
+
 
 
   // Handle releases input
