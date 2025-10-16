@@ -7,8 +7,12 @@ import { MdClose } from "react-icons/md";
 import { NavLink } from "react-router";
 import { LogOut } from "lucide-react";
 import profile from "../assets/images/profile.1.jpg";
+import { useNavigate } from "react-router";
 
 export default function Sidebar({ toggleSidebar }) {
+
+  const navigate = useNavigate();
+
   return (
     <>
       <div
@@ -106,11 +110,11 @@ export default function Sidebar({ toggleSidebar }) {
           </NavLink>
         </div>
 
-        {/* <ul className="absolute sm:static right-8 sm:right-0">
-          <button className="flex items-center gap-2 cursor-pointer font-medium text-red-500 hover:bg-red-500 hover:text-white px-4 py-2 rounded">
+        <ul className="">
+          <button onClick={() => navigate("/")} className="flex items-center gap-2 cursor-pointer font-medium bg-green-200 text-red-700 px-4 py-2 rounded">
             <LogOut size={18} /> Log Out
           </button>
-        </ul> */}
+        </ul>
       </div>
     </>
   );

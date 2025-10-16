@@ -1,4 +1,8 @@
 import React from "react";
+import { PencilSquare } from "../helpers/edit";
+import { Trash } from "../helpers/trash";
+import { Check } from "../helpers/check";
+import { Clipboard } from "../helpers/review";
 
 export default function BudgetTable({ records, searchQuery }) {
   if (records.length === 0) return null; // don’t render if no data
@@ -10,6 +14,8 @@ export default function BudgetTable({ records, searchQuery }) {
       .toLowerCase()
       .includes(searchQuery.toLowerCase())
   );
+
+  
 
   return (
     <div className="w-full overflow-x-auto lg:px-4">
@@ -70,29 +76,35 @@ export default function BudgetTable({ records, searchQuery }) {
                 <td className="border px-2 py-1">{record.releases}</td>
                 <td className="border px-2 py-1">{record.expenditure}</td>
                 <td className="border px-2 py-1">{record.payment}</td>
-               {/* --- Actions Menu (DaisyUI) --- */}
-<td className="px-2 py-1 border text-center">
-  <div className="dropdown dropdown-end">
-    <div
-      tabIndex={0}
-      role="button"
-      className="btn btn-ghost btn-sm"
-    >
-      •••
-    </div>
-
-    <ul
-      tabIndex={0}
-      className="dropdown-content menu shadow bg-base-100 rounded-box w-32 z-10"
-    >
-      <li><a>Edit</a></li>
-      <li><a>Review</a></li>
-      <li><a>Approve</a></li>
-      <li><a className="text-red-600">Delete</a></li>
-    </ul>
-  </div>
-</td>
-
+                {/* --- Actions Menu (DaisyUI) --- */}
+                <td className="px-2 py-1 border text-center">
+                  <ul className=" menu bg-base-100 w-32 z-10">
+                    <li>
+                      <a className="text-yellow-600 font-semibold">
+                        <PencilSquare />
+                        Edit
+                      </a>
+                    </li>
+                    <li>
+                      <a className="text-blue-700 font-semibold">
+                       
+                        <Clipboard /> Review
+                      </a>
+                    </li>
+                    <li>
+                      <a className="text-green-800 font-semibold">
+                        <Check />
+                        Approve
+                      </a>
+                    </li>
+                    <li>
+                      <a className="text-red-600 font-semibold">
+                        <Trash />
+                        Delete
+                      </a>
+                    </li>
+                  </ul>
+                </td>
               </tr>
             ))
           )}

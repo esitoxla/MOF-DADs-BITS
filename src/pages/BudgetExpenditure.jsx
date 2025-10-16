@@ -304,7 +304,7 @@ export default function BudgetExpenditure() {
           </div>
         </div>
 
-        <div className="font-semibold cursor-pointer shadow bg-white h-[30rem] py-8 px-4 mb-6">
+        <div className="font-semibold cursor-pointer shadow bg-white h-full py-8 px-4 mb-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-center justify-between gap-4 bg-white  w-full px-4 mb-8">
             {/* --- DATE FIELD --- */}
             <div className="flex flex-col gap-2">
@@ -426,7 +426,7 @@ export default function BudgetExpenditure() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-10 w-full px-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-center justify-between gap-4 w-full px-4 mb-8">
             <div className="flex flex-col gap-2">
               <label htmlFor="" className="text-gray-500">
                 APPROPRIATION
@@ -466,7 +466,7 @@ export default function BudgetExpenditure() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 bg-white w-full px-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-center justify-between gap-4 bg-white w-full px-4 mb-8">
             {/* RELEASES */}
             <div className="flex flex-col gap-2">
               <label className="text-gray-500">RELEASES</label>
@@ -524,7 +524,7 @@ export default function BudgetExpenditure() {
               setAllotmentBalance("");
               toast.success("Form reset successfully!");
             }}
-            className="bg-gray-400 text-white px-4 py-2 font-semibold hover:bg-gray-500 transition duration-300 shadow-md cursor-pointer w-[10%]"
+            className="bg-gray-400 text-white px-4 py-2 font-semibold hover:bg-gray-500 transition duration-300 shadow-md cursor-pointer lg:w-[10%]"
           >
             Cancel
           </button>
@@ -534,7 +534,7 @@ export default function BudgetExpenditure() {
             type="submit"
             onClick={handleSubmit}
             disabled={!isFormValid}
-            className="bg-green-600 text-white px-4 py-2 font-semibold hover:bg-green-700 transition duration-300 shadow-md cursor-pointer w-[10%]"
+            className="bg-green-600 text-white px-4 py-2 font-semibold hover:bg-green-700 transition duration-300 shadow-md cursor-pointer lg:w-[10%]"
           >
             Submit
           </button>
@@ -548,7 +548,7 @@ export default function BudgetExpenditure() {
           placeholder="Search any field..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="border px-3 py-2 rounded-md w-1/3"
+          className="border px-3 py-2 rounded-md w-full lg:w-1/3 md:w-1/2"
         />
       </div>
       <BudgetTable records={records} searchQuery={searchQuery} />
