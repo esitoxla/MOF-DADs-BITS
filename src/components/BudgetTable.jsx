@@ -4,6 +4,7 @@ import { Trash } from "../helpers/trash";
 import { Check } from "../helpers/check";
 import { Clipboard } from "../helpers/review";
 
+
 export default function BudgetTable({ records, searchQuery }) {
   if (records.length === 0) return null; // don’t render if no data
 
@@ -15,7 +16,7 @@ export default function BudgetTable({ records, searchQuery }) {
       .includes(searchQuery.toLowerCase())
   );
 
-  
+
 
   return (
     <div className="w-full overflow-x-auto lg:px-4">
@@ -35,7 +36,7 @@ export default function BudgetTable({ records, searchQuery }) {
             <th className="border px-2 py-1">Releases</th>
             <th className="border px-2 py-1">Expenditure</th>
             <th className="border px-2 py-1">Payment</th>
-            <th className="border px-2 py-1">Action</th>
+            <th className="border px-2 py-1">Actions</th>
           </tr>
         </thead>
         <tbody>

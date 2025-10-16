@@ -4,8 +4,14 @@ import Select from "react-select";
 import { useEffect } from "react";
 import BudgetTable from "../components/BudgetTable";
 import toast, { Toaster } from "react-hot-toast";
+import { goodsAndServicesAccounts } from "../data/BudgetExpenditureData";
+import { capitalExpenditureAccounts } from "../data/BudgetExpenditureData";
+import { dataMap } from "../data/BudgetExpenditureData";
+import { economicClassOptions } from "../data/BudgetExpenditureData";
+import { sourceOfFundingOptions } from "../data/BudgetExpenditureData";
 
 export default function BudgetExpenditure() {
+  
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [economicClass, setEconomicClass] = useState(null);
@@ -34,56 +40,11 @@ export default function BudgetExpenditure() {
     label: `Activity ${i + 1}`,
   }));
 
-  const goodsAndServicesAccounts = [
-    { value: "2210101", label: "2210101 - Printed Material and Stationery" },
-    {
-      value: "2210102",
-      label: "2210102 - Office Facilities, Supplies and Accessories",
-    },
-    { value: "2210103", label: "2210103 - Refreshment Items" },
-    { value: "2210104", label: "2210104 - Medical Supplies" },
-    { value: "2210105", label: "2210105 - Drugs" },
-  ];
-
-  const capitalExpenditureAccounts = [
-    { value: "3111102 ", label: "3111102 - Destitute Homes" },
-    { value: "3111103", label: "3111103 - Bungalows/Flats" },
-    { value: "3111104", label: "3111104 - Homes of Aged" },
-    { value: "3111105", label: "3111105 - Palace" },
-    { value: "3111106", label: "3111106 - Barracks" },
-  ];
-
-  const dataMap = {
-    "goods & services": {
-      IGF: { appropriation: 120000, allotment: 10000 },
-      DPF: { appropriation: 150000, allotment: 12000 },
-      GOG: { appropriation: 200000, allotment: 17000 },
-    },
-    "capital expenditure": {
-      IGF: { appropriation: 250000, allotment: 20000 },
-      DPF: { appropriation: 300000, allotment: 25000 },
-      GOG: { appropriation: 400000, allotment: 35000 },
-    },
-  };
-
-  //
-  const economicClassOptions = [
-    { value: "goods & services", label: "Use of goods & services" },
-    { value: "capital expenditure", label: "Capital expenditure" },
-  ];
-
-  const sourceOfFundingOptions = [
-    { value: "GOG", label: "GOG" },
-    { value: "DPF", label: "DPF" },
-    { value: "IGF", label: "IGF" },
-  ];
-
   //Dynamically switch accounts based on selected economic class
   const naturalAccountOptions =
     economicClass?.value === "goods & services"
       ? goodsAndServicesAccounts
       : capitalExpenditureAccounts;
-      
 
   useEffect(() => {
     if (!economicClass) return;
@@ -102,7 +63,6 @@ export default function BudgetExpenditure() {
       setSelectedAccount(null);
     }
   }, [economicClass]);
-
 
   // Auto-fill based on both selected fields
   useEffect(() => {
@@ -124,6 +84,36 @@ export default function BudgetExpenditure() {
   //
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!selectedActivity) {
+      toast.error("Activity is required!");
+      return;
+    }
+
+    if (!selectedDate) {
+      toast.error("Date is required!");
+      return;
+    }
+
+    if (!economicClass) {
+      toast.error("Economic Classification is required!");
+      return;
+    }
+
+    if (!fundingSource) {
+      toast.error("Source of funding must not be empty!");
+      return;
+    }
+
+    if (!selectedAccount) {
+      toast.error("Natural Account must not be empty!");
+      return;
+    }
+
+    if (!description) {
+      toast.error("Description is required!");
+      return;
+    }
 
     if (!isFormValid) {
       toast.error("Cannot add record — please fix input errors!");
@@ -148,7 +138,7 @@ export default function BudgetExpenditure() {
 
     // add it to the table
     setRecords([...records, newRecord]);
-     toast.success("Record submitted successfully!");
+    toast.success("Record submitted successfully!");
 
     // clear fields
     setSelectedActivity(null);
@@ -166,62 +156,62 @@ export default function BudgetExpenditure() {
   };
 
   //This ensures your Allotment Balance updates automatically when releases, allotment, or the previous records change.
- useEffect(() => {
-   const releaseNum = parseFloat(releases) || 0;
-   const expNum = parseFloat(expenditure) || 0;
-   const payNum = parseFloat(payment) || 0;
+  useEffect(() => {
+    const releaseNum = parseFloat(releases) || 0;
+    const expNum = parseFloat(expenditure) || 0;
+    const payNum = parseFloat(payment) || 0;
 
-   const ecoValue = economicClass?.value?.toLowerCase();
-   const fundValue = fundingSource?.value?.toUpperCase(); // make sure this matches your keys (IGF, DPF, GOG)
+    const ecoValue = economicClass?.value?.toLowerCase();
+    const fundValue = fundingSource?.value?.toUpperCase(); // make sure this matches your keys (IGF, DPF, GOG)
 
-   // --- Get the correct base allotment for the selected combo ---
-   const baseAllotment =
-     ecoValue && fundValue && dataMap[ecoValue]?.[fundValue]
-       ? dataMap[ecoValue][fundValue].allotment
-       : "";
+    // --- Get the correct base allotment for the selected combo ---
+    const baseAllotment =
+      ecoValue && fundValue && dataMap[ecoValue]?.[fundValue]
+        ? dataMap[ecoValue][fundValue].allotment
+        : "";
 
-   // If nothing is selected, clear the field
-   if (baseAllotment === "") {
-     setAllotmentBalance("");
-     return;
-   }
+    // If nothing is selected, clear the field
+    if (baseAllotment === "") {
+      setAllotmentBalance("");
+      return;
+    }
 
-   let newBalance = baseAllotment;
+    let newBalance = baseAllotment;
 
-   // --- Find existing records for the same category ---
-   const matchingRecords = records.filter(
-     (rec) =>
-       rec.economicClass.toLowerCase() ===
-         (economicClass?.label?.toLowerCase() || "") &&
-       rec.fundingSource.toUpperCase() ===
-         (fundingSource?.label?.toUpperCase() || "")
-   );
+    // --- Find existing records for the same category ---
+    const matchingRecords = records.filter(
+      (rec) =>
+        rec.economicClass.toLowerCase() ===
+          (economicClass?.label?.toLowerCase() || "") &&
+        rec.fundingSource.toUpperCase() ===
+          (fundingSource?.label?.toUpperCase() || "")
+    );
 
-   if (matchingRecords.length > 0) {
-     const lastBalance =
-       parseFloat(
-         matchingRecords[matchingRecords.length - 1].allotmentBalance
-       ) || baseAllotment;
-     newBalance = lastBalance - releaseNum;
-   } else {
-     newBalance = baseAllotment - releaseNum;
-   }
+    if (matchingRecords.length > 0) {
+      const lastBalance =
+        parseFloat(
+          matchingRecords[matchingRecords.length - 1].allotmentBalance
+        ) || baseAllotment;
+      newBalance = lastBalance - releaseNum;
+    } else {
+      newBalance = baseAllotment - releaseNum;
+    }
 
-   setAllotmentBalance(newBalance);
+    setAllotmentBalance(newBalance);
 
-   // --- Validate relationships ---
-   const exceedsAllotment = releaseNum > baseAllotment;
-   const exceedsReleases = expNum > releaseNum;
-   const exceedsExpenditure = payNum > expNum;
+    // --- Validate relationships ---
+    const exceedsAllotment = releaseNum > baseAllotment;
+    const exceedsReleases = expNum > releaseNum;
+    const exceedsExpenditure = payNum > expNum;
 
-   setShowReleasesAlert(exceedsAllotment);
-   setShowExpenditureAlert(exceedsReleases);
-   setShowPaymentAlert(exceedsExpenditure);
+    setShowReleasesAlert(exceedsAllotment);
+    setShowExpenditureAlert(exceedsReleases);
+    setShowPaymentAlert(exceedsExpenditure);
 
-   setIsFormValid(!exceedsAllotment && !exceedsReleases && !exceedsExpenditure);
- }, [releases, expenditure, payment, economicClass, fundingSource, records]);
-
-
+    setIsFormValid(
+      !exceedsAllotment && !exceedsReleases && !exceedsExpenditure
+    );
+  }, [releases, expenditure, payment, economicClass, fundingSource, records]);
 
   // Handle releases input
   const handleReleasesChange = (e) => {

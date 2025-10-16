@@ -112,7 +112,7 @@ export default function Sidebar({ toggleSidebar }) {
 
         <ul className="">
           <button onClick={() => navigate("/")} className="flex items-center gap-2 cursor-pointer font-medium bg-green-200 text-red-700 px-4 py-2 rounded">
-            <LogOut size={18} /> Log Out
+            <LogOut size={18} /> Log out
           </button>
         </ul>
       </div>
