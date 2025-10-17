@@ -4,34 +4,33 @@ import { Fragment } from "react";
 const EconomicClassificationTable = ({ data }) => {
   return (
     <>
-      <div className="overflow-x-auto bg-white shadow-xl rounded-2xl p-4 sm:p-6 border border-gray-200">
+      <div className="overflow-x-auto bg-white shadow-xl rounded-2xl p-4 sm:p-6 border border-gray-200 w-full">
         {/* <h2 className="text-xl font-bold text-center text-green-800 mb-6">
         Summary of Budget Performance by Economic Classification
       </h2> */}
 
-        {/* header */}
-        <div class=" flex justify-between items-center mb-2 bg-blue-50 w-full">
-          {/* <!-- Left Text Section --> */}
-          <div class=" flex flex-col space-y-1 pr-6 border-r-5 border-white p-4 font-bold text-lg w-[80%]">
-            <h1 class="">
+        {/* Header Section */}
+        <div className="min-w-[750px] flex justify-between items-center mb-2 bg-blue-50">
+          {/* Left Text Section */}
+          <div className="flex flex-col space-y-1 pr-6 border-r-4 border-white p-4 font-bold text-lg w-[80%] min-w-[600px]">
+            <h1>
               Summary of Budget Performance by Economic Classification and
-              funding
+              Funding
             </h1>
-            <p class="text-sm">
+            <p className="text-sm">
               DADs: The organisation of the user who runs the report
             </p>
-            <p class="text-sm">Year: 2025</p>
-            <p class="text-sm">Currency: Ghana cedis (GHS)</p>
+            <p className="text-sm">Year: 2025</p>
+            <p className="text-sm">Currency: Ghana cedis (GHS)</p>
           </div>
 
-          {/* <!-- Right Logo Section --> */}
-
-          <div class="flex items-center justify-center w-[20%]">
-            <span class="font-bold  text-[#03381E]">MoF Logo</span>
+          {/* Right Logo Section */}
+          <div className="flex items-center justify-center w-[20%] min-w-[150px]">
+            <span className="font-bold text-[#03381E]">MoF Logo</span>
           </div>
         </div>
 
-        <table className="min-w-full table-auto border border-gray-400 text-sm text-gray-800">
+        <table className="min-w-[750px] table-auto border border-gray-400 text-sm text-gray-800">
           <thead className="bg-gray-100">
             <tr className="text-center font-semibold">
               <th

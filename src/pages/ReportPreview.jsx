@@ -6,17 +6,14 @@ import { economicClassificationData } from "../data/EconomicClassification";
 import { useNavigate } from "react-router";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 export default function ReportPreview() {
   const navigate = useNavigate();
   const location = useLocation();
-  
- const reportType = location.state?.reportType || "EC";
- const fundingSource = location.state?.fundingSource || "ALL";
 
-
-  console.log("RAW economicClassificationData:", economicClassificationData);
-
+  const reportType = location.state?.reportType || "EC";
+  const fundingSource = location.state?.fundingSource || "ALL";
 
   // Function to filter or transform data based on funding source
   const filterByFundingSource = (data, source) => {
@@ -26,7 +23,6 @@ export default function ReportPreview() {
       const matchingBreakdown = item.breakdown?.find(
         (b) => b.source.toLowerCase() === source.toLowerCase()
       );
-
 
       if (!matchingBreakdown) return item; // If source not found, return as-is it
 
@@ -47,8 +43,6 @@ export default function ReportPreview() {
     fundingSource
   );
 
-  console.log("Filtered data:", filteredData);
-
   const handleExport = (type) => {
     if (type === "pdf") {
       const doc = new jsPDF({
@@ -58,7 +52,7 @@ export default function ReportPreview() {
       });
 
       // Header section
-      doc.setFont("helvetica", "bold");
+      doc.setFont("times", "bold");
       doc.setFontSize(14);
       doc.text(
         "Summary of Budget Performance by Economic Classification and Funding",
@@ -110,7 +104,7 @@ export default function ReportPreview() {
           if (Array.isArray(item.breakdown) && item.breakdown.length > 0) {
             item.breakdown.forEach((b) => {
               rows.push({
-                item: `   ↳ ${b.source || ""}`,
+                item: `    ${b.source || ""}`,
                 budget: (b.totalBudget ?? 0).toLocaleString(),
                 released: (b.amountReleased ?? 0).toLocaleString(),
                 expenditure: (b.actualExpenditure ?? 0).toLocaleString(),
@@ -168,7 +162,7 @@ export default function ReportPreview() {
           fontStyle: "bold",
         },
         didParseCell: (data) => {
-          if (data.row.raw.item?.startsWith("   ↳")) {
+          if (data.row.raw.item?.startsWith("    ")) {
             data.cell.styles.fontStyle = "italic";
             data.cell.styles.textColor = [90, 90, 90];
           }
@@ -183,15 +177,69 @@ export default function ReportPreview() {
 
       doc.save(`Economic_Report_${fundingSource}.pdf`);
     }
-  };
 
-  // function handleExport(type) {
-  //   if (type === "pdf") {
-  //     alert("Exporting report as PDF...");
-  //   } else {
-  //     alert("Exporting report as Excel...");
-  //   }
-  // }
+    if (type === "excel") {
+      // Prepare rows for Excel
+      const rows = [];
+
+      // Header row
+      rows.push([
+        "EXPENDITURE ITEM",
+        "2025 APPROVED BUDGET / APPROPRIATION",
+        "AMOUNT RELEASED AS AT END AUG 2025",
+        "ACTUAL EXPENDITURE AS AT END AUG 2025",
+        "ACTUAL PAYMENTS AS AT END AUG 2025",
+        "PROJECTIONS AS AT 31 DEC 2025",
+      ]);
+
+      // Add data rows
+      filteredData.forEach((item) => {
+        // Main item row
+        rows.push([
+          item.title,
+          item.totalBudget,
+          item.amountReleased,
+          item.actualExpenditure,
+          item.actualPayments,
+          item.projection,
+        ]);
+
+        // Breakdown rows
+        if (Array.isArray(item.breakdown) && item.breakdown.length > 0) {
+          item.breakdown.forEach((b) => {
+            rows.push([
+              `   ${b.source}`,
+              b.totalBudget,
+              b.amountReleased,
+              b.actualExpenditure,
+              b.actualPayments,
+              b.projection,
+            ]);
+          });
+        }
+      });
+
+      // Total row
+      rows.push([
+        "TOTAL",
+        filteredData.reduce((a, b) => a + b.totalBudget, 0),
+        filteredData.reduce((a, b) => a + b.amountReleased, 0),
+        filteredData.reduce((a, b) => a + b.actualExpenditure, 0),
+        filteredData.reduce((a, b) => a + b.actualPayments, 0),
+        filteredData.reduce((a, b) => a + b.projection, 0),
+      ]);
+
+      // Convert to worksheet
+      const worksheet = XLSX.utils.aoa_to_sheet(rows);
+
+      // Create workbook
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Economic Report");
+
+      // Download Excel file
+      XLSX.writeFile(workbook, `Economic_Report_${fundingSource}.xlsx`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-green-50 p-6 flex flex-col ">

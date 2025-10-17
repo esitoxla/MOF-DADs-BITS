@@ -110,10 +110,21 @@ export default function Sidebar({ toggleSidebar }) {
           </NavLink>
         </div>
 
-        <ul className="">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2 cursor-pointer font-medium bg-green-200 text-red-700 px-4 py-2 rounded">
-            <LogOut size={18} /> Log out
-          </button>
+        <ul>
+          <li>
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center gap-2 w-full px-4 py-2 rounded-lg 
+                 font-semibold text-white 
+                 bg-gradient-to-r from-green-700 to-green-500
+                 hover:from-green-600 hover:to-green-400
+                 transition-all duration-200 shadow-md hover:shadow-lg
+                 focus:outline-none focus:ring-2 focus:ring-green-300"
+            >
+              <LogOut size={18} className="text-white" />
+              <span>Log Out</span>
+            </button>
+          </li>
         </ul>
       </div>
     </>
