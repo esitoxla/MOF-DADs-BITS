@@ -10,7 +10,7 @@ import { dataMap } from "../data/BudgetExpenditureData";
 import { economicClassOptions } from "../data/BudgetExpenditureData";
 import { sourceOfFundingOptions } from "../data/BudgetExpenditureData";
 import { useSelector, useDispatch } from "react-redux";
-import { updateRecord, cancelEditing } from "../store/features/budgetSlice";
+import { updateRecord, cancelEditing, addRecord } from "../store/features/budgetSlice";
 
 
 
@@ -206,6 +206,8 @@ export default function BudgetExpenditure() {
       dispatch(cancelEditing());
     } else {
       setRecords([...records, newRecord]);
+      // but also dispatch to redux so the table updates
+      dispatch(addRecord(newRecord));
       toast.success("Record added successfully!");
     }
 
