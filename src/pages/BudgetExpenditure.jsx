@@ -10,15 +10,18 @@ import { dataMap } from "../data/BudgetExpenditureData";
 import { economicClassOptions } from "../data/BudgetExpenditureData";
 import { sourceOfFundingOptions } from "../data/BudgetExpenditureData";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  updateRecord,
-  cancelEditing,
-} from "../store/features/budgetSlice";
+import { updateRecord, cancelEditing } from "../store/features/budgetSlice";
+
+
+
+
 export default function BudgetExpenditure() {
-  
+  //redux handling the edit functionality
   const dispatch = useDispatch();
-  const { isEditing, editingIndex } = useSelector((state) => state.budget);
-  
+  const { isEditing, formValues, editingIndex } = useSelector(
+    (state) => state.budget
+  );
+
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [economicClass, setEconomicClass] = useState(null);
@@ -53,8 +56,13 @@ export default function BudgetExpenditure() {
       ? goodsAndServicesAccounts
       : capitalExpenditureAccounts;
 
+  //this handles the logic behind the relationship between economic classification and the natural account
   useEffect(() => {
-    if (!economicClass) return;
+     if (isEditing) {
+      return;
+     } else if (!economicClass) {
+      return
+     }
 
     const validOptions =
       economicClass.value === "goods & services"
@@ -71,12 +79,15 @@ export default function BudgetExpenditure() {
     }
   }, [economicClass]);
 
-  // Auto-fill based on both selected fields
+
+
+  // Auto-fill based on both selected fields for allotment, appropriation and allotment balance depending on economic classification and source of funding
   useEffect(() => {
     const ecoValue = economicClass?.value;
     const fundValue = fundingSource?.value;
 
-    if (ecoValue && fundValue) {
+    // Only auto-fill if NOT editing
+    if (!isEditing && ecoValue && fundValue) {
       const selectedData = dataMap[ecoValue]?.[fundValue];
       if (selectedData) {
         setAppropriation(selectedData.appropriation);
@@ -86,11 +97,54 @@ export default function BudgetExpenditure() {
         setAllotment("");
       }
     }
-  }, [economicClass, fundingSource]);
+  }, [economicClass, fundingSource, formValues]);
 
-  
 
-  //
+
+  //handles populating fields that are dependent on each other(natural account, allotment, appropriation, allotment balance)
+  // Handles populating fields when editing a record
+  useEffect(() => {
+    if (isEditing && formValues) {
+      setSelectedActivity(
+        formValues.activity
+          ? { label: formValues.activity, value: formValues.activity }
+          : null
+      );
+      setSelectedDate(formValues.date || "");
+      setEconomicClass(
+        formValues.economicClass
+          ? { label: formValues.economicClass, value: formValues.economicClass }
+          : null
+      );
+      setFundingSource(
+        formValues.fundingSource
+          ? { label: formValues.fundingSource, value: formValues.fundingSource }
+          : null
+      );
+      setSelectedAccount(
+        formValues.naturalAccount
+          ? {
+              label: formValues.naturalAccount,
+              value: formValues.naturalAccount,
+            }
+          : null
+      );
+      setDescription(formValues.description || "");
+
+      //restore appropriation and allotment if they exist
+      if (formValues.appropriation) setAppropriation(formValues.appropriation);
+      if (formValues.allotment) setAllotment(formValues.allotment);
+
+      setAllotmentBalance(formValues.allotmentBalance || "");
+      setReleases(formValues.releases || "");
+      setExpenditure(formValues.expenditure || "");
+      setPayment(formValues.payment || "");
+    }
+  }, [isEditing, formValues]);
+
+
+
+  //handles submiting of records and editing a record
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -170,8 +224,13 @@ export default function BudgetExpenditure() {
     setAllotmentBalance("");
   };
 
+
+
   //This ensures your Allotment Balance updates automatically when releases, allotment, or the previous records change.
   useEffect(() => {
+
+     if (isEditing) return;
+
     const releaseNum = parseFloat(releases) || 0;
     const expNum = parseFloat(expenditure) || 0;
     const payNum = parseFloat(payment) || 0;
@@ -272,6 +331,7 @@ export default function BudgetExpenditure() {
     }
   };
 
+  //handles the submission of the edited record
   const handleEditRecord = (record) => {
     setSelectedActivity({ label: record.activity, value: record.activity });
     setSelectedDate(record.date);
@@ -565,7 +625,7 @@ export default function BudgetExpenditure() {
             disabled={!isFormValid}
             className="bg-green-600 text-white px-4 py-2 font-semibold hover:bg-green-700 transition duration-300 shadow-md cursor-pointer lg:w-[10%]"
           >
-            Submit
+            {isEditing ? "OK" : "Submit"}
           </button>
         </div>
       </form>
@@ -580,7 +640,12 @@ export default function BudgetExpenditure() {
           className="border px-3 py-2 rounded-md w-full lg:w-1/3 md:w-1/2"
         />
       </div>
-      <BudgetTable records={records} setRecords={setRecords} searchQuery={searchQuery} onEdit={handleEditRecord} />
+      <BudgetTable
+        records={records}
+        setRecords={setRecords}
+        searchQuery={searchQuery}
+        onEdit={handleEditRecord}
+      />
 
       <Toaster
         position="top-right"

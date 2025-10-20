@@ -6,15 +6,17 @@ import { Clipboard } from "../helpers/review";
 import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { startEditing } from "../store/features/budgetSlice";
 
 export default function BudgetTable({
-  records,
+  
   setRecords,
   searchQuery,
   onEdit,
 }) {
   const dispatch = useDispatch();
+  const records = useSelector((state) => state.budget.records);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
@@ -70,8 +72,8 @@ export default function BudgetTable({
             <th className="border px-2 py-1">Allotment</th>
             <th className="border px-2 py-1">Allotment Balance</th>
             <th className="border px-2 py-1">Releases</th>
-            <th className="border px-2 py-1">Expenditure</th>
-            <th className="border px-2 py-1">Payment</th>
+            <th className="border px-2 py-1">Actual Expenditure</th>
+            <th className="border px-2 py-1">Actual Payment</th>
             <th className="border px-2 py-1">Actions</th>
           </tr>
         </thead>
