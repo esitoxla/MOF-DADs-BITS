@@ -9,8 +9,15 @@ import { capitalExpenditureAccounts } from "../data/BudgetExpenditureData";
 import { dataMap } from "../data/BudgetExpenditureData";
 import { economicClassOptions } from "../data/BudgetExpenditureData";
 import { sourceOfFundingOptions } from "../data/BudgetExpenditureData";
-
+import { useSelector, useDispatch } from "react-redux";
+import {
+  updateRecord,
+  cancelEditing,
+} from "../store/features/budgetSlice";
 export default function BudgetExpenditure() {
+  
+  const dispatch = useDispatch();
+  const { isEditing, editingIndex } = useSelector((state) => state.budget);
   
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
@@ -81,6 +88,8 @@ export default function BudgetExpenditure() {
     }
   }, [economicClass, fundingSource]);
 
+  
+
   //
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -136,9 +145,15 @@ export default function BudgetExpenditure() {
       allotmentBalance,
     };
 
-    // add it to the table
-    setRecords([...records, newRecord]);
-    toast.success("Record submitted successfully!");
+    // add or update it to the table
+    if (isEditing) {
+      dispatch(updateRecord({ index: editingIndex, updatedRecord: newRecord }));
+      toast.success("Record updated successfully!");
+      dispatch(cancelEditing());
+    } else {
+      setRecords([...records, newRecord]);
+      toast.success("Record added successfully!");
+    }
 
     // clear fields
     setSelectedActivity(null);
@@ -255,6 +270,30 @@ export default function BudgetExpenditure() {
     } else {
       setShowPaymentAlert(false);
     }
+  };
+
+  const handleEditRecord = (record) => {
+    setSelectedActivity({ label: record.activity, value: record.activity });
+    setSelectedDate(record.date);
+    setEconomicClass({
+      label: record.economicClass,
+      value: record.economicClass,
+    });
+    setFundingSource({
+      label: record.fundingSource,
+      value: record.fundingSource,
+    });
+    setSelectedAccount({
+      label: record.naturalAccount,
+      value: record.naturalAccount,
+    });
+    setDescription(record.description);
+    setAppropriation(record.appropriation);
+    setAllotment(record.allotment);
+    setAllotmentBalance(record.allotmentBalance);
+    setReleases(record.releases);
+    setExpenditure(record.expenditure);
+    setPayment(record.payment);
   };
 
   return (
@@ -541,7 +580,7 @@ export default function BudgetExpenditure() {
           className="border px-3 py-2 rounded-md w-full lg:w-1/3 md:w-1/2"
         />
       </div>
-      <BudgetTable records={records} searchQuery={searchQuery} />
+      <BudgetTable records={records} setRecords={setRecords} searchQuery={searchQuery} onEdit={handleEditRecord} />
 
       <Toaster
         position="top-right"

@@ -3,9 +3,22 @@ import { PencilSquare } from "../helpers/edit";
 import { Trash } from "../helpers/trash";
 import { Check } from "../helpers/check";
 import { Clipboard } from "../helpers/review";
+import { useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { startEditing } from "../store/features/budgetSlice";
 
+export default function BudgetTable({
+  records,
+  setRecords,
+  searchQuery,
+  onEdit,
+}) {
+  const dispatch = useDispatch();
 
-export default function BudgetTable({ records, searchQuery }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState(null);
+
   if (records.length === 0) return null; // don’t render if no data
 
   // Filter logic (case-insensitive, matches any field)
@@ -16,7 +29,30 @@ export default function BudgetTable({ records, searchQuery }) {
       .includes(searchQuery.toLowerCase())
   );
 
+  //delete logic
+  const openDeleteModal = (index) => {
+    setRecordToDelete(index);
+    setIsModalOpen(true);
+  };
 
+  const confirmDelete = () => {
+    const updatedRecords = records.filter((_, i) => i !== recordToDelete);
+    setRecords(updatedRecords);
+    setIsModalOpen(false);
+    toast.success("Record deleted successfully!");
+    setRecordToDelete(null);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setRecordToDelete(null);
+  };
+
+  //handling the edit functionality
+  const handleEditClick = (record, index) => {
+    dispatch(startEditing({ index, record }));
+    onEdit(record); // tells BudgetExpenditure to fill the form fields
+  };
 
   return (
     <div className="w-full overflow-x-auto lg:px-4">
@@ -81,14 +117,16 @@ export default function BudgetTable({ records, searchQuery }) {
                 <td className="px-2 py-1 border text-center">
                   <ul className=" menu bg-base-100 w-32 z-10">
                     <li>
-                      <a className="text-yellow-600 font-semibold">
+                      <a
+                        onClick={() => handleEditClick(record, index)}
+                        className="text-yellow-600 font-semibold"
+                      >
                         <PencilSquare />
                         Edit
                       </a>
                     </li>
                     <li>
                       <a className="text-blue-700 font-semibold">
-                       
                         <Clipboard /> Review
                       </a>
                     </li>
@@ -99,10 +137,13 @@ export default function BudgetTable({ records, searchQuery }) {
                       </a>
                     </li>
                     <li>
-                      <a className="text-red-600 font-semibold">
+                      <span
+                        onClick={() => openDeleteModal(index)}
+                        className="text-red-600 font-semibold"
+                      >
                         <Trash />
                         Delete
-                      </a>
+                      </span>
                     </li>
                   </ul>
                 </td>
@@ -111,6 +152,36 @@ export default function BudgetTable({ records, searchQuery }) {
           )}
         </tbody>
       </table>
+
+      {/*  DaisyUI Modal (renders outside the table to avoid layering issues) */}
+      {isModalOpen && (
+        <dialog open className="modal">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg text-red-400">Confirm Delete</h3>
+            <p className="py-4">
+              Are you sure you want to delete
+              <span className="font-semibold text-green-800">
+                “{records[recordToDelete]?.activity}”
+              </span>
+              ?
+            </p>
+            <div className="modal-action">
+              <button onClick={closeModal} className="btn btn-outline">
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="btn btn-error text-white"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+          <form method="dialog" className="modal-backdrop">
+            <button onClick={closeModal}>close</button>
+          </form>
+        </dialog>
+      )}
     </div>
   );
 }
