@@ -15,7 +15,7 @@ const budgetSlice = createSlice({
       state.records.push(action.payload);
     },
     deleteRecord: (state, action) => {
-      state.records.splice(action.payload, 1);
+      state.records.splice(action.payload, 1); //This works only if you pass the index (number) of the record you want to delete
     },
     setFormValues: (state, action) => {
       state.formValues = action.payload;

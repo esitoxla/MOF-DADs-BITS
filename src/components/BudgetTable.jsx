@@ -7,7 +7,7 @@ import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { startEditing } from "../store/features/budgetSlice";
+import { startEditing, deleteRecord } from "../store/features/budgetSlice";
 
 export default function BudgetTable({
   
@@ -37,13 +37,12 @@ export default function BudgetTable({
     setIsModalOpen(true);
   };
 
-  const confirmDelete = () => {
-    const updatedRecords = records.filter((_, i) => i !== recordToDelete);
-    setRecords(updatedRecords);
-    setIsModalOpen(false);
-    toast.success("Record deleted successfully!");
-    setRecordToDelete(null);
-  };
+ const confirmDelete = () => {
+   dispatch(deleteRecord(recordToDelete)); // recordToDelete = index or id
+   setIsModalOpen(false);
+   toast.success("Record deleted successfully!");
+   setRecordToDelete(null);
+ };
 
   const closeModal = () => {
     setIsModalOpen(false);

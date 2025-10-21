@@ -82,22 +82,28 @@ export default function BudgetExpenditure() {
 
 
   // Auto-fill based on both selected fields for allotment, appropriation and allotment balance depending on economic classification and source of funding
-  useEffect(() => {
-    const ecoValue = economicClass?.value;
-    const fundValue = fundingSource?.value;
+useEffect(() => {
+  // Get the actual selected values from your dropdowns
+  const ecoValue = economicClass?.value;
+  const fundValue = fundingSource?.value;
 
-    // Only auto-fill if NOT editing
-    if (!isEditing && ecoValue && fundValue) {
-      const selectedData = dataMap[ecoValue]?.[fundValue];
-      if (selectedData) {
-        setAppropriation(selectedData.appropriation);
-        setAllotment(selectedData.allotment);
-      } else {
-        setAppropriation("");
-        setAllotment("");
-      }
-    }
-  }, [economicClass, fundingSource, formValues]);
+  // Only run if both are selected
+  if (!ecoValue || !fundValue) return;
+
+  // Lookup from your dataMap directly (no case conversion)
+  const selectedData = dataMap[ecoValue]?.[fundValue];
+
+  // If a valid combination exists, update the state fields
+  if (selectedData) {
+    setAppropriation(selectedData.appropriation);
+    setAllotment(selectedData.allotment);
+    setAllotmentBalance(selectedData.allotment);
+  }
+}, [economicClass, fundingSource]);
+
+
+
+
 
 
 
@@ -525,7 +531,7 @@ export default function BudgetExpenditure() {
               <input
                 type="number"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
-                value={appropriation}
+                value={appropriation || ""}
                 readOnly
                 disabled
               />
@@ -538,7 +544,7 @@ export default function BudgetExpenditure() {
               <input
                 type="number"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
-                value={allotment}
+                value={allotment || ""}
                 readOnly
                 disabled
               />
