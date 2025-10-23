@@ -3,6 +3,7 @@ import { TbFileAnalytics } from "react-icons/tb";
 import { IoSettingsOutline } from "react-icons/io5";
 import { FaSackDollar } from "react-icons/fa6";
 import { TbReport } from "react-icons/tb";
+import { TbUsersPlus } from "react-icons/tb";
 import { MdClose } from "react-icons/md";
 import { NavLink } from "react-router";
 import { LogOut } from "lucide-react";
@@ -48,7 +49,7 @@ export default function Sidebar({ toggleSidebar }) {
 
         <div className="border-b p-0 border-gray-200 py-2"></div>
 
-        <div className="flex flex-col gap-6 text-white cursor-pointer pt-4 py-2">
+        <div className="flex flex-col gap-2 text-white cursor-pointer pt-2 py-2">
           <NavLink to="/dashboard" end>
             {({ isActive }) => (
               <div
@@ -90,6 +91,21 @@ export default function Sidebar({ toggleSidebar }) {
                   <TbReport />
                 </span>
                 <p>Reports</p>
+              </div>
+            )}
+          </NavLink>
+
+          <NavLink to="users">
+            {({ isActive }) => (
+              <div
+                className={`flex gap-2 items-center px-4 py-2 ${
+                  isActive ? "bg-green-50 text-gray-700 rounded" : "text-white"
+                }`}
+              >
+                <span className="text-3xl">
+                  <TbUsersPlus />
+                </span>
+                <p>Users</p>
               </div>
             )}
           </NavLink>

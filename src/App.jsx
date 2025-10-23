@@ -9,6 +9,10 @@ import Settings from './pages/Settings';
 import SummaryReport from './components/SummaryReport';
 import ReportLayout from './layouts/ReportLayout';
 import ReportPreview from './pages/ReportPreview';
+import Users from './pages/Users';
+import NewUser from './components/NewUser';
+import UserLayout from './layouts/UserLayout';
+import UpdateUser from './components/UpdateUser';
 
 
 function App() {
@@ -43,8 +47,26 @@ function App() {
             },
             {
               path: "preview",
-              Component: ReportPreview
-            }
+              Component: ReportPreview,
+            },
+          ],
+        },
+        {
+          path: "users",
+          Component: UserLayout,
+          children: [
+            {
+              index: true,
+              Component: Users,
+            },
+            {
+              path: "newUser",
+              Component: NewUser,
+            },
+            {
+              path: "update",
+              Component: UpdateUser,
+            },
           ],
         },
         {

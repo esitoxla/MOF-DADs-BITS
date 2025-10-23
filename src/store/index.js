@@ -1,8 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 import budgetReducer from "../store/features/budgetSlice"
+import userReducer from "../store/features/userSlice"
+import authReducer from "../store/features/authSlice"
 
 export const store = configureStore({
     reducer: {
-       budget: budgetReducer 
+       budget: budgetReducer,
+       user:  userReducer,
+       auth: authReducer
     }
 })

@@ -1,5 +1,6 @@
 import React from "react";
 import { Fragment } from "react";
+import logo from "../assets/images/logo.jpeg"
 
 const EconomicClassificationTable = ({ data }) => {
   return (
@@ -10,9 +11,9 @@ const EconomicClassificationTable = ({ data }) => {
       </h2> */}
 
         {/* Header Section */}
-        <div className="min-w-[750px] flex justify-between items-center mb-2 bg-blue-50">
+        <div className="min-w-[750px] flex justify-between items-center mb-2 bg-[#F7F7F7]">
           {/* Left Text Section */}
-          <div className="flex flex-col space-y-1 pr-6 border-r-4 border-white p-4 font-bold text-lg w-[80%] min-w-[600px]">
+          <div className="flex flex-col space-y-1 pr-6 p-4 font-bold text-lg w-[80%] min-w-[600px]">
             <h1>
               Summary of Budget Performance by Economic Classification and
               Funding
@@ -26,7 +27,9 @@ const EconomicClassificationTable = ({ data }) => {
 
           {/* Right Logo Section */}
           <div className="flex items-center justify-center w-[20%] min-w-[150px]">
-            <span className="font-bold text-[#03381E]">MoF Logo</span>
+            <span className="font-bold text-[#03381E]">
+              <img src={logo} alt="mof logo" />
+            </span>
           </div>
         </div>
 
@@ -39,12 +42,12 @@ const EconomicClassificationTable = ({ data }) => {
               >
                 EXPENDITURE ITEM
               </th>
-              <th
+              {/* <th
                 colSpan="5"
                 className="border border-gray-400 px-4 py-2 bg-blue-100"
               >
                 2025 PERFORMANCE (GHS)
-              </th>
+              </th> */}
             </tr>
             <tr className="text-center font-semibold bg-blue-50">
               <th className="border border-gray-400 px-3 py-2">
