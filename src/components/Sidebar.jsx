@@ -9,10 +9,24 @@ import { NavLink } from "react-router";
 import { LogOut } from "lucide-react";
 import profile from "../assets/images/profile.1.jpg";
 import { useNavigate } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../store/features/authSlice";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function Sidebar({ toggleSidebar }) {
-
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const { authUser } = useSelector((store) => store.auth);
+
+  async function handleLogout(e) {
+    dispatch(logoutUser());
+    toast.success("Logout successful");
+
+     setTimeout(() => {
+       navigate("/", { replace: true });
+     }, 1000);
+  }
 
   return (
     <>
@@ -95,20 +109,24 @@ export default function Sidebar({ toggleSidebar }) {
             )}
           </NavLink>
 
-          <NavLink to="users">
-            {({ isActive }) => (
-              <div
-                className={`flex gap-2 items-center px-4 py-2 ${
-                  isActive ? "bg-green-50 text-gray-700 rounded" : "text-white"
-                }`}
-              >
-                <span className="text-3xl">
-                  <TbUsersPlus />
-                </span>
-                <p>Users</p>
-              </div>
-            )}
-          </NavLink>
+          {authUser?.role === "admin" && (
+            <NavLink to="users">
+              {({ isActive }) => (
+                <div
+                  className={`flex gap-2 items-center px-4 py-2 ${
+                    isActive
+                      ? "bg-green-50 text-gray-700 rounded"
+                      : "text-white"
+                  }`}
+                >
+                  <span className="text-3xl">
+                    <TbUsersPlus />
+                  </span>
+                  <p>Users</p>
+                </div>
+              )}
+            </NavLink>
+          )}
 
           <NavLink to="/dashboard/settings">
             {({ isActive }) => (
@@ -129,7 +147,7 @@ export default function Sidebar({ toggleSidebar }) {
         <ul>
           <li>
             <button
-              onClick={() => navigate("/")}
+              onClick={handleLogout}
               className="flex items-center gap-2 w-full px-4 py-2 rounded-lg 
                  font-semibold text-white 
                  bg-gradient-to-r from-green-700 to-green-500
@@ -143,6 +161,22 @@ export default function Sidebar({ toggleSidebar }) {
           </li>
         </ul>
       </div>
+
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "#16a34a",
+            color: "#fff",
+            fontWeight: "600",
+            borderRadius: "8px",
+          },
+          error: {
+            style: { background: "#dc2626" },
+          },
+        }}
+      />
     </>
   );
 }

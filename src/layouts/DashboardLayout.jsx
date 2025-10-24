@@ -30,7 +30,7 @@ export default function DashboardLayout() {
       )}
 
       <div
-        className={`flex-1 p-6 transition-all duration-300 overflow-y-auto ${
+        className={`flex-1 transition-all duration-300 overflow-y-auto ${
           isSidebarOpen ? "md:ml-68" : "ml-0"
         }`}
       >

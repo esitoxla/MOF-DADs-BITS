@@ -10,7 +10,7 @@ import { dataMap } from "../data/BudgetExpenditureData";
 import { economicClassOptions } from "../data/BudgetExpenditureData";
 import { sourceOfFundingOptions } from "../data/BudgetExpenditureData";
 import { useSelector, useDispatch } from "react-redux";
-import { updateRecord, cancelEditing, addRecord } from "../store/features/budgetSlice";
+import { updateRecord, cancelEditing, addExpenditure } from "../store/features/budgetSlice";
 
 
 
@@ -18,7 +18,7 @@ import { updateRecord, cancelEditing, addRecord } from "../store/features/budget
 export default function BudgetExpenditure() {
   //redux handling the edit functionality
   const dispatch = useDispatch();
-  const { isEditing, formValues, editingIndex } = useSelector(
+  const { isEditing, formValues, editingIndex, loading, error } = useSelector(
     (state) => state.budget
   );
 
@@ -189,21 +189,23 @@ useEffect(() => {
       return;
     }
 
-    // build the record
+    // build the record to match backend field names
     const newRecord = {
       activity: selectedActivity?.label || "",
       date: selectedDate,
-      economicClass: economicClass?.label || "",
-      fundingSource: fundingSource?.label || "",
+      economicClassification: economicClass?.label || "",
+      sourceOfFunding: fundingSource?.label || "",
       naturalAccount: selectedAccount?.label || "",
       description,
       appropriation,
       allotment,
-      releases,
-      expenditure,
-      payment,
       allotmentBalance,
+      releases,
+      actualExpenditure: expenditure,
+      actualPayment: payment,
     };
+
+
 
     // add or update it to the table
     if (isEditing) {
@@ -213,7 +215,7 @@ useEffect(() => {
     } else {
       setRecords([...records, newRecord]);
       // but also dispatch to redux so the table updates
-      dispatch(addRecord(newRecord));
+      dispatch(addExpenditure(newRecord));
       toast.success("Record added successfully!");
     }
 

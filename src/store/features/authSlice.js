@@ -28,8 +28,10 @@ export const loginUser = createAsyncThunk(
   async (loginData, thunkAPI) => {
     try {
       const res = await api.post("/auth/login", loginData);
+      console.log(res.data.user);
       return res.data.user;
     } catch (error) {
+      console.log(error)
       if (error.response && error.response.data.message) {
         return thunkAPI.rejectWithValue(error.response.data.message);
       }
@@ -37,6 +39,19 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+
+//for getting a user details
+export const getUser = createAsyncThunk("getUser", async (_, thunkAPI) => {
+  try {
+    const res = await api.get("/auth/me");
+    console.log(res);
+    return thunkAPI.fulfillWithValue(res.data.user);
+  } catch (error) {
+    if (error.response && error.response.data.message) {
+      return thunkAPI.rejectWithValue(error.response.data.message);
+    }
+  }
+});
 
 
 export const changePassword = createAsyncThunk(
@@ -61,7 +76,6 @@ export const changePassword = createAsyncThunk(
 export const logoutUser = createAsyncThunk("logout", async (_, thunkAPI) => {
   try {
     const res = await api.post("/auth/logout");
-    console.log(res.data)
     return res.data;
   } catch (error) {
     console.log(error)
@@ -112,6 +126,20 @@ export const authSlice = createSlice({
         state.authUser = action.payload;
       })
       .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+        state.authUser = null;
+        state.error = action.payload;
+      })
+
+      // this is for loaduser cases
+      .addCase(getUser.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(getUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.authUser = action.payload;
+      })
+      .addCase(getUser.rejected, (state, action) => {
         state.loading = false;
         state.authUser = null;
         state.error = action.payload;

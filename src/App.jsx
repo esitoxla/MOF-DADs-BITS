@@ -13,6 +13,7 @@ import Users from './pages/Users';
 import NewUser from './components/NewUser';
 import UserLayout from './layouts/UserLayout';
 import UpdateUser from './components/UpdateUser';
+import PrivateRoute from './helpers/routesProtect';
 
 
 function App() {
@@ -53,7 +54,11 @@ function App() {
         },
         {
           path: "users",
-          Component: UserLayout,
+          element: (
+            <PrivateRoute allowedRoles={["admin"]}>
+              <UserLayout />
+            </PrivateRoute>
+          ),
           children: [
             {
               index: true,

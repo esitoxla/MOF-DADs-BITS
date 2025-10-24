@@ -7,7 +7,8 @@ import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { startEditing, deleteRecord } from "../store/features/budgetSlice";
+import { startEditing, deleteRecord, fetchExpenditures } from "../store/features/budgetSlice";
+import { useEffect } from "react";
 
 export default function BudgetTable({
   
@@ -16,10 +17,15 @@ export default function BudgetTable({
   onEdit,
 }) {
   const dispatch = useDispatch();
-  const records = useSelector((state) => state.budget.records);
+ const { records, loading, error } = useSelector((store) => store.budget);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
+
+    useEffect(() => {
+      dispatch(fetchExpenditures());
+    }, [dispatch]);
+
 
   if (records.length === 0) return null; // don’t render if no data
 
@@ -104,16 +110,16 @@ export default function BudgetTable({
                 <td className="border px-2 py-1">{index + 1}</td>
                 <td className="border px-2 py-1">{record.activity}</td>
                 <td className="border px-2 py-1">{record.date}</td>
-                <td className="border px-2 py-1">{record.economicClass}</td>
-                <td className="border px-2 py-1">{record.fundingSource}</td>
+                <td className="border px-2 py-1">{record.economicClassification}</td>
+                <td className="border px-2 py-1">{record.sourceOfFunding}</td>
                 <td className="border px-2 py-1">{record.naturalAccount}</td>
                 <td className="border px-2 py-1">{record.description}</td>
                 <td className="border px-2 py-1">{record.appropriation}</td>
                 <td className="border px-2 py-1">{record.allotment}</td>
                 <td className="border px-2 py-1">{record.allotmentBalance}</td>
                 <td className="border px-2 py-1">{record.releases}</td>
-                <td className="border px-2 py-1">{record.expenditure}</td>
-                <td className="border px-2 py-1">{record.payment}</td>
+                <td className="border px-2 py-1">{record.actualExpenditure}</td>
+                <td className="border px-2 py-1">{record.actualPayment}</td>
                 {/* --- Actions Menu (DaisyUI) --- */}
                 <td className="px-2 py-1 border text-center">
                   <ul className=" menu bg-base-100 w-32 z-10">
