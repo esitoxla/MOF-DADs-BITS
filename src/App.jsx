@@ -54,11 +54,12 @@ function App() {
         },
         {
           path: "users",
-          element: (
-            <PrivateRoute allowedRoles={["admin"]}>
-              <UserLayout />
-            </PrivateRoute>
-          ),
+          Component: UserLayout,
+          // element: (
+          //   <PrivateRoute allowedRoles={["admin"]}>
+          //     <UserLayout />
+          //   </PrivateRoute>
+          // ),
           children: [
             {
               index: true,
