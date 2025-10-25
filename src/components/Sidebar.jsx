@@ -58,8 +58,8 @@ export default function Sidebar({ toggleSidebar }) {
           </div>
 
           <div className="sm:block">
-            <p className="font-semibold">{authUser?.name?.toUpperCase()}</p>
-            <p className="text-sm">{authUser?.role?.toUpperCase()}</p>
+            <p className="font-semibold">{authUser?.name}</p>
+            <p className="text-sm">{authUser?.role}</p>
           </div>
         </div>
 
