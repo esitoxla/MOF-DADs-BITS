@@ -191,7 +191,7 @@ useEffect(() => {
 
     // build the record to match backend field names
     const newRecord = {
-      activity: selectedActivity?.label || "",
+      activity: selectedActivity?.value || selectedActivity?.label || "",
       date: selectedDate,
       economicClassification: economicClass?.label || "",
       sourceOfFunding: fundingSource?.label || "",
@@ -213,7 +213,7 @@ useEffect(() => {
       toast.success("Record updated successfully!");
       dispatch(cancelEditing());
     } else {
-      setRecords([...records, newRecord]);
+      // setRecords([...records, newRecord]);
       // but also dispatch to redux so the table updates
       dispatch(addExpenditure(newRecord));
       toast.success("Record added successfully!");
@@ -222,8 +222,8 @@ useEffect(() => {
     // clear fields
     setSelectedActivity(null);
     setSelectedDate("");
-    setEconomicClass("Select");
-    setFundingSource("select");
+   setEconomicClass(null);
+   setFundingSource(null);
     setSelectedAccount(null);
     setDescription("");
     setAppropriation("");

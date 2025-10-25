@@ -22,12 +22,12 @@ export default function BudgetTable({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
 
-    useEffect(() => {
-      dispatch(fetchExpenditures());
-    }, [dispatch]);
+   useEffect(() => {
+  dispatch(fetchExpenditures());
+}, [dispatch]);
 
-
-  if (records.length === 0) return null; // don’t render if no data
+if (!records) return <p>Loading...</p>;
+if (records.length === 0) return <p>No records found</p>;
 
   // Filter logic (case-insensitive, matches any field)
   const filteredRecords = records.filter((record) =>
