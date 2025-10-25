@@ -1,4 +1,6 @@
 import React from "react";
+import { BsArrowLeftShort } from "react-icons/bs";
+import { RiArrowDownSFill } from "react-icons/ri";
 import { useLocation } from "react-router";
 import { FaFilePdf, FaFileExcel } from "react-icons/fa";
 import EconomicClassificationTable from "../components/EconomicClassificationTable";
@@ -252,16 +254,18 @@ export default function ReportPreview() {
       <div className="flex justify-end items-center space-x-6 mb-4">
         <button
           onClick={() => navigate("/dashboard/reports")}
-          className="  bg-green-600 text-white px-4 py-2 rounded font-medium cursor-pointer shadow hover:bg-green-700"
+          className=" flex gap-1 bg-green-600 text-white px-4 py-2 rounded font-medium cursor-pointer shadow hover:bg-green-700"
         >
-          ← Back
+          <BsArrowLeftShort className="text-3xl" />
+          Back
         </button>
 
         {/* Export Dropdown */}
         <div className="relative ">
           <details className="group">
-            <summary className="list-none bg-green-600 text-white px-4 py-2 rounded font-medium cursor-pointer shadow hover:bg-green-700 flex items-center">
-              Export 
+            <summary className="list-none bg-green-600 text-white px-4 py-2 rounded font-medium cursor-pointer shadow hover:bg-green-700 flex gap-1 items-center">
+              Export
+              <RiArrowDownSFill className="text-3xl" />
             </summary>
             <div className="absolute right-0 mt-2 w-35 bg-white border rounded-lg shadow-lg overflow-hidden z-10 ">
               <button

@@ -19,6 +19,8 @@ export default function Sidebar({ toggleSidebar }) {
 
   const { authUser } = useSelector((store) => store.auth);
 
+ 
+
   async function handleLogout(e) {
     dispatch(logoutUser());
     toast.success("Logout successful");
@@ -56,8 +58,8 @@ export default function Sidebar({ toggleSidebar }) {
           </div>
 
           <div className="sm:block">
-            <p className="font-medium">Nkumin Asaa Osei</p>
-            <p>Budget Analyst</p>
+            <p className="font-semibold">{authUser?.name?.toUpperCase()}</p>
+            <p className="text-sm">{authUser?.role?.toUpperCase()}</p>
           </div>
         </div>
 
