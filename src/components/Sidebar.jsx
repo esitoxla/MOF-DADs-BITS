@@ -109,7 +109,7 @@ export default function Sidebar({ toggleSidebar }) {
             )}
           </NavLink>
 
-          {/* {authUser?.role === "admin" && ( */}
+          {authUser?.role === "admin" && (
             <NavLink to="users">
               {({ isActive }) => (
                 <div
@@ -126,7 +126,7 @@ export default function Sidebar({ toggleSidebar }) {
                 </div>
               )}
             </NavLink>
-          {/* )} */}
+          )}
 
           <NavLink to="/dashboard/settings">
             {({ isActive }) => (

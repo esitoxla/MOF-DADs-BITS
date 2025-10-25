@@ -261,7 +261,7 @@ export default function ReportPreview() {
         <div className="relative ">
           <details className="group">
             <summary className="list-none bg-green-600 text-white px-4 py-2 rounded font-medium cursor-pointer shadow hover:bg-green-700 flex items-center">
-              Export ▼
+              Export 
             </summary>
             <div className="absolute right-0 mt-2 w-35 bg-white border rounded-lg shadow-lg overflow-hidden z-10 ">
               <button
