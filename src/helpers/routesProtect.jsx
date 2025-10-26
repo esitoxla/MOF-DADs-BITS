@@ -18,7 +18,7 @@ export default function PrivateRoute({ children, allowedRoles }) {
   if (!authUser) return <Navigate to="/" replace />;
 
   // Check role authorization
-  if (allowedRoles && !allowedRoles.includes(authUser.role)) {
+  if (allowedRoles && !allowedRoles.includes(authUser?.role)) {
     return <Navigate to="/dashboard" replace />;
   }
 

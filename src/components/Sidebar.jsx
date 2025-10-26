@@ -1,4 +1,5 @@
 import React from "react";
+import { useEffect } from "react";
 import { TbFileAnalytics } from "react-icons/tb";
 import { IoSettingsOutline } from "react-icons/io5";
 import { FaSackDollar } from "react-icons/fa6";
@@ -10,7 +11,7 @@ import { LogOut } from "lucide-react";
 import profile from "../assets/images/profile.1.jpg";
 import { useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
-import { logoutUser } from "../store/features/authSlice";
+import { logoutUser, getUser } from "../store/features/authSlice";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function Sidebar({ toggleSidebar }) {
@@ -18,6 +19,11 @@ export default function Sidebar({ toggleSidebar }) {
   const dispatch = useDispatch();
 
   const { authUser } = useSelector((store) => store.auth);
+  console.log(authUser)
+
+   useEffect(() => {
+     dispatch(getUser()); // automatically fetch user from cookie if valid
+   }, [dispatch]);
 
  
 

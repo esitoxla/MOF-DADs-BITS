@@ -2,6 +2,16 @@ import { api } from "../../config/axios";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 
+
+const initialState = {
+  authUser: null,
+  loading: false,
+  error: null,
+};
+
+
+
+
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (registerData, thunkAPI) => {
@@ -44,12 +54,15 @@ export const loginUser = createAsyncThunk(
 export const getUser = createAsyncThunk("getUser", async (_, thunkAPI) => {
   try {
     const res = await api.get("/auth/me");
-    console.log(res);
+    console.log(res.data.user);
     return thunkAPI.fulfillWithValue(res.data.user);
+
   } catch (error) {
+    console.log(error)
     if (error.response && error.response.data.message) {
-      return thunkAPI.rejectWithValue(error.response.data.message);
+      return thunkAPI.rejectWithValue(null);
     }
+    return thunkAPI.rejectWithValue(null);
   }
 });
 
@@ -87,11 +100,6 @@ export const logoutUser = createAsyncThunk("logout", async (_, thunkAPI) => {
 
 
 
-const initialState = {
-    authUser: null,
-    loading: false,
-    error: null
-}
 
 
 export const authSlice = createSlice({

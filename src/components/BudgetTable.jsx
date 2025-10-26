@@ -27,7 +27,7 @@ export default function BudgetTable({
 }, [dispatch]);
 
 if (!records) return <p>Loading...</p>;
-if (records.length === 0) return <p>No records found</p>;
+// if (records.length === 0) return <p>No records found</p>;
 
   // Filter logic (case-insensitive, matches any field)
   const filteredRecords = records.filter((record) =>
