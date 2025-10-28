@@ -8,7 +8,7 @@ import { TbUsersPlus } from "react-icons/tb";
 import { MdClose } from "react-icons/md";
 import { NavLink } from "react-router";
 import { LogOut } from "lucide-react";
-import profile from "../assets/images/profile.1.jpg";
+import profile from "../assets/images/profile.1.png";
 import { useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser, getUser } from "../store/features/authSlice";
@@ -65,7 +65,7 @@ export default function Sidebar({ toggleSidebar }) {
 
           <div className="sm:block">
             <p className="font-semibold">{authUser?.name}</p>
-            <p className="text-sm">{authUser?.role}</p>
+            <p className="text-sm">{authUser?.designation}</p>
           </div>
         </div>
 

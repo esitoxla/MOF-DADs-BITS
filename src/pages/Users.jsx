@@ -59,7 +59,7 @@ export default function Users() {
   return (
     <div className=" px-6 bg-green-50 min-h-screen">
       {/* Header */}
-      <div className="py-6 px-6 bg-green-50 sticky top-0 z-20">
+      <div className="py-6 px-6 bg-green-50 sticky top-0 z-10">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 h-full">
           <h1 className="text-2xl font-semibold text-gray-800 mb-2 sm:mb-0">
             Users

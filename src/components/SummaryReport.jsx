@@ -9,11 +9,13 @@ export default function SummaryReport() {
   // State for selected options
   const [reportType, setReportType] = useState("EC");
   const [fundingSource, setFundingSource] = useState("ALL");
+  const [date, setDate] = useState("");
 
   // Handle generate button click
+  //these states are being passed via React Router:
   const handleGenerate = () => {
     navigate("/dashboard/reports/preview", {
-      state: { reportType, fundingSource },
+      state: { reportType, fundingSource, date },
     });
   };
 
@@ -73,6 +75,19 @@ export default function SummaryReport() {
               <option value="IGF">IGF</option>
               <option value="ALL">ALL</option>
             </select>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Date
+            </label>
+
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full px-4 py-3  border border-gray-300 rounded-lg"
+            />
           </div>
 
           {/* Action Button */}

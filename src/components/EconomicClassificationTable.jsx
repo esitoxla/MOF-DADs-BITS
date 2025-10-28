@@ -1,8 +1,17 @@
 import React from "react";
 import { Fragment } from "react";
 import logo from "../assets/images/logo.jpeg"
+import { useSelector } from "react-redux";
+import { useLocation } from "react-router";
 
 const EconomicClassificationTable = ({ data }) => {
+  const { authUser } = useSelector((store) => store.auth);
+  console.log(authUser);
+
+  //This extracts the values passed from the previous page — including the date
+  const location = useLocation();
+  const { date } = location.state || {};
+
   return (
     <>
       <div className="overflow-x-auto bg-white shadow-xl rounded-2xl p-4 sm:p-6 border border-gray-200 w-full">
@@ -19,9 +28,16 @@ const EconomicClassificationTable = ({ data }) => {
               Funding
             </h1>
             <p className="text-sm">
-              DADs: The organisation of the user who runs the report
+              <span> DADs: </span>
+              <span>{authUser?.organization}</span>
             </p>
-            <p className="text-sm">Year: 2025</p>
+            <p className="text-sm">
+              Date:{" "}
+              {date
+                ? new Date(date).toLocaleDateString("en-GB")
+                : "No date selected"}
+            </p>
+
             <p className="text-sm">Currency: Ghana cedis (GHS)</p>
           </div>
 
@@ -154,3 +170,10 @@ const EconomicClassificationTable = ({ data }) => {
 };
 
 export default EconomicClassificationTable;
+
+
+
+//That converts the selected date (like "2025-10-14") into a readable format ("14/10/2025").
+{/* <p className="text-sm">
+  Date: {date ? new Date(date).toLocaleDateString("en-GB") : "No date selected"}
+</p>; */}
