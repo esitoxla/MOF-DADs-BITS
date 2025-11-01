@@ -105,7 +105,7 @@ export default function Login() {
         </form>
       </div>
 
-      <Toaster
+      {/* <Toaster
               position="top-right"
               toastOptions={{
                 duration: 3000,
@@ -119,7 +119,7 @@ export default function Login() {
                   style: { background: "#dc2626" },
                 },
               }}
-            />
+            /> */}
     </div>
   );
 }

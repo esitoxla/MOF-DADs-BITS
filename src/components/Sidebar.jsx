@@ -12,7 +12,7 @@ import profile from "../assets/images/profile.1.png";
 import { useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser, getUser } from "../store/features/authSlice";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 export default function Sidebar({ toggleSidebar }) {
   const navigate = useNavigate();
@@ -170,7 +170,7 @@ export default function Sidebar({ toggleSidebar }) {
         </ul>
       </div>
 
-      <Toaster
+      {/* <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,
@@ -184,7 +184,7 @@ export default function Sidebar({ toggleSidebar }) {
             style: { background: "#dc2626" },
           },
         }}
-      />
+      /> */}
     </>
   );
 }

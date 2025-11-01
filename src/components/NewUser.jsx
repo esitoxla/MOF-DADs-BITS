@@ -280,21 +280,7 @@ export default function NewUser({ isOpen, onClose }) {
           </form>
         </div>
       </div>
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: "#16a34a",
-            color: "#fff",
-            fontWeight: "600",
-            borderRadius: "8px",
-          },
-          error: {
-            style: { background: "#dc2626" },
-          },
-        }}
-      />
+     
     </div>
   );
 }

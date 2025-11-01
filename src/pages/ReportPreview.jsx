@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useEffect, useMemo} from "react";
 import { BsArrowLeftShort } from "react-icons/bs";
 import { RiArrowDownSFill } from "react-icons/ri";
 import { useLocation } from "react-router";
 import { FaFilePdf, FaFileExcel } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { getYearAndQuarter } from "../helpers/dateHelper";
+import { formatReportData } from "../helpers/formatReportData";
+import { fetchQuarterlyReport } from "../store/features/reportSlice";
 import EconomicClassificationTable from "../components/EconomicClassificationTable";
 import { economicClassificationData } from "../data/EconomicClassification";
 import { useNavigate } from "react-router";
@@ -13,47 +17,49 @@ import * as XLSX from "xlsx";
 export default function ReportPreview() {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
+  const { reportData, totals, loading, error } = useSelector((s) => s.report);
+  const {
+    reportType = "EC",
+    fundingSource = "ALL",
+    date,
+  } = location.state || {};
 
-  const reportType = location.state?.reportType || "EC";
-  const fundingSource = location.state?.fundingSource || "ALL";
+  // compute year & quarter from date (fallback to today)
+  const { year, quarter } = useMemo(() => getYearAndQuarter(date), [date]);
 
-  // Function to filter or transform data based on funding source
-  const filterByFundingSource = (data, source) => {
-    if (source === "ALL") return data;
 
-    return data.map((item) => {
-      const matchingBreakdown = item.breakdown?.find(
-        (b) => b.source.toLowerCase() === source.toLowerCase()
+
+
+  // fetch from backend when page loads or filters change
+  useEffect(() => {
+    // Only EC implemented now; extend for other report types later
+    if (reportType === "EC") {
+      dispatch(
+        fetchQuarterlyReport({ year, quarter, sourceOfFunding: fundingSource })
       );
+    }
+  }, [dispatch, year, quarter, fundingSource, reportType]);
 
-      if (!matchingBreakdown) return item; // If source not found, return as-is it
 
-      return {
-        ...item,
-        totalBudget: matchingBreakdown.totalBudget,
-        amountReleased: matchingBreakdown.amountReleased,
-        actualExpenditure: matchingBreakdown.actualExpenditure,
-        actualPayments: matchingBreakdown.actualPayments,
-        projection: matchingBreakdown.projection,
-        breakdown: [matchingBreakdown], // only show the chosen source
-      };
-    });
-  };
 
-  const filteredData = filterByFundingSource(
-    economicClassificationData,
-    fundingSource
-  );
+  // transform backend payload into your table format
+ const tableData = useMemo(
+   () => formatReportData(reportData, fundingSource),
+   [reportData, fundingSource]
+ );
 
+
+
+  // export handlers use tableData (not local dummy)
   const handleExport = (type) => {
+    // PDF & Excel export code — adapt to use tableData and totals
     if (type === "pdf") {
       const doc = new jsPDF({
         orientation: "landscape",
         unit: "pt",
         format: "a4",
       });
-
-      // Header section
       doc.setFont("times", "bold");
       doc.setFontSize(14);
       doc.text(
@@ -61,97 +67,73 @@ export default function ReportPreview() {
         40,
         40
       );
-
       doc.setFontSize(11);
       doc.setFont("helvetica", "normal");
       doc.text(
-        "DADs: The organisation of the user who runs the report",
+        `DADs: ${/* you can get authUser from store if you like */ ""}`,
         40,
         60
       );
-      doc.text("Year: 2025", 40, 75);
+      doc.text(`Year: ${year}`, 40, 75);
       doc.text("Currency: Ghana cedis (GHS)", 40, 90);
       doc.text(`Funding Source: ${fundingSource}`, 40, 105);
-
       doc.setLineWidth(0.5);
       doc.line(40, 115, 800, 115);
 
-      // Table structure
       const columns = [
         { header: "EXPENDITURE ITEM", dataKey: "item" },
-        { header: "2025 APPROVED BUDGET / APPROPRIATION", dataKey: "budget" },
-        { header: "AMOUNT RELEASED AS AT END AUG 2025", dataKey: "released" },
-        {
-          header: "ACTUAL EXPENDITURE AS AT END AUG 2025",
-          dataKey: "expenditure",
-        },
-        { header: "ACTUAL PAYMENTS AS AT END AUG 2025", dataKey: "payments" },
-        { header: "PROJECTIONS AS AT 31 DEC 2025", dataKey: "projection" },
+        { header: "APPROPRIATION", dataKey: "budget" },
+        { header: "AMOUNT RELEASED", dataKey: "released" },
+        { header: "ACTUAL EXPENDITURE", dataKey: "expenditure" },
+        { header: "ACTUAL PAYMENTS", dataKey: "payments" },
+        { header: "PROJECTION", dataKey: "projection" },
       ];
 
       const rows = [];
+      tableData.forEach((item) => {
+        rows.push({
+          item: item.title,
+          budget: item.totalBudget.toLocaleString(),
+          released: item.amountReleased.toLocaleString(),
+          expenditure: item.actualExpenditure.toLocaleString(),
+          payments: item.actualPayments.toLocaleString(),
+          projection: item.projection.toLocaleString(),
+        });
 
-      if (fundingSource === "ALL") {
-        filteredData.forEach((item) => {
-          rows.push({
-            item: item.title || "",
-            budget: (item.totalBudget ?? 0).toLocaleString(),
-            released: (item.amountReleased ?? 0).toLocaleString(),
-            expenditure: (item.actualExpenditure ?? 0).toLocaleString(),
-            payments: (item.actualPayments ?? 0).toLocaleString(),
-            projection: (item.projection ?? 0).toLocaleString(),
-          });
-
-          // Only include breakdown if it exists
-          if (Array.isArray(item.breakdown) && item.breakdown.length > 0) {
-            item.breakdown.forEach((b) => {
-              rows.push({
-                item: `    ${b.source || ""}`,
-                budget: (b.totalBudget ?? 0).toLocaleString(),
-                released: (b.amountReleased ?? 0).toLocaleString(),
-                expenditure: (b.actualExpenditure ?? 0).toLocaleString(),
-                payments: (b.actualPayments ?? 0).toLocaleString(),
-                projection: (b.projection ?? 0).toLocaleString(),
-              });
+        if (Array.isArray(item.breakdown)) {
+          item.breakdown.forEach((b) => {
+            rows.push({
+              item: `    ${b.source}`,
+              budget: b.totalBudget.toLocaleString(),
+              released: b.amountReleased.toLocaleString(),
+              expenditure: b.actualExpenditure.toLocaleString(),
+              payments: b.actualPayments.toLocaleString(),
+              projection: b.projection.toLocaleString(),
             });
-          }
-        });
-      } else {
-        // Single source (GoG / IGF / DPF)
-        filteredData.forEach((item) => {
-          rows.push({
-            item: item.title,
-            budget: item.totalBudget.toLocaleString(),
-            released: item.amountReleased.toLocaleString(),
-            expenditure: item.actualExpenditure.toLocaleString(),
-            payments: item.actualPayments.toLocaleString(),
-            projection: item.projection.toLocaleString(),
           });
-        });
-      }
+        }
+      });
 
-      // Total row
-      const total = {
+      // total row
+      rows.push({
         item: "TOTAL",
-        budget: filteredData
+        budget: tableData
           .reduce((a, b) => a + b.totalBudget, 0)
           .toLocaleString(),
-        released: filteredData
+        released: tableData
           .reduce((a, b) => a + b.amountReleased, 0)
           .toLocaleString(),
-        expenditure: filteredData
+        expenditure: tableData
           .reduce((a, b) => a + b.actualExpenditure, 0)
           .toLocaleString(),
-        payments: filteredData
+        payments: tableData
           .reduce((a, b) => a + b.actualPayments, 0)
           .toLocaleString(),
-        projection: filteredData
+        projection: tableData
           .reduce((a, b) => a + b.projection, 0)
           .toLocaleString(),
-      };
-      rows.push(total);
+      });
 
-      // Generate table
       autoTable(doc, {
         startY: 125,
         columns,
@@ -181,22 +163,17 @@ export default function ReportPreview() {
     }
 
     if (type === "excel") {
-      // Prepare rows for Excel
       const rows = [];
-
-      // Header row
       rows.push([
         "EXPENDITURE ITEM",
-        "2025 APPROVED BUDGET / APPROPRIATION",
-        "AMOUNT RELEASED AS AT END AUG 2025",
-        "ACTUAL EXPENDITURE AS AT END AUG 2025",
-        "ACTUAL PAYMENTS AS AT END AUG 2025",
-        "PROJECTIONS AS AT 31 DEC 2025",
+        "APPROPRIATION",
+        "AMOUNT RELEASED",
+        "ACTUAL EXPENDITURE",
+        "ACTUAL PAYMENTS",
+        "PROJECTION",
       ]);
 
-      // Add data rows
-      filteredData.forEach((item) => {
-        // Main item row
+      tableData.forEach((item) => {
         rows.push([
           item.title,
           item.totalBudget,
@@ -205,9 +182,7 @@ export default function ReportPreview() {
           item.actualPayments,
           item.projection,
         ]);
-
-        // Breakdown rows
-        if (Array.isArray(item.breakdown) && item.breakdown.length > 0) {
+        if (Array.isArray(item.breakdown)) {
           item.breakdown.forEach((b) => {
             rows.push([
               `   ${b.source}`,
@@ -221,62 +196,49 @@ export default function ReportPreview() {
         }
       });
 
-      // Total row
       rows.push([
         "TOTAL",
-        filteredData.reduce((a, b) => a + b.totalBudget, 0),
-        filteredData.reduce((a, b) => a + b.amountReleased, 0),
-        filteredData.reduce((a, b) => a + b.actualExpenditure, 0),
-        filteredData.reduce((a, b) => a + b.actualPayments, 0),
-        filteredData.reduce((a, b) => a + b.projection, 0),
+        tableData.reduce((a, b) => a + b.totalBudget, 0),
+        tableData.reduce((a, b) => a + b.amountReleased, 0),
+        tableData.reduce((a, b) => a + b.actualExpenditure, 0),
+        tableData.reduce((a, b) => a + b.actualPayments, 0),
+        tableData.reduce((a, b) => a + b.projection, 0),
       ]);
 
-      // Convert to worksheet
       const worksheet = XLSX.utils.aoa_to_sheet(rows);
-
-      // Create workbook
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Economic Report");
-
-      // Download Excel file
       XLSX.writeFile(workbook, `Economic_Report_${fundingSource}.xlsx`);
     }
   };
 
   return (
     <div className="min-h-screen bg-green-50 p-6 flex flex-col ">
-      {/* <h1 className="text-2xl font-bold text-green-700 mb-6 text-center">
-        {fundingSource === "ALL"
-          ? "Economic Classification Summary (All Funding Sources)"
-          : `Economic Classification Summary - ${fundingSource}`}
-      </h1> */}
-
       <div className="flex justify-end items-center space-x-6 mb-4">
         <button
           onClick={() => navigate("/dashboard/reports")}
-          className=" flex gap-1 bg-green-600 text-white px-4 py-2 rounded font-medium cursor-pointer shadow hover:bg-green-700"
+          className="flex gap-1 bg-green-600 text-white px-4 py-2 rounded font-medium"
         >
           <BsArrowLeftShort className="text-3xl" />
           Back
         </button>
 
-        {/* Export Dropdown */}
-        <div className="relative ">
+        <div className="relative">
           <details className="group">
-            <summary className="list-none bg-green-600 text-white px-4 py-2 rounded font-medium cursor-pointer shadow hover:bg-green-700 flex gap-1 items-center">
+            <summary className="list-none bg-green-600 text-white px-4 py-2 rounded font-medium cursor-pointer flex gap-1 items-center">
               Export
               <RiArrowDownSFill className="text-3xl" />
             </summary>
-            <div className="absolute right-0 mt-2 w-35 bg-white border rounded-lg shadow-lg overflow-hidden z-10 ">
+            <div className="absolute right-0 mt-2 w-35 bg-white border rounded-lg shadow-lg z-10">
               <button
-                className="flex items-center gap-2 w-full px-4 py-2 hover:bg-green-50"
                 onClick={() => handleExport("pdf")}
+                className="flex items-center gap-2 w-full px-4 py-2 hover:bg-green-50"
               >
                 <FaFilePdf className="text-red-600" /> PDF
               </button>
               <button
-                className="flex items-center gap-2 w-full px-4 py-2 hover:bg-green-50"
                 onClick={() => handleExport("excel")}
+                className="flex items-center gap-2 w-full px-4 py-2 hover:bg-green-50"
               >
                 <FaFileExcel className="text-green-700" /> Excel
               </button>
@@ -285,10 +247,13 @@ export default function ReportPreview() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className=" flex-1 overflow-y-auto">
-        {reportType === "EC" && (
-          <EconomicClassificationTable data={filteredData} />
+      <div className="flex-1 overflow-y-auto">
+        {loading ? (
+          <p>Loading report...</p>
+        ) : error ? (
+          <p className="text-red-500">{error}</p>
+        ) : (
+          <EconomicClassificationTable data={tableData} />
         )}
       </div>
     </div>

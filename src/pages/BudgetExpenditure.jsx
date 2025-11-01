@@ -3,17 +3,19 @@ import { useState } from "react";
 import Select from "react-select";
 import { useEffect } from "react";
 import BudgetTable from "../components/BudgetTable";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { goodsAndServicesAccounts } from "../data/BudgetExpenditureData";
 import { capitalExpenditureAccounts } from "../data/BudgetExpenditureData";
+import { compensatingEmployeesAccounts } from "../data/BudgetExpenditureData";
 import { dataMap } from "../data/BudgetExpenditureData";
 import { economicClassOptions } from "../data/BudgetExpenditureData";
 import { sourceOfFundingOptions } from "../data/BudgetExpenditureData";
 import { useSelector, useDispatch } from "react-redux";
-import { updateRecord, cancelEditing, addExpenditure } from "../store/features/budgetSlice";
-
-
-
+import {
+  updateRecord,
+  cancelEditing,
+  addExpenditure,
+} from "../store/features/budgetSlice";
 
 export default function BudgetExpenditure() {
   //redux handling the edit functionality
@@ -51,18 +53,29 @@ export default function BudgetExpenditure() {
   }));
 
   //Dynamically switch accounts based on selected economic class
-  const naturalAccountOptions =
-    economicClass?.value === "goods & services"
-      ? goodsAndServicesAccounts
-      : capitalExpenditureAccounts;
+  let naturalAccountOptions = [];
+
+  switch (economicClass?.value) {
+    case "goods & services":
+      naturalAccountOptions = goodsAndServicesAccounts;
+      break;
+    case "capital expenditure":
+      naturalAccountOptions = capitalExpenditureAccounts;
+      break;
+    case "compensation of employees":
+      naturalAccountOptions = compensatingEmployeesAccounts;
+      break;
+    default:
+      naturalAccountOptions = [];
+  }
 
   //this handles the logic behind the relationship between economic classification and the natural account
   useEffect(() => {
-     if (isEditing) {
+    if (isEditing) {
       return;
-     } else if (!economicClass) {
-      return
-     }
+    } else if (!economicClass) {
+      return;
+    }
 
     const validOptions =
       economicClass.value === "goods & services"
@@ -79,33 +92,25 @@ export default function BudgetExpenditure() {
     }
   }, [economicClass]);
 
-
-
   // Auto-fill based on both selected fields for allotment, appropriation and allotment balance depending on economic classification and source of funding
-useEffect(() => {
-  // Get the actual selected values from your dropdowns
-  const ecoValue = economicClass?.value;
-  const fundValue = fundingSource?.value;
+  useEffect(() => {
+    // Get the actual selected values from your dropdowns
+    const ecoValue = economicClass?.value;
+    const fundValue = fundingSource?.value;
 
-  // Only run if both are selected
-  if (!ecoValue || !fundValue) return;
+    // Only run if both are selected
+    if (!ecoValue || !fundValue) return;
 
-  // Lookup from your dataMap directly (no case conversion)
-  const selectedData = dataMap[ecoValue]?.[fundValue];
+    // Lookup from your dataMap directly (no case conversion)
+    const selectedData = dataMap[ecoValue]?.[fundValue];
 
-  // If a valid combination exists, update the state fields
-  if (selectedData) {
-    setAppropriation(selectedData.appropriation);
-    setAllotment(selectedData.allotment);
-    setAllotmentBalance(selectedData.allotment);
-  }
-}, [economicClass, fundingSource]);
-
-
-
-
-
-
+    // If a valid combination exists, update the state fields
+    if (selectedData) {
+      setAppropriation(selectedData.appropriation);
+      setAllotment(selectedData.allotment);
+      setAllotmentBalance(selectedData.allotment);
+    }
+  }, [economicClass, fundingSource]);
 
   //handles populating fields that are dependent on each other(natural account, allotment, appropriation, allotment balance)
   // Handles populating fields when editing a record
@@ -147,8 +152,6 @@ useEffect(() => {
       setPayment(formValues.payment || "");
     }
   }, [isEditing, formValues]);
-
-
 
   //handles submiting of records and editing a record
   const handleSubmit = (e) => {
@@ -205,8 +208,6 @@ useEffect(() => {
       actualPayment: payment,
     };
 
-
-
     // add or update it to the table
     if (isEditing) {
       dispatch(updateRecord({ index: editingIndex, updatedRecord: newRecord }));
@@ -222,8 +223,8 @@ useEffect(() => {
     // clear fields
     setSelectedActivity(null);
     setSelectedDate("");
-   setEconomicClass(null);
-   setFundingSource(null);
+    setEconomicClass(null);
+    setFundingSource(null);
     setSelectedAccount(null);
     setDescription("");
     setAppropriation("");
@@ -234,12 +235,19 @@ useEffect(() => {
     setAllotmentBalance("");
   };
 
-
+  useEffect(() => {
+    if (error) {
+      toast.error(
+        typeof error === "string"
+          ? error
+          : error?.message || "An unexpected error occurred"
+      );
+    }
+  }, [error]);
 
   //This ensures your Allotment Balance updates automatically when releases, allotment, or the previous records change.
   useEffect(() => {
-
-     if (isEditing) return;
+    if (isEditing) return;
 
     const releaseNum = parseFloat(releases) || 0;
     const expNum = parseFloat(expenditure) || 0;
@@ -532,6 +540,7 @@ useEffect(() => {
               </label>
               <input
                 type="number"
+                min="0"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
                 value={appropriation || ""}
                 readOnly
@@ -545,6 +554,7 @@ useEffect(() => {
               </label>
               <input
                 type="number"
+                min="0"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
                 value={allotment || ""}
                 readOnly
@@ -558,6 +568,7 @@ useEffect(() => {
               </label>
               <input
                 type="number"
+                min="0"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
                 value={allotmentBalance}
                 readOnly
@@ -571,6 +582,7 @@ useEffect(() => {
               <label className="text-gray-500">RELEASES</label>
               <input
                 type="number"
+                min="0"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
                 value={releases}
                 onChange={handleReleasesChange}
@@ -583,6 +595,7 @@ useEffect(() => {
               <label className="text-gray-500">ACTUAL EXPENDITURE</label>
               <input
                 type="number"
+                min="0"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
                 value={expenditure}
                 onChange={handleExpenditureChange}
@@ -595,6 +608,7 @@ useEffect(() => {
               <label className="text-gray-500">ACTUAL PAYMENT</label>
               <input
                 type="number"
+                min="0"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
                 value={payment}
                 onChange={handlePaymentChange}
@@ -657,7 +671,7 @@ useEffect(() => {
         onEdit={handleEditRecord}
       />
 
-      <Toaster
+      {/* <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,
@@ -671,7 +685,7 @@ useEffect(() => {
             style: { background: "#dc2626" },
           },
         }}
-      />
+      /> */}
     </div>
   );
 }

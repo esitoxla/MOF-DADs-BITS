@@ -14,6 +14,7 @@ import NewUser from "./components/NewUser";
 import UserLayout from "./layouts/UserLayout";
 import UpdateUser from "./components/UpdateUser";
 import PrivateRoute from "./helpers/routesProtect";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   const router = createBrowserRouter([
@@ -84,6 +85,22 @@ function App() {
   return (
     <>
       <RouterProvider router={router} />
+
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: "#16a34a",
+            color: "#fff",
+            fontWeight: "600",
+            borderRadius: "8px",
+          },
+          error: {
+            style: { background: "#dc2626" },
+          },
+        }}
+      />
     </>
   );
 }

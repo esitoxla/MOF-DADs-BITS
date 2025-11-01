@@ -9,6 +9,7 @@ export default function SummaryReport() {
   // State for selected options
   const [reportType, setReportType] = useState("EC");
   const [fundingSource, setFundingSource] = useState("ALL");
+  
   const [date, setDate] = useState("");
 
   // Handle generate button click
