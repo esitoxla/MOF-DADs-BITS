@@ -235,15 +235,15 @@ export default function BudgetExpenditure() {
     setAllotmentBalance("");
   };
 
-  useEffect(() => {
-    if (error) {
-      toast.error(
-        typeof error === "string"
-          ? error
-          : error?.message || "An unexpected error occurred"
-      );
-    }
-  }, [error]);
+  // useEffect(() => {
+  //   if (error) {
+  //     toast.error(
+  //       typeof error === "string"
+  //         ? error
+  //         : error?.message || "An unexpected error occurred"
+  //     );
+  //   }
+  // }, [error]);
 
   //This ensures your Allotment Balance updates automatically when releases, allotment, or the previous records change.
   useEffect(() => {
