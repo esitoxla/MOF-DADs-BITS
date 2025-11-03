@@ -38,7 +38,6 @@ export const dataMap = {
   },
   "compensation of employees": {
     IGF: { appropriation: 300000, allotment: 30000 },
-    DPF: { appropriation: 450000, allotment: 35000 },
     GOG: { appropriation: 600000, allotment: 45000 },
   },
 };

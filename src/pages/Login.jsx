@@ -38,9 +38,9 @@ export default function Login() {
       const resultAction = await dispatch(loginUser({ username, password }));
 
       if (loginUser.fulfilled.match(resultAction)) {
-        toast.success("Login successful");
         await dispatch(getUser());
         navigate("/dashboard", { replace: true });
+        toast.success("Login successful");
       } else {
         // Show the error in a toast
         const errorMsg = resultAction.payload || "Login failed";

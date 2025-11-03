@@ -110,25 +110,25 @@ const EconomicClassificationTable = ({ data }) => {
                 </tr>
 
                 {/* Breakdown rows (GoG, IGF, DPF) */}
-                {item.breakdown?.map((b, i) => (
-                  <tr key={i} className="text-gray-700">
+                {item.breakdown?.map((b, index) => (
+                  <tr key={index} className="text-gray-700">
                     <td className="border border-gray-400 px-8 py-2 text-left italic">
                       {b.source}
                     </td>
                     <td className="border border-gray-400 px-4 py-2 text-right">
-                      {b.totalBudget.toLocaleString()}
+                      {(b.appropriation ?? 0).toLocaleString()}
                     </td>
                     <td className="border border-gray-400 px-4 py-2 text-right">
-                      {b.amountReleased.toLocaleString()}
+                      {(b.releases ?? 0).toLocaleString()}
                     </td>
                     <td className="border border-gray-400 px-4 py-2 text-right">
-                      {b.actualExpenditure.toLocaleString()}
+                      {(b.expenditure ?? 0).toLocaleString()}
                     </td>
                     <td className="border border-gray-400 px-4 py-2 text-right">
-                      {b.actualPayments.toLocaleString()}
+                      {(b.payment ?? 0).toLocaleString()}
                     </td>
                     <td className="border border-gray-400 px-4 py-2 text-right">
-                      {b.projection.toLocaleString()}
+                      {(b.projection ?? 0).toLocaleString()}
                     </td>
                   </tr>
                 ))}

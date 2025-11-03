@@ -52,6 +52,18 @@ export default function BudgetExpenditure() {
     label: `Activity ${i + 1}`,
   }));
 
+  // Determine available funding options based on selected economic class
+  const filteredFundingOptions =
+    economicClass?.value === "compensation of employees"
+      ? sourceOfFundingOptions.filter(
+          (opt) => opt.value === "GOG" || opt.value === "IGF"
+        )
+      : sourceOfFundingOptions;
+
+
+
+      
+
   //Dynamically switch accounts based on selected economic class
   let naturalAccountOptions = [];
 
@@ -235,15 +247,14 @@ export default function BudgetExpenditure() {
     setAllotmentBalance("");
   };
 
-  // useEffect(() => {
-  //   if (error) {
-  //     toast.error(
-  //       typeof error === "string"
-  //         ? error
-  //         : error?.message || "An unexpected error occurred"
-  //     );
-  //   }
-  // }, [error]);
+  useEffect(() => {
+    if (
+      economicClass?.value === "compensation of employees" &&
+      fundingSource?.value === "DPF"
+    ) {
+      setFundingSource(null);
+    }
+  }, [economicClass, fundingSource]);
 
   //This ensures your Allotment Balance updates automatically when releases, allotment, or the previous records change.
   useEffect(() => {
@@ -454,17 +465,12 @@ export default function BudgetExpenditure() {
               />
             </div>
 
-            {/* <div className="flex items-center justify-center gap-4">
-              <p>NATURAL ACCOUNT</p>
-              <span className="text-4xl">
-                <IoMdArrowDropdown />
-              </span>
-            </div> */}
+          
 
             <div className="flex flex-col gap-2">
               <label className="text-gray-500">SOURCE OF FUNDING</label>
               <Select
-                options={sourceOfFundingOptions}
+                options={filteredFundingOptions}
                 value={fundingSource} // should be an object like {value, label}
                 onChange={setFundingSource}
                 placeholder="Select source of funding"
@@ -671,21 +677,7 @@ export default function BudgetExpenditure() {
         onEdit={handleEditRecord}
       />
 
-      {/* <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: "#16a34a",
-            color: "#fff",
-            fontWeight: "600",
-            borderRadius: "8px",
-          },
-          error: {
-            style: { background: "#dc2626" },
-          },
-        }}
-      /> */}
+      
     </div>
   );
 }

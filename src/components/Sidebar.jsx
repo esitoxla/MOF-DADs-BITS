@@ -28,12 +28,15 @@ export default function Sidebar({ toggleSidebar }) {
  
 
   async function handleLogout(e) {
+    e.preventDefault()
     dispatch(logoutUser());
+     navigate("/", { replace: true });
     toast.success("Logout successful");
+    
 
-     setTimeout(() => {
-       navigate("/", { replace: true });
-     }, 1000);
+    //  setTimeout(() => {
+      
+    //  }, 1000);
   }
 
   return (
