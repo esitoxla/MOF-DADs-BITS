@@ -144,7 +144,7 @@ const userRole = authUser?.role;
                 <td className="px-2 py-1 border text-center">
                   <ul className="menu bg-base-100 w-32 z-10">
                     {/* === DATA ENTRY USER === */}
-                    {userRole === "data_entry" &&
+                    {(userRole === "data_entry" || userRole === "admin") &&
                       record.status === "Pending" && (
                         <>
                           <li>
@@ -168,32 +168,33 @@ const userRole = authUser?.role;
                       )}
 
                     {/* === REVIEWER === */}
-                    {userRole === "reviewer" && record.status === "Pending" && (
-                      <li>
-                        <a
-                          onClick={() => {
-                            // Set Redux to reviewing mode and populate the form
-                            dispatch(startReviewing({ record, index }));
-                            onEdit(record);
+                    {(userRole === "reviewer" || userRole === "admin") &&
+                      record.status === "Pending" && (
+                        <li>
+                          <a
+                            onClick={() => {
+                              // Set Redux to reviewing mode and populate the form
+                              dispatch(startReviewing({ record, index }));
+                              onEdit(record);
 
-                            // Open the review modal
-                            setRecordToReview(record);
-                            setIsReviewModalOpen(false);
+                              // Open the review modal
+                              setRecordToReview(record);
+                              setIsReviewModalOpen(false);
 
-                            // Notify the reviewer
-                            toast.success(
-                              `Ready to review "${record.activity}"`
-                            );
-                          }}
-                          className="text-blue-700 font-semibold cursor-pointer"
-                        >
-                          <Clipboard /> Review
-                        </a>
-                      </li>
-                    )}
+                              // Notify the reviewer
+                              toast.success(
+                                `Ready to review "${record.activity}"`
+                              );
+                            }}
+                            className="text-blue-700 font-semibold cursor-pointer"
+                          >
+                            <Clipboard /> Review
+                          </a>
+                        </li>
+                      )}
 
                     {/* === APPROVER === */}
-                    {userRole === "approver" &&
+                    {(userRole === "approver" || userRole === "admin") &&
                       record.status === "Reviewed" && (
                         <li>
                           <a
