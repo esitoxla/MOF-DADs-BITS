@@ -1,35 +1,39 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { PencilSquare } from "../helpers/edit";
 import { Trash } from "../helpers/trash";
 import { Check } from "../helpers/check";
 import { Clipboard } from "../helpers/review";
-import { useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
-import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
-import { startEditing, deleteRecord, fetchExpenditures } from "../store/features/budgetSlice";
-import { useEffect } from "react";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  startEditing,
+  startReviewing,
+  fetchExpenditures,
+  deleteExpenditure,
+  approveExpenditure,
+} from "../store/features/budgetSlice";
 
 export default function BudgetTable({
-  
-  setRecords,
   searchQuery,
   onEdit,
+  setRecordToReview,
+  setIsReviewModalOpen,
 }) {
   const dispatch = useDispatch();
- const { records, loading, error } = useSelector((store) => store.budget);
+  const { records, loading, error } = useSelector((store) => store.budget);
+  const { user } = useSelector((store) => store.auth);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
 
-   useEffect(() => {
-  dispatch(fetchExpenditures());
-}, [dispatch]);
+  useEffect(() => {
+    dispatch(fetchExpenditures());
+  }, [dispatch]);
 
-if (!records) return <p>Loading...</p>;
-// if (records.length === 0) return <p>No records found</p>;
+  if (loading) return <p className="text-center py-4">Loading records...</p>;
+  if (error) return <p className="text-center text-red-500">{error}</p>;
 
-  // Filter logic (case-insensitive, matches any field)
+  // Filter records (case-insensitive)
   const filteredRecords = records.filter((record) =>
     Object.values(record)
       .join(" ")
@@ -37,28 +41,48 @@ if (!records) return <p>Loading...</p>;
       .includes(searchQuery.toLowerCase())
   );
 
-  //delete logic
-  const openDeleteModal = (index) => {
-    setRecordToDelete(index);
-    setIsModalOpen(true);
+  //delete
+  const openDeleteModal = (record) => {
+    setRecordToDelete(record);
+    setIsDeleteModalOpen(true);
   };
 
- const confirmDelete = () => {
-   dispatch(deleteRecord(recordToDelete)); // recordToDelete = index or id
-   setIsModalOpen(false);
-   toast.success("Record deleted successfully!");
-   setRecordToDelete(null);
- };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setRecordToDelete(null);
+  const confirmDelete = async () => {
+    try {
+      await dispatch(deleteExpenditure(recordToDelete.id)).unwrap();
+      toast.success("Record deleted successfully!");
+      dispatch(fetchExpenditures());
+    } catch (err) {
+      toast.error(err || "Failed to delete record.");
+    } finally {
+      setIsDeleteModalOpen(false);
+      setRecordToDelete(null);
+    }
   };
 
-  //handling the edit functionality
+  ///review
+  const handleReviewClick = (record, index) => {
+    // Set reviewing mode and populate the form in the main page
+    dispatch(startReviewing({ index, record }));
+    onEdit(record);
+    toast.success(`You are now reviewing "${record.activity}"`);
+  };
+
+  //approve
+  const handleApprove = async (record) => {
+    try {
+      await dispatch(approveExpenditure(record.id)).unwrap();
+      toast.success("Record approved successfully!");
+      dispatch(fetchExpenditures());
+    } catch (err) {
+      toast.error(err || "Failed to approve record.");
+    }
+  };
+
+  //
   const handleEditClick = (record, index) => {
     dispatch(startEditing({ index, record }));
-    onEdit(record); // tells BudgetExpenditure to fill the form fields
+    onEdit(record);
   };
 
   return (
@@ -79,38 +103,29 @@ if (!records) return <p>Loading...</p>;
             <th className="border px-2 py-1">Releases</th>
             <th className="border px-2 py-1">Actual Expenditure</th>
             <th className="border px-2 py-1">Actual Payment</th>
+            <th className="border px-2 py-1">Status</th>
             <th className="border px-2 py-1">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {records.length === 0 ? (
-            // Case 1: No records have been submitted yet
+          {filteredRecords.length === 0 ? (
             <tr>
               <td
-                colSpan="13"
-                className="text-center text-gray-500 py-3 italic"
-              >
-                No inputs yet. Please submit a record.
-              </td>
-            </tr>
-          ) : filteredRecords.length === 0 ? (
-            // Case 2: Records exist, but no match for search
-            <tr>
-              <td
-                colSpan="13"
+                colSpan="15"
                 className="text-center text-gray-500 py-3 italic"
               >
                 No matching records found.
               </td>
             </tr>
           ) : (
-            // Case 3: Display filtered records
             filteredRecords.map((record, index) => (
-              <tr key={index} className="text-center">
+              <tr key={record.id || index} className="text-center">
                 <td className="border px-2 py-1">{index + 1}</td>
                 <td className="border px-2 py-1">{record.activity}</td>
                 <td className="border px-2 py-1">{record.date}</td>
-                <td className="border px-2 py-1">{record.economicClassification}</td>
+                <td className="border px-2 py-1">
+                  {record.economicClassification}
+                </td>
                 <td className="border px-2 py-1">{record.sourceOfFunding}</td>
                 <td className="border px-2 py-1">{record.naturalAccount}</td>
                 <td className="border px-2 py-1">{record.description}</td>
@@ -120,36 +135,56 @@ if (!records) return <p>Loading...</p>;
                 <td className="border px-2 py-1">{record.releases}</td>
                 <td className="border px-2 py-1">{record.actualExpenditure}</td>
                 <td className="border px-2 py-1">{record.actualPayment}</td>
-                {/* --- Actions Menu (DaisyUI) --- */}
+                <td className="border px-2 py-1 font-semibold text-blue-900 border-black">
+                  {record.status}
+                </td>
+
                 <td className="px-2 py-1 border text-center">
-                  <ul className=" menu bg-base-100 w-32 z-10">
+                  <ul className="menu bg-base-100 w-32 z-10">
                     <li>
                       <a
                         onClick={() => handleEditClick(record, index)}
-                        className="text-yellow-600 font-semibold"
+                        className="text-yellow-600 font-semibold cursor-pointer"
                       >
-                        <PencilSquare />
-                        Edit
+                        <PencilSquare /> Edit
                       </a>
                     </li>
+
                     <li>
-                      <a className="text-blue-700 font-semibold">
+                      <a
+                        onClick={() => {
+                          // Set Redux to reviewing mode and populate the form
+                          dispatch(startReviewing({ record, index }));
+                          onEdit(record);
+
+                          // Open the review modal
+                          setRecordToReview(record);
+                          setIsReviewModalOpen(false);
+
+                          // Notify the reviewer
+                          toast.success(`Ready to review "${record.activity}"`);
+                        }}
+                        className="text-blue-700 font-semibold cursor-pointer"
+                      >
                         <Clipboard /> Review
                       </a>
                     </li>
+
                     <li>
-                      <a className="text-green-800 font-semibold">
-                        <Check />
-                        Approve
+                      <a
+                        onClick={() => handleApprove(record)}
+                        className="text-green-800 font-semibold cursor-pointer"
+                      >
+                        <Check /> Approve
                       </a>
                     </li>
+
                     <li>
                       <span
-                        onClick={() => openDeleteModal(index)}
-                        className="text-red-600 font-semibold"
+                        onClick={() => openDeleteModal(record)}
+                        className="text-red-600 font-semibold cursor-pointer"
                       >
-                        <Trash />
-                        Delete
+                        <Trash /> Delete
                       </span>
                     </li>
                   </ul>
@@ -160,20 +195,24 @@ if (!records) return <p>Loading...</p>;
         </tbody>
       </table>
 
-      {/*  DaisyUI Modal (renders outside the table to avoid layering issues) */}
-      {isModalOpen && (
+      {/*                              DELETE MODAL                                  */}
+
+      {isDeleteModalOpen && (
         <dialog open className="modal">
           <div className="modal-box">
             <h3 className="font-bold text-lg text-red-400">Confirm Delete</h3>
             <p className="py-4">
-              Are you sure you want to delete
+              Are you sure you want to delete{" "}
               <span className="font-semibold text-green-800">
-                “{records[recordToDelete]?.activity}”
+                “{recordToDelete?.activity}”
               </span>
               ?
             </p>
             <div className="modal-action">
-              <button onClick={closeModal} className="btn btn-outline">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="btn btn-outline"
+              >
                 Cancel
               </button>
               <button
@@ -185,7 +224,7 @@ if (!records) return <p>Loading...</p>;
             </div>
           </div>
           <form method="dialog" className="modal-backdrop">
-            <button onClick={closeModal}>close</button>
+            <button onClick={() => setIsDeleteModalOpen(false)}>close</button>
           </form>
         </dialog>
       )}

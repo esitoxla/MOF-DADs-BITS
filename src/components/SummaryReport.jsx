@@ -1,6 +1,6 @@
-import React from 'react'
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import React from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 
 export default function SummaryReport() {
@@ -9,15 +9,21 @@ export default function SummaryReport() {
   // State for selected options
   const [reportType, setReportType] = useState("EC");
   const [fundingSource, setFundingSource] = useState("ALL");
-  
+
   const [date, setDate] = useState("");
 
   // Handle generate button click
   //these states are being passed via React Router:
   const handleGenerate = () => {
-    navigate("/dashboard/reports/preview", {
-      state: { reportType, fundingSource, date },
-    });
+    // Build the state dynamically based on selected report type
+    const state = { reportType, date };
+
+    if (reportType === "EC") {
+      state.fundingSource = fundingSource;
+    }
+      
+      
+      navigate("/dashboard/reports/preview", { state });
   };
 
   return (
@@ -54,29 +60,31 @@ export default function SummaryReport() {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg"
             >
               <option value="EC">Economic Classification</option>
+              <option value="IRP">IGF Revenue Performance</option>
               <option value="R">Reallocation</option>
               <option value="NA">Natural Account</option>
-              <option value="IRP">IGF Revenue Performance</option>
               <option value="CP">Cash Position</option>
             </select>
           </div>
 
-          {/* Source of Funding */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Source of Funding
-            </label>
-            <select
-              value={fundingSource}
-              onChange={(e) => setFundingSource(e.target.value)}
-              className="w-full px-4 py-3  border border-gray-300 rounded-lg"
-            >
-              <option value="GOG">GOG</option>
-              <option value="DPF">DPF</option>
-              <option value="IGF">IGF</option>
-              <option value="ALL">ALL</option>
-            </select>
-          </div>
+          {/* Source of Funding (only visible for EC) */}
+          {reportType === "EC" && (
+            <div className="transition-all duration-300">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Source of Funding
+              </label>
+              <select
+                value={fundingSource}
+                onChange={(e) => setFundingSource(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+              >
+                <option value="GOG">GOG</option>
+                <option value="DPF">DPF</option>
+                <option value="IGF">IGF</option>
+                <option value="ALL">ALL</option>
+              </select>
+            </div>
+          )}
 
           <div className="flex flex-col gap-2">
             <label className="block text-sm font-semibold text-gray-700 mb-2">

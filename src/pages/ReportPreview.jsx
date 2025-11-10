@@ -8,11 +8,11 @@ import { getYearAndQuarter } from "../helpers/dateHelper";
 import { formatReportData } from "../helpers/formatReportData";
 import { fetchQuarterlyReport } from "../store/features/reportSlice";
 import EconomicClassificationTable from "../components/EconomicClassificationTable";
-import { economicClassificationData } from "../data/EconomicClassification";
 import { useNavigate } from "react-router";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import RevenuePerformanceTable from "../components/RevenuePerformanceTable";
 
 export default function ReportPreview() {
   const navigate = useNavigate();
@@ -28,28 +28,49 @@ export default function ReportPreview() {
   // compute year & quarter from date (fallback to today)
   const { year, quarter } = useMemo(() => getYearAndQuarter(date), [date]);
 
-
-
-
   // fetch from backend when page loads or filters change
   useEffect(() => {
-    // Only EC implemented now; extend for other report types later
-    if (reportType === "EC") {
-      dispatch(
-        fetchQuarterlyReport({ year, quarter, sourceOfFunding: fundingSource })
-      );
+    if (!reportType) return;
+
+    switch (reportType) {
+      case "EC":
+        dispatch(
+          fetchQuarterlyReport({
+            year,
+            quarter,
+            sourceOfFunding: fundingSource,
+          })
+        );
+        break;
+
+      //  case "IRP":
+      //    dispatch(fetchRevenuePerformance({ year, quarter }));
+      //    break;
+
+      // Add other report fetchers as needed
+      default:
+        console.warn("Unknown report type selected:", reportType);
     }
-  }, [dispatch, year, quarter, fundingSource, reportType]);
-
-
+  }, [dispatch, reportType, year, quarter, fundingSource]);
 
   // transform backend payload into your table format
- const tableData = useMemo(
-   () => formatReportData(reportData, fundingSource),
-   [reportData, fundingSource]
- );
+  const tableData = useMemo(
+    () => formatReportData(reportData, fundingSource),
+    [reportData, fundingSource]
+  );
 
-
+  // Choose which table to render
+  const renderTable = () => {
+    switch (reportType) {
+      case "EC":
+        return <EconomicClassificationTable data={tableData} />;
+      case "IRP":
+        return <RevenuePerformanceTable data={tableData} />;
+      // Extend for R, NA, CP etc.
+      default:
+        return <p>No table available for this report type.</p>;
+    }
+  };
 
   // export handlers use tableData (not local dummy)
   const handleExport = (type) => {
@@ -253,7 +274,7 @@ export default function ReportPreview() {
         ) : error ? (
           <p className="text-red-500">{error}</p>
         ) : (
-          <EconomicClassificationTable data={tableData} />
+          renderTable()
         )}
       </div>
     </div>

@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { TbFileAnalytics } from "react-icons/tb";
 import { IoSettingsOutline } from "react-icons/io5";
 import { FaSackDollar } from "react-icons/fa6";
+import { Banknote, Receipt } from "lucide-react";
 import { TbReport } from "react-icons/tb";
 import { TbUsersPlus } from "react-icons/tb";
 import { MdClose } from "react-icons/md";
@@ -19,23 +20,20 @@ export default function Sidebar({ toggleSidebar }) {
   const dispatch = useDispatch();
 
   const { authUser } = useSelector((store) => store.auth);
-  console.log(authUser)
+  console.log(authUser);
 
-   useEffect(() => {
-     dispatch(getUser()); // automatically fetch user from cookie if valid
-   }, [dispatch]);
-
- 
+  useEffect(() => {
+    dispatch(getUser()); // automatically fetch user from cookie if valid
+  }, [dispatch]);
 
   async function handleLogout(e) {
-    e.preventDefault()
+    e.preventDefault();
     dispatch(logoutUser());
-     navigate("/", { replace: true });
+    navigate("/", { replace: true });
     toast.success("Logout successful");
-    
 
     //  setTimeout(() => {
-      
+
     //  }, 1000);
   }
 
@@ -46,7 +44,7 @@ export default function Sidebar({ toggleSidebar }) {
          fixed top-0 left-0
          bg-gradient-to-r from-green-700 to-green-500 text-white
           border-r border-gray-200
-          w-68 p-4 h-screen flex flex-col gap-6 py-6
+          w-68 p-4 h-screen flex flex-col gap-4 py-6
            z-50 overflow-y-auto
       "
       >
@@ -90,6 +88,21 @@ export default function Sidebar({ toggleSidebar }) {
             )}
           </NavLink>
 
+          <NavLink to="revenue">
+            {({ isActive }) => (
+              <div
+                className={`flex gap-2 items-center px-4 py-2 ${
+                  isActive ? "bg-green-50 text-gray-700 rounded" : "text-white"
+                }`}
+              >
+                <span className="text-3xl">
+                  <Banknote />
+                </span>
+                <p>Revenue Collection</p>
+              </div>
+            )}
+          </NavLink>
+
           <NavLink to="budget">
             {({ isActive }) => (
               <div
@@ -98,7 +111,7 @@ export default function Sidebar({ toggleSidebar }) {
                 }`}
               >
                 <span className="text-3xl">
-                  <FaSackDollar />
+                  <Receipt />
                 </span>
                 <p>Budget Expenditure</p>
               </div>

@@ -15,6 +15,10 @@ import UserLayout from "./layouts/UserLayout";
 import UpdateUser from "./components/UpdateUser";
 import PrivateRoute from "./helpers/routesProtect";
 import { Toaster } from "react-hot-toast";
+import RevenueCollectionPage from "./pages/RevenueCollectionPage";
+
+
+
 
 function App() {
   const router = createBrowserRouter([
@@ -33,6 +37,10 @@ function App() {
         {
           path: "budget",
           Component: BudgetExpenditure,
+        },
+        {
+          path: "revenue",
+          Component: RevenueCollectionPage,
         },
         {
           path: "reports",

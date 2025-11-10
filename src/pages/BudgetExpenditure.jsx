@@ -11,8 +11,9 @@ import { dataMap } from "../data/BudgetExpenditureData";
 import { economicClassOptions } from "../data/BudgetExpenditureData";
 import { sourceOfFundingOptions } from "../data/BudgetExpenditureData";
 import { useSelector, useDispatch } from "react-redux";
+import ReviewModal from "../components/ReviewModal"; 
 import {
-  updateRecord,
+  updateExpenditure,
   cancelEditing,
   addExpenditure,
 } from "../store/features/budgetSlice";
@@ -20,7 +21,7 @@ import {
 export default function BudgetExpenditure() {
   //redux handling the edit functionality
   const dispatch = useDispatch();
-  const { isEditing, formValues, editingIndex, loading, error } = useSelector(
+  const { isEditing, isReviewing, formValues, editingIndex, error } = useSelector(
     (state) => state.budget
   );
 
@@ -46,6 +47,13 @@ export default function BudgetExpenditure() {
   const [records, setRecords] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
 
+
+  //review logic
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [recordToReview, setRecordToReview] = useState(null);
+
+  
+
   // Create activities 1–20 as options for react-select
   const activityOptions = Array.from({ length: 20 }, (_, i) => ({
     value: i + 1,
@@ -59,10 +67,6 @@ export default function BudgetExpenditure() {
           (opt) => opt.value === "GOG" || opt.value === "IGF"
         )
       : sourceOfFundingOptions;
-
-
-
-      
 
   //Dynamically switch accounts based on selected economic class
   let naturalAccountOptions = [];
@@ -127,125 +131,44 @@ export default function BudgetExpenditure() {
   //handles populating fields that are dependent on each other(natural account, allotment, appropriation, allotment balance)
   // Handles populating fields when editing a record
   useEffect(() => {
-    if (isEditing && formValues) {
-      setSelectedActivity(
-        formValues.activity
-          ? { label: formValues.activity, value: formValues.activity }
-          : null
-      );
-      setSelectedDate(formValues.date || "");
-      setEconomicClass(
-        formValues.economicClass
-          ? { label: formValues.economicClass, value: formValues.economicClass }
-          : null
-      );
-      setFundingSource(
-        formValues.fundingSource
-          ? { label: formValues.fundingSource, value: formValues.fundingSource }
-          : null
-      );
-      setSelectedAccount(
-        formValues.naturalAccount
-          ? {
-              label: formValues.naturalAccount,
-              value: formValues.naturalAccount,
-            }
-          : null
-      );
-      setDescription(formValues.description || "");
+    if ((!isEditing && !isReviewing) || !formValues) return;
 
-      //restore appropriation and allotment if they exist
-      if (formValues.appropriation) setAppropriation(formValues.appropriation);
-      if (formValues.allotment) setAllotment(formValues.allotment);
-
-      setAllotmentBalance(formValues.allotmentBalance || "");
-      setReleases(formValues.releases || "");
-      setExpenditure(formValues.expenditure || "");
-      setPayment(formValues.payment || "");
+    setSelectedActivity(
+      formValues.activity
+        ? { label: formValues.activity, value: formValues.activity }
+        : null
+    );
+    setSelectedDate(formValues.date || "");
+    setEconomicClass(
+      formValues.economicClassification
+        ? {
+            label: formValues.economicClassification,
+            value: formValues.economicClassification.toLowerCase(),
+          }
+        : null
+    );
+    setFundingSource(
+      formValues.sourceOfFunding
+        ? {
+            label: formValues.sourceOfFunding,
+            value: formValues.sourceOfFunding,
+          }
+        : null
+    );
+    if (formValues.naturalAccount && economicClass) {
+      setSelectedAccount({
+        label: formValues.naturalAccount,
+        value: formValues.naturalAccount,
+      });
     }
+    setDescription(formValues.description || "");
+    setAppropriation(formValues.appropriation || "");
+    setAllotment(formValues.allotment || "");
+    setAllotmentBalance(formValues.allotmentBalance || "");
+    setReleases(formValues.releases || "");
+    setExpenditure(formValues.actualExpenditure || "");
+    setPayment(formValues.actualPayment || "");
   }, [isEditing, formValues]);
-
-  //handles submiting of records and editing a record
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!selectedActivity) {
-      toast.error("Activity is required!");
-      return;
-    }
-
-    if (!selectedDate) {
-      toast.error("Date is required!");
-      return;
-    }
-
-    if (!economicClass) {
-      toast.error("Economic Classification is required!");
-      return;
-    }
-
-    if (!fundingSource) {
-      toast.error("Source of funding must not be empty!");
-      return;
-    }
-
-    if (!selectedAccount) {
-      toast.error("Natural Account must not be empty!");
-      return;
-    }
-
-    if (!description) {
-      toast.error("Description is required!");
-      return;
-    }
-
-    if (!isFormValid) {
-      toast.error("Cannot add record — please fix input errors!");
-      return;
-    }
-
-    // build the record to match backend field names
-    const newRecord = {
-      activity: selectedActivity?.value || selectedActivity?.label || "",
-      date: selectedDate,
-      economicClassification: economicClass?.label || "",
-      sourceOfFunding: fundingSource?.label || "",
-      naturalAccount: selectedAccount?.label || "",
-      description,
-      appropriation,
-      allotment,
-      allotmentBalance,
-      releases,
-      actualExpenditure: expenditure,
-      actualPayment: payment,
-    };
-
-    // add or update it to the table
-    if (isEditing) {
-      dispatch(updateRecord({ index: editingIndex, updatedRecord: newRecord }));
-      toast.success("Record updated successfully!");
-      dispatch(cancelEditing());
-    } else {
-      // setRecords([...records, newRecord]);
-      // but also dispatch to redux so the table updates
-      dispatch(addExpenditure(newRecord));
-      toast.success("Record added successfully!");
-    }
-
-    // clear fields
-    setSelectedActivity(null);
-    setSelectedDate("");
-    setEconomicClass(null);
-    setFundingSource(null);
-    setSelectedAccount(null);
-    setDescription("");
-    setAppropriation("");
-    setAllotment("");
-    setReleases("");
-    setExpenditure("");
-    setPayment("");
-    setAllotmentBalance("");
-  };
 
   useEffect(() => {
     if (
@@ -360,6 +283,101 @@ export default function BudgetExpenditure() {
     }
   };
 
+  //handles submiting of records and editing a record
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!selectedActivity) {
+      toast.error("Activity is required!");
+      return;
+    }
+
+    if (!selectedDate) {
+      toast.error("Date is required!");
+      return;
+    }
+
+    if (!economicClass) {
+      toast.error("Economic Classification is required!");
+      return;
+    }
+
+    if (!fundingSource) {
+      toast.error("Source of funding must not be empty!");
+      return;
+    }
+
+    if (!selectedAccount) {
+      toast.error("Natural Account must not be empty!");
+      return;
+    }
+
+    if (!description) {
+      toast.error("Description is required!");
+      return;
+    }
+
+    if (!isFormValid) {
+      toast.error("Cannot add record — please fix input errors!");
+      return;
+    }
+
+    // build the record to match backend field names
+    const newRecord = {
+      activity: selectedActivity?.label || selectedActivity?.value || "",
+      date: selectedDate,
+      economicClassification: economicClass?.label || "",
+      sourceOfFunding: fundingSource?.label || "",
+      naturalAccount: selectedAccount?.label || "",
+      description,
+      appropriation,
+      allotment,
+      allotmentBalance,
+      releases,
+      actualExpenditure: expenditure,
+      actualPayment: payment,
+    };
+
+    try {
+      if (isEditing) {
+        // get the id of the record being edited:
+        // prefer formValues.id (set by startEditing), fallback to records[editingIndex]?.id
+        const id = formValues?.id ?? records?.[editingIndex]?.id;
+        if (!id) {
+          toast.error("Cannot update: record id not found.");
+        } else {
+          await dispatch(
+            updateExpenditure({ id, formData: newRecord })
+          ).unwrap();
+          toast.success("Record updated successfully!");
+          dispatch(cancelEditing());
+          
+        }
+      } else {
+        await dispatch(addExpenditure(newRecord)).unwrap();
+        toast.success("Record added successfully!");
+      }
+
+      // clear fields
+      setSelectedActivity(null);
+      setSelectedDate("");
+      setEconomicClass(null);
+      setFundingSource(null);
+      setSelectedAccount(null);
+      setDescription("");
+      setAppropriation("");
+      setAllotment("");
+      setReleases("");
+      setExpenditure("");
+      setPayment("");
+      setAllotmentBalance("");
+    } catch (err) {
+      // err is either the rejected value or an Error
+      const message = err?.message || err || "Something went wrong";
+      toast.error(message);
+    }
+  };
+
   //handles the submission of the edited record
   const handleEditRecord = (record) => {
     setSelectedActivity({ label: record.activity, value: record.activity });
@@ -432,6 +450,7 @@ export default function BudgetExpenditure() {
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
+                  disabled={isReviewing}
                   className="border w-full py-[0.7rem] px-2 rounded"
                 />
               </div>
@@ -443,6 +462,7 @@ export default function BudgetExpenditure() {
                 options={economicClassOptions}
                 value={economicClass} // should be an object like {value, label}
                 onChange={setEconomicClass}
+                disabled={isReviewing}
                 placeholder="Select economic classification"
                 isSearchable
                 filterOption={(option, inputValue) =>
@@ -465,14 +485,13 @@ export default function BudgetExpenditure() {
               />
             </div>
 
-          
-
             <div className="flex flex-col gap-2">
               <label className="text-gray-500">SOURCE OF FUNDING</label>
               <Select
                 options={filteredFundingOptions}
                 value={fundingSource} // should be an object like {value, label}
                 onChange={setFundingSource}
+                disabled={isReviewing}
                 placeholder="Select source of funding"
                 isSearchable
                 filterOption={(option, inputValue) =>
@@ -503,6 +522,7 @@ export default function BudgetExpenditure() {
                 options={naturalAccountOptions}
                 value={selectedAccount}
                 onChange={setSelectedAccount}
+                disabled={isReviewing}
                 placeholder={`Select natural account`}
                 isSearchable
                 filterOption={(option, inputValue) =>
@@ -534,6 +554,7 @@ export default function BudgetExpenditure() {
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                disabled={isReviewing}
                 placeholder="Enter a description..."
               />
             </div>
@@ -590,8 +611,9 @@ export default function BudgetExpenditure() {
                 type="number"
                 min="0"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
-                value={releases}
+                value={releases || ""}
                 onChange={handleReleasesChange}
+                disabled={isReviewing}
                 placeholder="Enter releases here..."
               />
             </div>
@@ -603,8 +625,9 @@ export default function BudgetExpenditure() {
                 type="number"
                 min="0"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
-                value={expenditure}
+                value={expenditure || ""}
                 onChange={handleExpenditureChange}
+                disabled={isReviewing}
                 placeholder="Enter actual expenditure here..."
               />
             </div>
@@ -616,8 +639,9 @@ export default function BudgetExpenditure() {
                 type="number"
                 min="0"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
-                value={payment}
+                value={payment || ""}
                 onChange={handlePaymentChange}
+                disabled={isReviewing}
                 placeholder="Enter actual payment here..."
               />
             </div>
@@ -641,6 +665,7 @@ export default function BudgetExpenditure() {
               setExpenditure("");
               setPayment("");
               setAllotmentBalance("");
+              dispatch(cancelEditing());
               toast.success("Form reset successfully!");
             }}
             className="bg-gray-400 text-white px-4 py-2 font-semibold hover:bg-gray-500 transition duration-300 shadow-md cursor-pointer lg:w-[10%]"
@@ -651,11 +676,24 @@ export default function BudgetExpenditure() {
           {/* Submit Button */}
           <button
             type="submit"
-            onClick={handleSubmit}
+            onClick={(e) => {
+              if (isReviewing) {
+                e.preventDefault();
+                setIsReviewModalOpen(true);
+              } else {
+                handleSubmit(e);
+              }
+            }}
             disabled={!isFormValid}
-            className="bg-green-600 text-white px-4 py-2 font-semibold hover:bg-green-700 transition duration-300 shadow-md cursor-pointer lg:w-[10%]"
+            className={`${
+              isReviewing
+                ? "bg-blue-600 hover:bg-blue-700"
+                : isEditing
+                ? "bg-yellow-600 hover:bg-yellow-700"
+                : "bg-green-600 hover:bg-green-700"
+            } text-white px-4 py-2 font-semibold transition duration-300 shadow-md cursor-pointer lg:w-[10%]`}
           >
-            {isEditing ? "OK" : "Submit"}
+            {isReviewing ? "Review" : isEditing ? "OK" : "Submit"}
           </button>
         </div>
       </form>
@@ -671,13 +709,17 @@ export default function BudgetExpenditure() {
         />
       </div>
       <BudgetTable
-        records={records}
-        setRecords={setRecords}
         searchQuery={searchQuery}
         onEdit={handleEditRecord}
+        setRecordToReview={setRecordToReview}
+        setIsReviewModalOpen={setIsReviewModalOpen}
       />
 
-      
+      <ReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        record={recordToReview}
+      />
     </div>
   );
 }
