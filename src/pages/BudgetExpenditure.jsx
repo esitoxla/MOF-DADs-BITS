@@ -11,7 +11,7 @@ import { dataMap } from "../data/BudgetExpenditureData";
 import { economicClassOptions } from "../data/BudgetExpenditureData";
 import { sourceOfFundingOptions } from "../data/BudgetExpenditureData";
 import { useSelector, useDispatch } from "react-redux";
-import ReviewModal from "../components/ReviewModal"; 
+import ReviewModal from "../components/ReviewModal";
 import {
   updateExpenditure,
   cancelEditing,
@@ -21,9 +21,8 @@ import {
 export default function BudgetExpenditure() {
   //redux handling the edit functionality
   const dispatch = useDispatch();
-  const { isEditing, isReviewing, formValues, editingIndex, error } = useSelector(
-    (state) => state.budget
-  );
+  const { isEditing, isReviewing, formValues, editingIndex, error } =
+    useSelector((state) => state.budget);
 
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
@@ -47,12 +46,9 @@ export default function BudgetExpenditure() {
   const [records, setRecords] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-
   //review logic
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [recordToReview, setRecordToReview] = useState(null);
-
-  
 
   // Create activities 1–20 as options for react-select
   const activityOptions = Array.from({ length: 20 }, (_, i) => ({
@@ -351,7 +347,6 @@ export default function BudgetExpenditure() {
           ).unwrap();
           toast.success("Record updated successfully!");
           dispatch(cancelEditing());
-          
         }
       } else {
         await dispatch(addExpenditure(newRecord)).unwrap();
@@ -390,10 +385,12 @@ export default function BudgetExpenditure() {
       label: record.fundingSource,
       value: record.fundingSource,
     });
+    
     setSelectedAccount({
       label: record.naturalAccount,
       value: record.naturalAccount,
     });
+
     setDescription(record.description);
     setAppropriation(record.appropriation);
     setAllotment(record.allotment);
@@ -520,7 +517,18 @@ export default function BudgetExpenditure() {
               <label className="text-gray-500">NATURAL ACCOUNT</label>
               <Select
                 options={naturalAccountOptions}
-                value={selectedAccount}
+                value={
+                  naturalAccountOptions.find(
+                    (opt) => opt.value === selectedAccount?.value
+                  ) ||
+                  selectedAccount ||
+                  (formValues?.naturalAccount
+                    ? {
+                        label: formValues.naturalAccount,
+                        value: formValues.naturalAccount,
+                      }
+                    : null)
+                }
                 onChange={setSelectedAccount}
                 disabled={isReviewing}
                 placeholder={`Select natural account`}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { PencilSquare } from "../helpers/edit";
 import { Trash } from "../helpers/trash";
 import { Check } from "../helpers/check";
+import { CheckFill } from "../helpers/checkFill";
 import { Clipboard } from "../helpers/review";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
@@ -21,7 +22,8 @@ export default function BudgetTable({
 }) {
   const dispatch = useDispatch();
   const { records, loading, error } = useSelector((store) => store.budget);
-  const { user } = useSelector((store) => store.auth);
+  const { authUser } = useSelector((state) => state.auth);
+const userRole = authUser?.role;
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
@@ -141,52 +143,78 @@ export default function BudgetTable({
 
                 <td className="px-2 py-1 border text-center">
                   <ul className="menu bg-base-100 w-32 z-10">
-                    <li>
-                      <a
-                        onClick={() => handleEditClick(record, index)}
-                        className="text-yellow-600 font-semibold cursor-pointer"
-                      >
-                        <PencilSquare /> Edit
-                      </a>
-                    </li>
+                    {/* === DATA ENTRY USER === */}
+                    {userRole === "data_entry" &&
+                      record.status === "Pending" && (
+                        <>
+                          <li>
+                            <a
+                              onClick={() => handleEditClick(record, index)}
+                              className="text-yellow-600 font-semibold cursor-pointer"
+                            >
+                              <PencilSquare /> Edit
+                            </a>
+                          </li>
 
-                    <li>
-                      <a
-                        onClick={() => {
-                          // Set Redux to reviewing mode and populate the form
-                          dispatch(startReviewing({ record, index }));
-                          onEdit(record);
+                          <li>
+                            <span
+                              onClick={() => openDeleteModal(record)}
+                              className="text-red-600 font-semibold cursor-pointer"
+                            >
+                              <Trash /> Delete
+                            </span>
+                          </li>
+                        </>
+                      )}
 
-                          // Open the review modal
-                          setRecordToReview(record);
-                          setIsReviewModalOpen(false);
+                    {/* === REVIEWER === */}
+                    {userRole === "reviewer" && record.status === "Pending" && (
+                      <li>
+                        <a
+                          onClick={() => {
+                            // Set Redux to reviewing mode and populate the form
+                            dispatch(startReviewing({ record, index }));
+                            onEdit(record);
 
-                          // Notify the reviewer
-                          toast.success(`Ready to review "${record.activity}"`);
-                        }}
-                        className="text-blue-700 font-semibold cursor-pointer"
-                      >
-                        <Clipboard /> Review
-                      </a>
-                    </li>
+                            // Open the review modal
+                            setRecordToReview(record);
+                            setIsReviewModalOpen(false);
 
-                    <li>
-                      <a
-                        onClick={() => handleApprove(record)}
-                        className="text-green-800 font-semibold cursor-pointer"
-                      >
-                        <Check /> Approve
-                      </a>
-                    </li>
+                            // Notify the reviewer
+                            toast.success(
+                              `Ready to review "${record.activity}"`
+                            );
+                          }}
+                          className="text-blue-700 font-semibold cursor-pointer"
+                        >
+                          <Clipboard /> Review
+                        </a>
+                      </li>
+                    )}
 
-                    <li>
-                      <span
-                        onClick={() => openDeleteModal(record)}
-                        className="text-red-600 font-semibold cursor-pointer"
-                      >
-                        <Trash /> Delete
-                      </span>
-                    </li>
+                    {/* === APPROVER === */}
+                    {userRole === "approver" &&
+                      record.status === "Reviewed" && (
+                        <li>
+                          <a
+                            onClick={() => handleApprove(record)}
+                            className="text-green-800 font-semibold cursor-pointer"
+                          >
+                            <Check /> Approve
+                          </a>
+                        </li>
+                      )}
+
+                    {record.status === "Approved" && (
+                      <li>
+                        <a
+                          onClick={() => handleApprove(record)}
+                          className="text-green-800 font-semibold cursor-pointer"
+                        >
+                          <CheckFill /> Approved
+                        </a>
+                      </li>
+                    )}
                   </ul>
                 </td>
               </tr>

@@ -2,16 +2,6 @@ import { api } from "../../config/axios";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 
-
-const initialState = {
-  authUser: null,
-  loading: false,
-  error: null,
-};
-
-
-
-
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (registerData, thunkAPI) => {
@@ -29,9 +19,6 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-
-
-
 //for login
 export const loginUser = createAsyncThunk(
   "login",
@@ -41,7 +28,7 @@ export const loginUser = createAsyncThunk(
       console.log(res.data.user);
       return res.data.user;
     } catch (error) {
-      console.log(error)
+      console.log(error);
       if (error.response && error.response.data.message) {
         return thunkAPI.rejectWithValue(error.response.data.message);
       }
@@ -49,23 +36,20 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-
 //for getting a user details
 export const getUser = createAsyncThunk("getUser", async (_, thunkAPI) => {
   try {
     const res = await api.get("/auth/me");
     console.log(res.data.user);
     return thunkAPI.fulfillWithValue(res.data.user);
-
   } catch (error) {
-    console.log(error)
+    console.log(error);
     if (error.response && error.response.data.message) {
       return thunkAPI.rejectWithValue(null);
     }
     return thunkAPI.rejectWithValue(null);
   }
 });
-
 
 export const changePassword = createAsyncThunk(
   "changePass",
@@ -83,31 +67,29 @@ export const changePassword = createAsyncThunk(
   }
 );
 
-
-
 //for logout
 export const logoutUser = createAsyncThunk("logout", async (_, thunkAPI) => {
   try {
     const res = await api.post("/auth/logout");
     return res.data;
   } catch (error) {
-    console.log(error)
+    console.log(error);
     if (error.response && error.response.data.message) {
       return thunkAPI.rejectWithValue(error.response.data.message);
     }
   }
 });
 
-
-
-
-
 export const authSlice = createSlice({
   name: "auth",
-  initialState,
-   reducers: {
+  initialState: {
+    authUser: null,
+    loading: false,
+    error: null,
+  },
+  reducers: {
     setUser: (state, action) => {
-      state.authUser= action.payload;
+      state.authUser = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -180,8 +162,8 @@ export const authSlice = createSlice({
         state.authUser = null;
         state.error = action.payload;
       });
-  }
+  },
 });
 
-export const { setUser } =  authSlice.actions;
+export const { setUser } = authSlice.actions;
 export default authSlice.reducer;
