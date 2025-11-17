@@ -10,7 +10,7 @@ const EconomicClassificationTable = ({ data }) => {
 
   //This extracts the values passed from the previous page — including the date
   const location = useLocation();
-  const { date } = location.state || {};
+  const { date, fundingSource } = location.state || {};
 
   return (
     <>
@@ -85,57 +85,64 @@ const EconomicClassificationTable = ({ data }) => {
           </thead>
 
           <tbody>
-            {data.map((item, index) => (
-              <Fragment key={index}>
-                {/* Main row */}
-                <tr className="font-semibold bg-gray-50">
-                  <td className="border border-gray-400 px-4 py-2 text-left">
-                    {item.title}
-                  </td>
-                  <td className="border border-gray-400 px-4 py-2 text-right">
-                    {item.totalBudget.toLocaleString()}
-                  </td>
-                  <td className="border border-gray-400 px-4 py-2 text-right">
-                    {item.amountReleased.toLocaleString()}
-                  </td>
-                  <td className="border border-gray-400 px-4 py-2 text-right">
-                    {item.actualExpenditure.toLocaleString()}
-                  </td>
-                  <td className="border border-gray-400 px-4 py-2 text-right">
-                    {item.actualPayments.toLocaleString()}
-                  </td>
-                  <td className="border border-gray-400 px-4 py-2 text-right">
-                    {item.projection.toLocaleString()}
-                  </td>
-                </tr>
+            {data.map((item, index) => {
+              const filteredBreakdown =
+                fundingSource === "ALL"
+                  ? item.breakdown
+                  : item.breakdown.filter((b) => b.source === fundingSource);
 
-                {/* Breakdown rows (GoG, IGF, DPF) */}
-                {item.breakdown?.map((b, index) => (
-                  <tr key={index} className="text-gray-700">
-                    <td className="border border-gray-400 px-8 py-2 text-left italic">
-                      {b.source}
+              return (
+                <Fragment key={index}>
+                  {/* Main category row */}
+                  <tr className="font-semibold bg-gray-50">
+                    <td className="border border-gray-400 px-4 py-2 text-left">
+                      {item.title}
                     </td>
                     <td className="border border-gray-400 px-4 py-2 text-right">
-                      {(b.appropriation ?? 0).toLocaleString()}
+                      {item.totalBudget.toLocaleString()}
                     </td>
                     <td className="border border-gray-400 px-4 py-2 text-right">
-                      {(b.releases ?? 0).toLocaleString()}
+                      {item.amountReleased.toLocaleString()}
                     </td>
                     <td className="border border-gray-400 px-4 py-2 text-right">
-                      {(b.expenditure ?? 0).toLocaleString()}
+                      {item.actualExpenditure.toLocaleString()}
                     </td>
                     <td className="border border-gray-400 px-4 py-2 text-right">
-                      {(b.payment ?? 0).toLocaleString()}
+                      {item.actualPayments.toLocaleString()}
                     </td>
                     <td className="border border-gray-400 px-4 py-2 text-right">
-                      {(b.projection ?? 0).toLocaleString()}
+                      {item.projection.toLocaleString()}
                     </td>
                   </tr>
-                ))}
-              </Fragment>
-            ))}
 
-            {/* Total Row */}
+                  {/* Breakdown rows */}
+                  {filteredBreakdown.map((b, i) => (
+                    <tr key={i} className="text-gray-700">
+                      <td className="border border-gray-400 px-8 py-2 text-left italic">
+                        {b.source}
+                      </td>
+                      <td className="border border-gray-400 px-4 py-2 text-right">
+                        {(b.appropriation ?? 0).toLocaleString()}
+                      </td>
+                      <td className="border border-gray-400 px-4 py-2 text-right">
+                        {(b.releases ?? 0).toLocaleString()}
+                      </td>
+                      <td className="border border-gray-400 px-4 py-2 text-right">
+                        {(b.expenditure ?? 0).toLocaleString()}
+                      </td>
+                      <td className="border border-gray-400 px-4 py-2 text-right">
+                        {(b.payment ?? 0).toLocaleString()}
+                      </td>
+                      <td className="border border-gray-400 px-4 py-2 text-right">
+                        {(b.projection ?? 0).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </Fragment>
+              );
+            })}
+
+            {/* TOTAL Row */}
             <tr className="bg-green-50 font-bold text-green-800">
               <td className="border border-gray-400 px-4 py-2 text-left">
                 TOTAL
