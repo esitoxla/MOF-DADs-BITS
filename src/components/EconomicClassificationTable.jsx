@@ -15,9 +15,6 @@ const EconomicClassificationTable = ({ data }) => {
   return (
     <>
       <div className="overflow-x-auto bg-white shadow-xl rounded-2xl p-4 sm:p-6 border border-gray-200 w-full">
-        {/* <h2 className="text-xl font-bold text-center text-green-800 mb-6">
-        Summary of Budget Performance by Economic Classification
-      </h2> */}
 
         {/* Header Section */}
         <div className="min-w-[750px] flex justify-between items-center mb-2 bg-[#F7F7F7]">
@@ -58,12 +55,7 @@ const EconomicClassificationTable = ({ data }) => {
               >
                 EXPENDITURE ITEM
               </th>
-              {/* <th
-                colSpan="5"
-                className="border border-gray-400 px-4 py-2 bg-blue-100"
-              >
-                2025 PERFORMANCE (GHS)
-              </th> */}
+              
             </tr>
             <tr className="text-center font-semibold bg-blue-50">
               <th className="border border-gray-400 px-3 py-2">

@@ -1,6 +1,8 @@
 import React from "react";
 import { NavLink } from "react-router";
 import { useNavigate } from "react-router";
+import summaryPic from "../assets/images/summary.png"
+import detailedPic from "../assets/images/detailed.png"
 
 
 export default function Reports() {
@@ -17,14 +19,29 @@ export default function Reports() {
         {/* Summary Report */}
         <button
           onClick={() => navigate("summaryReport")}
-          className="w-full h-full bg-green-600 text-white text-xl font-semibold rounded-2xl shadow-lg hover:bg-green-700 transition duration-300 cursor-pointer flex items-center justify-center"
+          className="flex flex-col gap-3 w-full h-full bg-green-600 text-white text-xl font-semibold rounded-2xl shadow-lg hover:bg-green-700 transition duration-300 cursor-pointer  items-center justify-center"
         >
-          Summary Report
+          <div>
+            <img
+              src={summaryPic}
+              alt="Summary Report Image"
+              className="w-26 h-26"
+            />
+          </div>
+
+          <span> Summary Report</span>
         </button>
 
         {/* Detailed Report */}
-        <button className="w-full h-full bg-white border-2 border-green-600 text-green-700 text-xl font-semibold rounded-2xl shadow-lg hover:bg-green-50 transition duration-300 cursor-pointer flex items-center justify-center">
-          Detailed Report
+        <button className="w-full h-full bg-green-200 text-green-600 text-xl font-semibold rounded-2xl shadow-lg hover:bg-white transition duration-300 cursor-pointer flex flex-col gap-3 items-center justify-center">
+          <div>
+            <img
+              src={detailedPic}
+              alt="Summary Report Image"
+              className="w-26 h-26"
+            />
+          </div>
+          <span>Detailed Report</span>
         </button>
       </div>
     </div>

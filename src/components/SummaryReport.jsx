@@ -61,9 +61,9 @@ export default function SummaryReport() {
             >
               <option value="EC">Economic Classification</option>
               <option value="IRP">IGF Revenue Performance</option>
+              <option value="CP">Cash Position</option>
               <option value="R">Reallocation</option>
               <option value="NA">Natural Account</option>
-              <option value="CP">Cash Position</option>
             </select>
           </div>
 

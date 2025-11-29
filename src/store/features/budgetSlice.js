@@ -113,6 +113,7 @@ const initialState = {
 const budgetSlice = createSlice({
   name: "budget",
   initialState,
+  //this control the UI state for how the form behaves
   reducers: {
     setFormValues: (state, action) => {
       state.formValues = action.payload;

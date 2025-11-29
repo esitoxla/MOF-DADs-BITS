@@ -454,7 +454,7 @@ export default function BudgetExpenditure() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-gray-500">ECONOMIC CLASSIFICATION</label>
+              <label className="text-black">ECONOMIC CLASSIFICATION</label>
               <Select
                 options={economicClassOptions}
                 value={economicClass} // should be an object like {value, label}
@@ -476,14 +476,14 @@ export default function BudgetExpenditure() {
                   }),
                   placeholder: (base) => ({
                     ...base,
-                    color: "#000000",
+                    color: "#9E9E9E",
                   }),
                 }}
               />
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-gray-500">SOURCE OF FUNDING</label>
+              <label className="text-black">SOURCE OF FUNDING</label>
               <Select
                 options={filteredFundingOptions}
                 value={fundingSource} // should be an object like {value, label}
@@ -505,7 +505,7 @@ export default function BudgetExpenditure() {
                   }),
                   placeholder: (base) => ({
                     ...base,
-                    color: "#000000",
+                    color: "#9E9E9E",
                   }),
                 }}
               />
@@ -554,12 +554,12 @@ export default function BudgetExpenditure() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="" className="text-gray-500">
+              <label htmlFor="" className="text-black">
                 DESCRIPTION
               </label>
               <input
                 type="text"
-                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
+                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-gray-500"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={isReviewing}

@@ -88,7 +88,7 @@ export default function Sidebar({ toggleSidebar }) {
             )}
           </NavLink>
 
-          <NavLink to="revenue">
+          <NavLink to="revenue&cash">
             {({ isActive }) => (
               <div
                 className={`flex gap-2 items-center px-4 py-2 ${
@@ -98,7 +98,7 @@ export default function Sidebar({ toggleSidebar }) {
                 <span className="text-3xl">
                   <Banknote />
                 </span>
-                <p>Revenue Collection</p>
+                <p>Revenue & Cash</p>
               </div>
             )}
           </NavLink>

@@ -209,7 +209,6 @@ const userRole = authUser?.role;
                     {record.status === "Approved" && (
                       <li>
                         <a
-                          onClick={() => handleApprove(record)}
                           className="text-green-800 font-semibold cursor-pointer"
                         >
                           <CheckFill /> Approved

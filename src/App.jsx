@@ -15,7 +15,11 @@ import UserLayout from "./layouts/UserLayout";
 import UpdateUser from "./components/UpdateUser";
 import PrivateRoute from "./helpers/routesProtect";
 import { Toaster } from "react-hot-toast";
-import RevenueCollectionPage from "./pages/RevenueCollectionPage";
+import RevenueCashLayout from "./layouts/RevenueCashLayout";
+import RevenueCashPage from "./pages/RevenueCashPage";
+import RevenueForm from "./components/RevenueForm";
+import RevenuePage from "./pages/RevenuePage";
+
 
 
 
@@ -39,8 +43,18 @@ function App() {
           Component: BudgetExpenditure,
         },
         {
-          path: "revenue",
-          Component: RevenueCollectionPage,
+          path: "revenue&cash",
+          Component: RevenueCashLayout,
+          children: [
+            {
+              index: true,
+              Component: RevenueCashPage,
+            },
+            {
+              path: "revenue",
+              Component: RevenuePage,
+            },
+          ],
         },
         {
           path: "reports",
