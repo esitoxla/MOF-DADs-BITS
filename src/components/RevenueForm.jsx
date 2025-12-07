@@ -296,19 +296,7 @@ export default function RevenueForm() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
-            {/* <div className="flex flex-col gap-2">
-              <label htmlFor="" className="text-gray-500">
-                BUDGET PROJECTIONS (END OF YEAR)
-              </label>
-              <input
-                type="number"
-                min="0"
-                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black placeholder:text-sm"
-                value={projectionYear || ""}
-                readOnly
-                disabled
-              />
-            </div> */}
+            
 
             <div className="flex flex-col gap-2">
               <label htmlFor="" className="text-gray-500">
