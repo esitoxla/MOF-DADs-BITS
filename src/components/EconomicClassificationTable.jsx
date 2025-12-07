@@ -78,7 +78,7 @@ const EconomicClassificationTable = ({ data }) => {
 
           <tbody>
             {data.map((item, index) => {
-              const filteredBreakdown =
+              const filteredBreakdown =  
                 fundingSource === "ALL"
                   ? item.breakdown
                   : item.breakdown.filter((b) => b.source === fundingSource);

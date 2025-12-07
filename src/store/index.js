@@ -4,6 +4,7 @@ import userReducer from "../store/features/userSlice"
 import authReducer from "../store/features/authSlice"
 import reportReducer from "../store/features/reportSlice"
 import revenueReducer from "../store/features/revenueSlice"
+import revenueReportReducer from "../store/features/revenueSlice"
 
 export const store = configureStore({
     reducer: {
@@ -11,6 +12,7 @@ export const store = configureStore({
        user:  userReducer,
        auth: authReducer,
        report: reportReducer,
-       revenue: revenueReducer
+       revenue: revenueReducer,
+       revenueReport: revenueReportReducer
     }
 })

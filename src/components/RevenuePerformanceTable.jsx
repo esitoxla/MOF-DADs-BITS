@@ -1,8 +1,9 @@
 import React from 'react'
-import { useSelector } from 'react-redux';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 import logo from "../assets/images/logo.jpeg";
-
+import { fetchRevenues } from '../store/features/revenueSlice';
 
 
 
@@ -10,10 +11,18 @@ import logo from "../assets/images/logo.jpeg";
 export default function RevenuePerformanceTable({ data }) {
 
     const { authUser } = useSelector((store) => store.auth);
+    const { revenues, loading } = useSelector((store) => store.revenue);
+
 
      //This extracts the values passed from the previous page — including the date
       const location = useLocation();
       const { date } = location.state || {};
+
+    const dispatch = useDispatch()
+
+     useEffect(() => {
+         dispatch(fetchRevenues());
+       }, [dispatch]);
 
 
   return (
@@ -113,14 +122,15 @@ export default function RevenuePerformanceTable({ data }) {
               <th className="border border-gray-400 px-4 py-2">A</th>
               <th className="border border-gray-400 px-4 py-2">B</th>
               <th className="border border-gray-400 px-4 py-2">C = D + E</th>
-              <th className="border border-gray-400 px-4 py-2">D = C − E</th>
-              <th className="border border-gray-400 px-4 py-2">E = C − D</th>
+              <th className="border border-gray-400 px-4 py-2">D = C - E</th>
+              <th className="border border-gray-400 px-4 py-2">E = C - D</th>
               <th className="border border-gray-400 px-4 py-2">&nbsp;</th>
               <th className="border border-gray-400 px-4 py-2">&nbsp;</th>
             </tr>
           </thead>
 
           <tbody className='font-bold text-gray-800'>
+            
             {/* Fees / Charges row */}
             <tr>
               <td className="border border-gray-400 px-4 py-2">Fees/Charges</td>

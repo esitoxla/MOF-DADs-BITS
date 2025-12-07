@@ -454,12 +454,12 @@ export default function BudgetExpenditure() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-black">ECONOMIC CLASSIFICATION</label>
+              <label className="text-grey-500">ECONOMIC CLASSIFICATION</label>
               <Select
                 options={economicClassOptions}
                 value={economicClass} // should be an object like {value, label}
                 onChange={setEconomicClass}
-                disabled={isReviewing}
+                isDisabled={isReviewing}
                 placeholder="Select economic classification"
                 isSearchable
                 filterOption={(option, inputValue) =>
@@ -473,6 +473,7 @@ export default function BudgetExpenditure() {
                     borderColor: "black",
                     fontSize: "1rem",
                     fontWeight: 600,
+                    backgroundColor: "white"
                   }),
                   placeholder: (base) => ({
                     ...base,
@@ -483,12 +484,12 @@ export default function BudgetExpenditure() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-black">SOURCE OF FUNDING</label>
+              <label className="text-grey-500">SOURCE OF FUNDING</label>
               <Select
                 options={filteredFundingOptions}
                 value={fundingSource} // should be an object like {value, label}
                 onChange={setFundingSource}
-                disabled={isReviewing}
+                isDisabled={isReviewing}
                 placeholder="Select source of funding"
                 isSearchable
                 filterOption={(option, inputValue) =>
@@ -502,6 +503,7 @@ export default function BudgetExpenditure() {
                     borderColor: "black",
                     fontSize: "1rem",
                     fontWeight: 600,
+                    backgroundColor: "white",
                   }),
                   placeholder: (base) => ({
                     ...base,
@@ -530,7 +532,7 @@ export default function BudgetExpenditure() {
                     : null)
                 }
                 onChange={setSelectedAccount}
-                disabled={isReviewing}
+                isDisabled={isReviewing}
                 placeholder={`Select natural account`}
                 isSearchable
                 filterOption={(option, inputValue) =>
@@ -544,6 +546,7 @@ export default function BudgetExpenditure() {
                     borderColor: "black",
                     fontSize: "1rem",
                     fontWeight: 600,
+                    backgroundColor: "white",
                   }),
                   placeholder: (base) => ({
                     ...base,

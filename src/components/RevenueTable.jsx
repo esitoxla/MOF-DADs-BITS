@@ -1,34 +1,97 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import { PencilSquare } from "../helpers/edit";
 import { Trash } from "../helpers/trash";
 import { Check } from "../helpers/check";
 import { CheckFill } from "../helpers/checkFill";
 import { Clipboard } from "../helpers/review";
 import toast from "react-hot-toast";
-import { fetchRevenues } from "../store/features/revenueSlice";
+import {
+  fetchRevenues,
+  startEditing,
+  startReviewing,
+  deleteRevenue,
+  approveRevenue,
+} from "../store/features/revenueSlice";
 
-export default function RevenueTable() {
+export default function RevenueTable({
+  searchQuery,
+  setRecordToReview,
+  setIsReviewModalOpen,
+}) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { records, loading, error } = useSelector((store) => store.revenue);
   const { authUser } = useSelector((state) => state.auth);
+
   const userRole = authUser?.role;
-  
-  
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState(null);
 
   useEffect(() => {
     dispatch(fetchRevenues());
   }, [dispatch]);
 
-  
-   
+  //    console.log(records);
 
+  // Filter records (case-insensitive)
+  const filteredRecords = records.filter((record) => {
+    if (!searchQuery) return true;
+    return (
+      Object.values(record)
+        //Convert every value into a string safely.
+        .map((v) => String(v || ""))
+        .join(" ")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
+    );
+  });
 
-  console.log(records);
+  const handleEditClick = (index, record) => {
+    dispatch(startEditing({ index, record }));
+    navigate("/dashboard/revenue&cash/revenue");
+  };
+
+  const handleReviewClick = (index, record) => {
+    dispatch(startReviewing({ index, record }));
+    navigate("/dashboard/revenue&cash/revenue");
+  };
 
   if (loading) return <p className="text-center py-4">Loading records...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
+
+  //approve
+  const handleApprove = async (record) => {
+    try {
+      await dispatch(approveRevenue(record.id)).unwrap();
+      toast.success("Record approved successfully!");
+      dispatch(fetchRevenues());
+    } catch (err) {
+      toast.error(err || "Failed to approve record.");
+    }
+  };
+
+  //DELETE
+  const openDeleteModal = (record) => {
+    setRecordToDelete(record);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await dispatch(deleteRevenue(recordToDelete.id)).unwrap();
+      toast.success("Record deleted successfully!");
+      dispatch(fetchRevenues());
+    } catch (err) {
+      toast.error(err || "Failed to delete record.");
+    } finally {
+      setIsDeleteModalOpen(false);
+      setRecordToDelete(null);
+    }
+  };
 
   return (
     <div className="w-full overflow-x-auto lg:px-4">
@@ -50,10 +113,10 @@ export default function RevenueTable() {
         </thead>
 
         <tbody>
-          {records.map((record, index) => (
+          {filteredRecords.map((record, index) => (
             <tr key={record.id || index} className="text-center">
               <td className="border px-2 py-1">{index + 1}</td>
-              <td className="border px-2 py-1">{record.date}</td>
+              <td className="border px-2 py-1">{record?.date}</td>
               <td className="border px-2 py-1">{record.revenue_category}</td>
               <td className="border px-2 py-1">{record.budgetProjections}</td>
               <td className="border px-2 py-1">{record.actual_collection}</td>
@@ -68,35 +131,101 @@ export default function RevenueTable() {
 
               <td className="px-2 py-1 border text-center">
                 <ul className="menu bg-base-100 w-32 z-10">
-                  <li>
-                    <a className="text-yellow-600 font-semibold cursor-pointer">
-                      <PencilSquare /> Edit
-                    </a>
-                  </li>
+                  {/* === DATA ENTRY USER === */}
+                  {(userRole === "data_entry" || userRole === "admin") &&
+                    record.status === "Pending" && (
+                      <>
+                        <li>
+                          <a
+                            onClick={() => handleEditClick(index, record)}
+                            className="text-yellow-600 font-semibold cursor-pointer"
+                          >
+                            <PencilSquare /> Edit
+                          </a>
+                        </li>
 
-                  <li>
-                    <span className="text-red-600 font-semibold cursor-pointer">
-                      <Trash /> Delete
-                    </span>
-                  </li>
+                        <li>
+                          <span
+                            onClick={() => openDeleteModal(record)}
+                            className="text-red-600 font-semibold cursor-pointer"
+                          >
+                            <Trash /> Delete
+                          </span>
+                        </li>
+                      </>
+                    )}
 
-                  <li>
-                    <span className="text-blue-700 font-semibold cursor-pointer">
-                      <Clipboard /> Review
-                    </span>
-                  </li>
+                  {(userRole === "reviewer" || userRole === "admin") &&
+                    record.status === "Pending" && (
+                      <li>
+                        <span
+                          onClick={() => handleReviewClick(index, record)}
+                          className="text-blue-700 font-semibold cursor-pointer"
+                        >
+                          <Clipboard /> Review
+                        </span>
+                      </li>
+                    )}
 
-                  <li>
-                    <span className="text-green-800 font-semibold cursor-pointer">
-                      <Check /> Approve
-                    </span>
-                  </li>
+                  {(userRole === "approver" || userRole === "admin") &&
+                    record.status === "Reviewed" && (
+                      <li>
+                        <a
+                          onClick={() => handleApprove(record)}
+                          className="text-green-800 font-semibold cursor-pointer"
+                        >
+                          <Check /> Approve
+                        </a>
+                      </li>
+                    )}
+
+                  {record.status === "Approved" && (
+                    <li>
+                      <a className="text-green-800 font-semibold cursor-pointer">
+                        <CheckFill /> Approved
+                      </a>
+                    </li>
+                  )}
                 </ul>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      {/*      DELETE MODAL    */}
+
+      {isDeleteModalOpen && (
+        <dialog open className="modal">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg text-red-400">Confirm Delete</h3>
+            <p className="py-4">
+              Are you sure you want to delete item{" "}
+              <span className="font-semibold text-green-800">
+                “{recordToDelete?.id}”
+              </span>
+              ?
+            </p>
+            <div className="modal-action">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="btn btn-outline"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="btn btn-error text-white"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+          <form method="dialog" className="modal-backdrop">
+            <button onClick={() => setIsDeleteModalOpen(false)}>close</button>
+          </form>
+        </dialog>
+      )}
     </div>
   );
 }

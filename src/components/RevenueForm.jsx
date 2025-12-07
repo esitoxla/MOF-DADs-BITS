@@ -1,12 +1,16 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import Select from "react-select"
-import { revenueCategoriesOptions, revenueBudgetProjections, organizationRetentionRates } from "../data/RevenueFormsData";
+import Select from "react-select";
+import {
+  revenueCategoriesOptions,
+  revenueBudgetProjections,
+  organizationRetentionRates,
+} from "../data/RevenueFormsData";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { addRevenue } from "../store/features/revenueSlice";
+import { addRevenue, updateRevenue, reviewRevenue, cancelEditing } from "../store/features/revenueSlice";
 import toast from "react-hot-toast";
-
+import ReviewModal from "./ReviewModal";
 
 export default function RevenueForm() {
   const [selectedDate, setSelectedDate] = useState("");
@@ -19,23 +23,27 @@ export default function RevenueForm() {
   const [remarks, setRemarks] = useState("");
   const [retentionRate, setRetentionRate] = useState(0);
 
+
+  //review logic
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [recordToReview, setRecordToReview] = useState(null);
+  
+
   const { authUser: user } = useSelector((state) => state.auth);
+
+  const { formValues, isEditing, isReviewing } = useSelector(
+    (state) => state.revenue
+  );
 
   const dispatch = useDispatch();
 
-
-
-
   //Load the retention rate from the logged-in user
- useEffect(() => {
-   if (user?.organization) {
-     const rate = organizationRetentionRates[user.organization];
-     console.log("Retention Rate Loaded:", rate);
-     setRetentionRate(rate);
-   }
- }, [user]);
-
-
+  useEffect(() => {
+    if (user?.organization) {
+      const rate = organizationRetentionRates[user.organization];
+      setRetentionRate(rate);
+    }
+  }, [user]);
 
   // Auto-calculate logic based on retention rate
   const handleCollectionsChange = (value) => {
@@ -59,6 +67,34 @@ export default function RevenueForm() {
 
     setRetention(E.toFixed(2));
     setPayment(D.toFixed(2));
+  };
+
+  //update your form component to load formValues when editing, or reviewing
+
+  useEffect(() => {
+    if ((isEditing || isReviewing) && formValues) {
+      setSelectedDate(formValues.date || "");
+      setRevenue({
+        label: formValues.revenue_category,
+        value: formValues.revenue_category,
+      });
+      setProjectionB(formValues.budgetProjections || "");
+      setCollections(formValues.actual_collection || "");
+      setPayment(formValues.payment_amount || "");
+      setRetention(formValues.retention_amount || "");
+      setRemarks(formValues.remarks || "");
+    }
+  }, [isEditing, isReviewing, formValues]);
+
+
+  const clearForm = () => {
+    setSelectedDate("");
+    setRevenue(null);
+    setProjectionB("");
+    setCollections("");
+    setPayment("");
+    setRetention("");
+    setRemarks("");
   };
 
   const handleSubmit = (e) => {
@@ -95,32 +131,54 @@ export default function RevenueForm() {
       remarks,
     };
 
-    console.log("Submitting Revenue Data:", formData);
+    // console.log("Submitting Revenue Data:", formData);
+
+    //edit functionality
+    if (isEditing) {
+      dispatch(updateRevenue({ id: formValues.id, formData }))
+        .unwrap()
+        .then(() => {
+          toast.success("Revenue updated successfully!");
+          clearForm();
+          dispatch(cancelEditing());
+        })
+        .catch((err) => toast.error(err));
+      return;
+    }
+
+    //review functionality
+    if (isReviewing) {
+      dispatch(
+        reviewRevenue({
+          id: formValues.id,
+          reviewComment: remarks, // the remarks act as the review comment
+        })
+      )
+        .unwrap()
+        .then(() => {
+          toast.success("Revenue reviewed successfully!");
+          clearForm();
+          dispatch(cancelEditing());
+        })
+        .catch((err) => toast.error(err));
+      return;
+    }
 
     dispatch(addRevenue(formData))
       .unwrap()
       .then(() => {
-        toast.success("Revenue record added successfully!");
-
-        // Reset form
-        setSelectedDate("");
-        setRevenue(null);
-        setProjectionB("");
-        setCollections("");
-        setPayment("");
-        setRetention("");
-        setRemarks("");
+        toast.success("Revenue added successfully!");
+        clearForm(); // RESET FORM
       })
-      .catch((err) => {
-        toast.error("Failed to add revenue: " + err);
-      });
+      .catch((err) => toast.error(err));
   };
-
-
 
   return (
     <div className="flex flex-col gap-6 justify-center">
-      <form onSubmit={handleSubmit} className="min-h-screen w-full p-4 sm:p-6 flex flex-col">
+      <form
+        onSubmit={handleSubmit}
+        className="min-h-screen w-full p-4 sm:p-6 flex flex-col"
+      >
         <div className=" text-center text-2xl font-bold text-green-800 mb-8 border-0 shadow bg-white px-4 py-4 w-full">
           IGF Revenue Collections
         </div>
@@ -133,6 +191,7 @@ export default function RevenueForm() {
                 <input
                   type="date"
                   value={selectedDate}
+                  disabled={isReviewing}
                   onChange={(e) => setSelectedDate(e.target.value)}
                   // disabled={isReviewing}
                   className="border w-full py-[0.7rem] px-2 rounded"
@@ -153,6 +212,7 @@ export default function RevenueForm() {
                 // disabled={isReviewing}
                 placeholder="Select revenue category"
                 isSearchable
+                isDisabled={isReviewing}
                 filterOption={(option, inputValue) =>
                   option.label.toLowerCase().includes(inputValue.toLowerCase())
                 }
@@ -164,6 +224,7 @@ export default function RevenueForm() {
                     borderColor: "black",
                     fontSize: "1rem",
                     fontWeight: 600,
+                    backgroundColor: "white",
                   }),
                   placeholder: (base) => ({
                     ...base,
@@ -196,6 +257,7 @@ export default function RevenueForm() {
                 min="0"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black placeholder:text-sm"
                 value={collections}
+                disabled={isReviewing}
                 onChange={(e) => handleCollectionsChange(e.target.value)}
                 // disabled={isReviewing}
                 placeholder="Enter actual collection here..."
@@ -256,6 +318,7 @@ export default function RevenueForm() {
                 type="text"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black placeholder:text-sm"
                 value={remarks}
+                disabled={isReviewing}
                 onChange={(e) => setRemarks(e.target.value)}
                 placeholder="Enter a remark..."
               />
@@ -264,15 +327,51 @@ export default function RevenueForm() {
         </div>
 
         <div className="text-right flex justify-end gap-4">
-          <button className="bg-gray-400 text-white px-4 py-2 font-semibold hover:bg-gray-500 transition duration-300 shadow-md cursor-pointer lg:w-[10%]">
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedDate("");
+              setRevenue(null);
+              setProjectionB("");
+              setCollections("");
+              setPayment("");
+              setRetention("");
+              setRemarks("");
+              dispatch(cancelEditing());
+              toast.success("Form reset successfully!");
+            }}
+            className="bg-gray-400 text-white px-4 py-2 font-semibold hover:bg-gray-500 transition duration-300 shadow-md cursor-pointer lg:w-[10%]"
+          >
             Cancel
           </button>
 
-          <button type="submit" className="bg-green-600 text-white px-4 py-2 font-semibold hover:bg-green-700 transition duration-300 shadow-md cursor-pointer lg:w-[10%]">
-            Submit
+          <button
+            type="submit"
+            onClick={(e) => {
+              if (isReviewing) {
+                e.preventDefault();
+                setIsReviewModalOpen(true);
+              } else {
+                handleSubmit(e);
+              }
+            }}
+            className={`${
+              isReviewing
+                ? "bg-blue-600 hover:bg-blue-700"
+                : isEditing
+                ? "bg-yellow-600 hover:bg-yellow-700"
+                : "bg-green-600 hover:bg-green-700"
+            } text-white px-4 py-2 font-semibold transition duration-300 shadow-md cursor-pointer lg:w-[10%]`}
+          >
+            {isEditing ? "OK" : isReviewing ? "Review" : "Submit"}
           </button>
         </div>
       </form>
+
+      <ReviewModal
+        isReviewModalOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+      />
     </div>
   );
 }

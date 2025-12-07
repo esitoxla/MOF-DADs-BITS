@@ -20,7 +20,7 @@ export default function Sidebar({ toggleSidebar }) {
   const dispatch = useDispatch();
 
   const { authUser } = useSelector((store) => store.auth);
-  console.log(authUser);
+  // console.log(authUser);
 
   useEffect(() => {
     dispatch(getUser()); // automatically fetch user from cookie if valid

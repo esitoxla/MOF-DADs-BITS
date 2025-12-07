@@ -23,7 +23,7 @@ export default function BudgetTable({
   const dispatch = useDispatch();
   const { records, loading, error } = useSelector((store) => store.budget);
   const { authUser } = useSelector((state) => state.auth);
-const userRole = authUser?.role;
+  const userRole = authUser?.role;
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
@@ -208,9 +208,7 @@ const userRole = authUser?.role;
 
                     {record.status === "Approved" && (
                       <li>
-                        <a
-                          className="text-green-800 font-semibold cursor-pointer"
-                        >
+                        <a className="text-green-800 font-semibold cursor-pointer">
                           <CheckFill /> Approved
                         </a>
                       </li>

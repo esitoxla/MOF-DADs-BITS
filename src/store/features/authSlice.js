@@ -25,7 +25,7 @@ export const loginUser = createAsyncThunk(
   async (loginData, thunkAPI) => {
     try {
       const res = await api.post("/auth/login", loginData);
-      console.log(res.data.user);
+      // console.log(res.data.user);
       return res.data.user;
     } catch (error) {
       console.log(error);
@@ -40,7 +40,7 @@ export const loginUser = createAsyncThunk(
 export const getUser = createAsyncThunk("getUser", async (_, thunkAPI) => {
   try {
     const res = await api.get("/auth/me");
-    console.log(res.data.user);
+    // console.log(res.data.user);
     return thunkAPI.fulfillWithValue(res.data.user);
   } catch (error) {
     console.log(error);
@@ -56,7 +56,7 @@ export const changePassword = createAsyncThunk(
   async (CData, thunkAPI) => {
     try {
       const res = await api.post("/auth/change-password", CData);
-      console.log(res.data);
+      // console.log(res.data);
       return thunkAPI.fulfillWithValue(res.data);
     } catch (error) {
       if (error.response && error.response.data.message) {

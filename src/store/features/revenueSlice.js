@@ -29,6 +29,68 @@ export const addRevenue = createAsyncThunk(
   }
 );
 
+//to update revenue record
+export const updateRevenue = createAsyncThunk(
+  "revenue/updateRevenue",
+  async ({ id, formData }, { rejectWithValue }) => {
+    try {
+      const response = await api.put(`/revenue/${id}`, formData);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update revenue"
+      );
+    }
+  }
+);
+
+//to delete revenue
+export const deleteRevenue = createAsyncThunk(
+  "revenue/deleteRevenue",
+  async (id, { rejectWithValue }) => {
+    try {
+      await api.delete(`/revenue/${id}`);
+      return id; // just return the deleted record ID
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to delete revenue"
+      );
+    }
+  }
+);
+
+//review revenue by a user with role reviewer
+export const reviewRevenue = createAsyncThunk(
+  "revenue/reviewRevenue",
+  async ({ id, reviewComment }, { rejectWithValue }) => {
+    try {
+      const response = await api.patch(`/revenue/${id}/review`, {
+        reviewComment,
+      });
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to review revenue"
+      );
+    }
+  }
+);
+
+//approve expenditure by a user with role approver
+export const approveRevenue = createAsyncThunk(
+  "revenue/approveRevenue",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await api.patch(`/revenue/${id}/approve`);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to approve revenue"
+      );
+    }
+  }
+);
+
 const initialState = {
   records: [],
   loading: false,
@@ -93,15 +155,52 @@ const revenueSlice = createSlice({
       .addCase(addRevenue.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      //update expenditure
+      .addCase(updateRevenue.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.records.findIndex(
+          (r) => r.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.records[index] = action.payload;
+        }
+      })
+
+      //delete expenditure
+      .addCase(deleteRevenue.fulfilled, (state, action) => {
+        state.records = state.records.filter((r) => r.id !== action.payload);
+      })
+
+      //review expense
+      .addCase(reviewRevenue.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(reviewRevenue.fulfilled, (state, action) => {
+        state.loading = false;
+        const idx = state.records.findIndex((r) => r.id === action.payload.id);
+        if (idx !== -1) state.records[idx] = action.payload;
+      })
+      .addCase(reviewRevenue.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      //approve expense
+      .addCase(approveRevenue.fulfilled, (state, action) => {
+        const index = state.records.findIndex(
+          (r) => r.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.records[index] = action.payload;
+        }
       });
   },
 });
 
-export const {
-  startEditing,
-  startReviewing,
-  cancelEditing,
-  setFormValues
-} = revenueSlice.actions;
+export const { startEditing, startReviewing, cancelEditing, setFormValues } =
+  revenueSlice.actions;
 
 export default revenueSlice.reducer;
