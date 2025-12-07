@@ -16,7 +16,7 @@ import {
   approveRevenue,
 } from "../store/features/revenueSlice";
 
-export default function RevenueTable({
+export default function revenueTable({
   searchQuery,
   setRecordToReview,
   setIsReviewModalOpen,

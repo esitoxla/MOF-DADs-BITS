@@ -1,7 +1,7 @@
 import React from 'react'
 import RevenueForm from '../components/RevenueForm'
 import { useState } from 'react';
-import RevenueTable from '../components/revenueTable';
+
 
 export default function RevenuePage() {
 
@@ -21,7 +21,7 @@ export default function RevenuePage() {
         />
       </div>
 
-      <RevenueTable search={searchQuery}/>
+      
     </div>
   );
 }
