@@ -16,11 +16,7 @@ import {
   approveRevenue,
 } from "../store/features/revenueSlice";
 
-export default function revenueTable({
-  searchQuery,
-  setRecordToReview,
-  setIsReviewModalOpen,
-}) {
+export default function RevenueTableDetails({ searchQuery }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { records, loading, error } = useSelector((store) => store.revenue);
