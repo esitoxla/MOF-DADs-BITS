@@ -6,8 +6,6 @@ import BudgetTable from "../components/BudgetTable";
 import toast from "react-hot-toast";
 import { goodsAndServicesAccounts } from "../data/BudgetExpenditureData";
 import { capitalExpenditureAccounts } from "../data/BudgetExpenditureData";
-import { compensatingEmployeesAccounts } from "../data/BudgetExpenditureData";
-import { dataMap } from "../data/BudgetExpenditureData";
 import { economicClassOptions } from "../data/BudgetExpenditureData";
 import { sourceOfFundingOptions } from "../data/BudgetExpenditureData";
 import { useSelector, useDispatch } from "react-redux";
@@ -17,12 +15,21 @@ import {
   cancelEditing,
   addExpenditure,
 } from "../store/features/budgetSlice";
+import { fetchNaturalAccounts, fetchBudgetValues } from "../store/features/budgetDynamicSlice";
 
 export default function BudgetExpenditure() {
   //redux handling the edit functionality
   const dispatch = useDispatch();
   const { isEditing, isReviewing, formValues, editingIndex, error } =
     useSelector((state) => state.budget);
+
+  const {
+    naturalAccounts,
+    budgetValues,
+    loading: budgetLoading,
+  } = useSelector((state) => state.budgetDynamic);
+
+  
 
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
@@ -64,22 +71,50 @@ export default function BudgetExpenditure() {
         )
       : sourceOfFundingOptions;
 
-  //Dynamically switch accounts based on selected economic class
-  let naturalAccountOptions = [];
+  // Fetch NATURAL ACCOUNTS dynamically when eco + fund are selected
+  useEffect(() => {
+    if (!economicClass || !fundingSource) return;
 
-  switch (economicClass?.value) {
-    case "goods & services":
-      naturalAccountOptions = goodsAndServicesAccounts;
-      break;
-    case "capital expenditure":
-      naturalAccountOptions = capitalExpenditureAccounts;
-      break;
-    case "compensation of employees":
-      naturalAccountOptions = compensatingEmployeesAccounts;
-      break;
-    default:
-      naturalAccountOptions = [];
-  }
+   dispatch(
+     fetchNaturalAccounts({
+       eco: economicClass.label, // instead of value
+       fund: fundingSource.label, // instead of value
+     })
+   );
+
+   
+  }, [economicClass, fundingSource]);
+
+  //Dynamically switch accounts based on selected economic class
+ const naturalAccountOptions = Array.isArray(naturalAccounts)
+   ? naturalAccounts.map((acc) => {
+       const value = typeof acc === "string" ? acc : acc?.naturalAccount;
+
+       return {
+         label: value,
+         value: value,
+       };
+     })
+   : [];
+
+
+
+  // Fetch budget values when natural account is selected
+  useEffect(() => {
+    if (!economicClass || !fundingSource || !selectedAccount) return;
+
+    const payload = {
+      eco: economicClass.label.trim(),
+      fund: fundingSource.label.trim(),
+      account: selectedAccount.value.trim(),
+    };
+
+    console.log("Sending to backend:", payload);
+
+    dispatch(fetchBudgetValues(payload));
+  }, [selectedAccount, economicClass, fundingSource, dispatch]);
+
+
 
   //this handles the logic behind the relationship between economic classification and the natural account
   useEffect(() => {
@@ -104,25 +139,18 @@ export default function BudgetExpenditure() {
     }
   }, [economicClass]);
 
-  // Auto-fill based on both selected fields for allotment, appropriation and allotment balance depending on economic classification and source of funding
+
+
+  // Autofill appropriation, allotment, and balance from backend
   useEffect(() => {
-    // Get the actual selected values from your dropdowns
-    const ecoValue = economicClass?.value;
-    const fundValue = fundingSource?.value;
+    if (!budgetValues) return;
 
-    // Only run if both are selected
-    if (!ecoValue || !fundValue) return;
+    setAppropriation(budgetValues.appropriation || "");
+    setAllotment(budgetValues.allotment || "");
+    setAllotmentBalance(budgetValues.balance || "");
+  }, [budgetValues]);
 
-    // Lookup from your dataMap directly (no case conversion)
-    const selectedData = dataMap[ecoValue]?.[fundValue];
 
-    // If a valid combination exists, update the state fields
-    if (selectedData) {
-      setAppropriation(selectedData.appropriation);
-      setAllotment(selectedData.allotment);
-      setAllotmentBalance(selectedData.allotment);
-    }
-  }, [economicClass, fundingSource]);
 
   //handles populating fields that are dependent on each other(natural account, allotment, appropriation, allotment balance)
   // Handles populating fields when editing a record
@@ -175,83 +203,29 @@ export default function BudgetExpenditure() {
     }
   }, [economicClass, fundingSource]);
 
-  //This ensures your Allotment Balance updates automatically when releases, allotment, or the previous records change.
-  useEffect(() => {
-    if (isEditing) return;
 
-    const releaseNum = parseFloat(releases) || 0;
-    const expNum = parseFloat(expenditure) || 0;
-    const payNum = parseFloat(payment) || 0;
-
-    const ecoValue = economicClass?.value?.toLowerCase();
-    const fundValue = fundingSource?.value?.toUpperCase(); // make sure this matches your keys (IGF, DPF, GOG)
-
-    // --- Get the correct base allotment for the selected combo ---
-    const baseAllotment =
-      ecoValue && fundValue && dataMap[ecoValue]?.[fundValue]
-        ? dataMap[ecoValue][fundValue].allotment
-        : "";
-
-    // If nothing is selected, clear the field
-    if (baseAllotment === "") {
-      setAllotmentBalance("");
-      return;
-    }
-
-    let newBalance = baseAllotment;
-
-    // --- Find existing records for the same category ---
-    const matchingRecords = records.filter(
-      (rec) =>
-        rec.economicClass.toLowerCase() ===
-          (economicClass?.label?.toLowerCase() || "") &&
-        rec.fundingSource.toUpperCase() ===
-          (fundingSource?.label?.toUpperCase() || "")
-    );
-
-    if (matchingRecords.length > 0) {
-      const lastBalance =
-        parseFloat(
-          matchingRecords[matchingRecords.length - 1].allotmentBalance
-        ) || baseAllotment;
-      newBalance = lastBalance - releaseNum;
-    } else {
-      newBalance = baseAllotment - releaseNum;
-    }
-
-    setAllotmentBalance(newBalance);
-
-    // --- Validate relationships ---
-    const exceedsAllotment = releaseNum > baseAllotment;
-    const exceedsReleases = expNum > releaseNum;
-    const exceedsExpenditure = payNum > expNum;
-
-    setShowReleasesAlert(exceedsAllotment);
-    setShowExpenditureAlert(exceedsReleases);
-    setShowPaymentAlert(exceedsExpenditure);
-
-    setIsFormValid(
-      !exceedsAllotment && !exceedsReleases && !exceedsExpenditure
-    );
-  }, [releases, expenditure, payment, economicClass, fundingSource, records]);
 
   // Handle releases input
-  const handleReleasesChange = (e) => {
-    const value = e.target.value;
-    setReleases(value);
+ const handleReleasesChange = (e) => {
+   const value = e.target.value;
+   setReleases(value);
 
-    const releaseNum = parseFloat(value);
-    const balanceNum = parseFloat(allotmentBalance || 0);
+   const releaseNum = parseFloat(value) || 0;
+   const baseBalance = parseFloat(budgetValues?.balance || 0);
 
-    if (releaseNum > balanceNum) {
-      toast.error("Releases cannot exceed the current allotment balance.");
-      setShowReleasesAlert(true);
-    } else {
-      setShowReleasesAlert(false);
-    }
+   // Prevent releases from exceeding current balance
+   if (releaseNum > baseBalance) {
+     toast.error("Releases cannot exceed the remaining allotment balance.");
+     setShowReleasesAlert(true);
+   } else {
+     setShowReleasesAlert(false);
+   }
 
-    setShowExpenditureAlert(false);
-  };
+   // calculate updated balance
+   const updatedBalance = baseBalance - releaseNum;
+   setAllotmentBalance(updatedBalance);
+ };
+
 
   // Handle expenditure input
   const handleExpenditureChange = (e) => {
@@ -266,6 +240,7 @@ export default function BudgetExpenditure() {
     }
   };
 
+
   // Handle payment input
   const handlePaymentChange = (e) => {
     const value = e.target.value;
@@ -278,6 +253,7 @@ export default function BudgetExpenditure() {
       setShowPaymentAlert(false);
     }
   };
+
 
   //handles submiting of records and editing a record
   const handleSubmit = async (e) => {
@@ -385,7 +361,7 @@ export default function BudgetExpenditure() {
       label: record.fundingSource,
       value: record.fundingSource,
     });
-    
+
     setSelectedAccount({
       label: record.naturalAccount,
       value: record.naturalAccount,
@@ -454,7 +430,7 @@ export default function BudgetExpenditure() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-grey-500">ECONOMIC CLASSIFICATION</label>
+              <label className="text-gray-500">ECONOMIC CLASSIFICATION</label>
               <Select
                 options={economicClassOptions}
                 value={economicClass} // should be an object like {value, label}
@@ -473,18 +449,18 @@ export default function BudgetExpenditure() {
                     borderColor: "black",
                     fontSize: "1rem",
                     fontWeight: 600,
-                    backgroundColor: "white"
+                    backgroundColor: "white",
                   }),
                   placeholder: (base) => ({
                     ...base,
-                    color: "#9E9E9E",
+                    color: "black",
                   }),
                 }}
               />
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-grey-500">SOURCE OF FUNDING</label>
+              <label className="text-gray-500">SOURCE OF FUNDING</label>
               <Select
                 options={filteredFundingOptions}
                 value={fundingSource} // should be an object like {value, label}
@@ -507,7 +483,7 @@ export default function BudgetExpenditure() {
                   }),
                   placeholder: (base) => ({
                     ...base,
-                    color: "#9E9E9E",
+                    color: "black",
                   }),
                 }}
               />
@@ -535,9 +511,11 @@ export default function BudgetExpenditure() {
                 isDisabled={isReviewing}
                 placeholder={`Select natural account`}
                 isSearchable
-                filterOption={(option, inputValue) =>
-                  option.label.toLowerCase().includes(inputValue.toLowerCase())
-                }
+                filterOption={(option, inputValue) => {
+                  const label = option?.label || "";
+                  const search = inputValue || "";
+                  return label.toLowerCase().includes(search.toLowerCase());
+                }}
                 styles={{
                   control: (base) => ({
                     ...base,
@@ -557,12 +535,12 @@ export default function BudgetExpenditure() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="" className="text-black">
+              <label htmlFor="" className="text-gray-500">
                 DESCRIPTION
               </label>
               <input
                 type="text"
-                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-gray-500"
+                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={isReviewing}

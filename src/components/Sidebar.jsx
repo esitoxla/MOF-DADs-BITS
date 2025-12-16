@@ -146,7 +146,7 @@ export default function Sidebar({ toggleSidebar }) {
                   <span className="text-3xl">
                     <TbUsersPlus />
                   </span>
-                  <p>Users</p>
+                  <p>Console</p>
                 </div>
               )}
             </NavLink>

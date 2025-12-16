@@ -6,7 +6,7 @@ import React from 'react'
    { key: "changePass", label: "Change Password" },
  ];
 
-export default function SettingsTab({ activeTab, changeTab}) {
+export default function SettingsTab({ activeTab, changeTab }) {
   return (
     <div className="flex gap-6 border-b border-gray-300 md:w-[21%]">
       {tabItems.map((tab) => (

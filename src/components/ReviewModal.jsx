@@ -6,11 +6,16 @@ import {
 } from "../store/features/budgetSlice";
 import toast from "react-hot-toast";
 
-export default function ReviewModal({ isOpen, onClose, record }) {
+export default function ReviewModal({
+  isOpen,
+  onClose,
+  record,
+  isReviewModalOpen,
+}) {
   const dispatch = useDispatch();
   const [comment, setComment] = useState("");
 
-  if (!isOpen) return null;
+  if (!isOpen || !isReviewModalOpen) return null;
 
   const handleSubmit = async () => {
     if (!comment.trim()) {

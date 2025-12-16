@@ -19,6 +19,7 @@ import RevenueCashLayout from "./layouts/RevenueCashLayout";
 import RevenueCashPage from "./pages/RevenueCashPage";
 import RevenueForm from "./components/RevenueForm";
 import RevenuePage from "./pages/RevenuePage";
+import AdminDashboard from "./pages/AdminDashboard";
 
 
 
@@ -84,6 +85,10 @@ function App() {
           children: [
             {
               index: true,
+              Component: AdminDashboard,
+            },
+            {
+              path:"users" ,
               Component: Users,
             },
             {

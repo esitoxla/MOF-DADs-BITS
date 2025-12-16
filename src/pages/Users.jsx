@@ -1,83 +1,66 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, ArrowBigDown } from "lucide-react";
 import { Trash } from "../helpers/trash";
-import { PencilSquare }from "../helpers/edit"
+import { PencilSquare } from "../helpers/edit";
 import { NavLink } from "react-router";
 import NewUser from "../components/NewUser";
 import UpdateUser from "../components/UpdateUser";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllUsers } from "../store/features/userSlice";
 
-
 export default function Users() {
-    const [showModal, setShowModal] = useState(false);
-    const [showAddModal, setShowAddModal] = useState(false)
-     const [search, setSearch] = useState("");
-    
-    const dispatch = useDispatch();
-    const { users, loading, error } = useSelector((state) => state.user);
+  const [showModal, setShowModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [search, setSearch] = useState("");
 
-    useEffect(() => {
-        dispatch(fetchAllUsers())
-    }, [dispatch]);
+  const dispatch = useDispatch();
+  const { users, loading, error } = useSelector((state) => state.user);
 
+  useEffect(() => {
+    dispatch(fetchAllUsers());
+  }, [dispatch]);
 
-    useEffect(() => {
-      // Fetch users when page loads or when search changes
-      const delayDebounce = setTimeout(() => {
-        dispatch(fetchAllUsers({ search })); // pass search term to your thunk
-      }, 500); // debounce 500ms to avoid too many requests
+  useEffect(() => {
+    // Fetch users when page loads or when search changes
+    const delayDebounce = setTimeout(() => {
+      dispatch(fetchAllUsers({ search })); // pass search term to your thunk
+    }, 500); // debounce 500ms to avoid too many requests
 
-      return () => clearTimeout(delayDebounce);
-    }, [search, dispatch]);
+    return () => clearTimeout(delayDebounce);
+  }, [search, dispatch]);
 
-//   const users = [
-//     {
-//       id: 1,
-//       name: "Nana Ama",
-//       email: "nanaama@example.com",
-//       username: "nana_ama",
-//       role: "admin",
-//       status: "active",
-//       organization: "Ministry of Finance",
-//       designation: "Budget Analyst",
-//       lastLogin: "2025-10-21",
-//     },
-//     {
-//       id: 2,
-//       name: "Kofi Mensah",
-//       email: "kofi.mensah@example.com",
-//       username: "kofi_m",
-//       role: "employee",
-//       status: "inactive",
-//       organization: "Ghana Highway Authority",
-//       designation: "Engineer",
-//       lastLogin: "2025-09-12",
-//     },
-//   ];
+  //   const users = [
+  //     {
+  //       id: 1,
+  //       name: "Nana Ama",
+  //       email: "nanaama@example.com",
+  //       username: "nana_ama",
+  //       role: "admin",
+  //       status: "active",
+  //       organization: "Ministry of Finance",
+  //       designation: "Budget Analyst",
+  //       lastLogin: "2025-10-21",
+  //     },
+  //     {
+  //       id: 2,
+  //       name: "Kofi Mensah",
+  //       email: "kofi.mensah@example.com",
+  //       username: "kofi_m",
+  //       role: "employee",
+  //       status: "inactive",
+  //       organization: "Ghana Highway Authority",
+  //       designation: "Engineer",
+  //       lastLogin: "2025-09-12",
+  //     },
+  //   ];
 
   return (
     <div className=" px-6 bg-green-50 min-h-screen">
       {/* Header */}
-      <div className="py-6 px-6 bg-green-50 sticky top-0 z-10">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 h-full">
-          <h1 className="text-2xl font-semibold text-gray-800 mb-2 sm:mb-0">
-            Users
-          </h1>
-          {/* <hr className="border-gray-300 w-full sm:hidden mb-4" /> */}
-          <div>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg cursor-pointer"
-            >
-              <Plus className="w-5 h-5" />
-              Create New User
-            </button>
-          </div>
-        </div>
 
-        <hr className="border-gray-300 mb-6" />
 
+      <div className="py-6 px-6 bg-green-50 sticky top-0 z-10 flex w-full justify-between">
         <div className="relative mb-6 w-full">
           <input
             type="text"
@@ -87,6 +70,16 @@ export default function Users() {
             onChange={(e) => setSearch(e.target.value)}
           />
           <Search className="absolute left-3 top-2.5 text-green-400 w-5 h-5" />
+        </div>
+
+        <div className="w-full">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg cursor-pointer"
+          >
+            <Plus className="w-5 h-5" />
+            Create New User
+          </button>
         </div>
       </div>
 

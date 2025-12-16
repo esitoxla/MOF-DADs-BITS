@@ -44,9 +44,9 @@ export const dataMap = {
 
 //
 export const economicClassOptions = [
-  { value: "compensation of employees", label: "Compensation of Employees" },
-  { value: "goods & services", label: "Use of Goods and Services" },
-  { value: "capital expenditure", label: "Capital Expenditure" },
+  { value: "Compensation of Employees", label: "Compensation of Employees" },
+  { value: "Use of Goods and Services", label: "Use of Goods and Services" },
+  { value: "Capital Expenditure", label: "Capital Expenditure" },
 ];
 
 export const sourceOfFundingOptions = [

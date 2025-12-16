@@ -20,7 +20,7 @@ export const addRevenue = createAsyncThunk(
   async (formData, { rejectWithValue }) => {
     try {
       const response = await api.post("/revenue", formData);
-      return response.data.revenue;
+      return response.data.record;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to add revenue"
