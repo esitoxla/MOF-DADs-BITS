@@ -21,60 +21,56 @@ export const fetchQuarterlyRevenueReport = createAsyncThunk(
 
 
 export const downloadQuarterlyRevenueExcel = createAsyncThunk(
-  "report/downloadQuarterlyExcel",
+  "revenueReport/downloadQuarterlyRevenueExcel",
   async ({ year, quarter }, thunkAPI) => {
     try {
       const response = await api.get("/revenueReport/quarterly/excel", {
         params: { year, quarter },
-        responseType: "blob", // IMPORTANT for Excel files
+        responseType: "blob",
       });
 
-      // Create file download
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute(
-        "download",
-        `Quarterly_Report_${year}_Q${quarter}.xlsx`
-      );
+      link.setAttribute("download", `Revenue_Report_${year}_Q${quarter}.xlsx`);
       document.body.appendChild(link);
       link.click();
       link.remove();
 
-      return true;
+      return
     } catch (error) {
       console.error("Excel download failed:", error);
-      return thunkAPI.rejectWithValue(
-        error.response?.data || { message: "Excel download failed" }
-      );
+      
+     return thunkAPI.rejectWithValue({
+       message: "Excel download failed",
+     });
     }
   }
 );
 
 
+
 export const downloadQuarterlyRevenuePDF = createAsyncThunk(
-  "report/downloadQuarterlyPDF",
+  "revenueReport/downloadQuarterlyRevenuePDF",
   async ({ year, quarter }, thunkAPI) => {
     try {
-      const response = await api.get("/reports/quarterly/pdf", {
-        params: { year, quarter, sourceOfFunding },
-        responseType: "blob", // IMPORTANT for PDF files
+      const response = await api.get("/revenueReport/quarterly/pdf", {
+        params: { year, quarter },
+        responseType: "blob",
       });
 
-      // Create PDF file download
       const url = window.URL.createObjectURL(
         new Blob([response.data], { type: "application/pdf" })
       );
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `Quarterly_Report_${year}_Q${quarter}.pdf`);
+      link.setAttribute("download", `Revenue_Report_${year}_Q${quarter}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
 
-      return true;
+      return
     } catch (error) {
-      console.error("PDF download failed:", error);
       return thunkAPI.rejectWithValue(
         error.response?.data || { message: "PDF download failed" }
       );
@@ -83,8 +79,9 @@ export const downloadQuarterlyRevenuePDF = createAsyncThunk(
 );
 
 
+
 const revenueReportSlice = createSlice({
-  name: "report",
+  name: "revenueReport",
   initialState: {
     loading: false,
     reportData: [],
@@ -92,47 +89,22 @@ const revenueReportSlice = createSlice({
     error: null,
   },
   reducers: {},
-    extraReducers: (builder) => {
-      builder
-        .addCase(fetchQuarterlyRevenueReport.pending, (state) => {
-          state.loading = true;
-          state.error = null;
-        })
-        .addCase(fetchQuarterlyRevenueReport.fulfilled, (state, action) => {
-          state.loading = false;
-          state.reportData = action.payload.report || [];
-          state.totals = action.payload.totals || {};
-        })
-        .addCase(fetchQuarterlyRevenueReport.rejected, (state, action) => {
-          state.loading = false;
-          state.error = action.payload?.message || "Something went wrong";
-        })
-
-        //downloading in excel
-        .addCase(downloadQuarterlyRevenueExcel.pending, (state) => {
-          state.loading = true;
-        })
-        .addCase(downloadQuarterlyRevenueExcel.fulfilled, (state) => {
-          state.loading = false;
-        })
-        .addCase(downloadQuarterlyRevenueExcel.rejected, (state, action) => {
-          state.loading = false;
-          state.error = action.payload?.message || "Excel download failed";
-        })
-
-        // PDF download
-        .addCase(downloadQuarterlyRevenuePDF.pending, (state) => {
-          state.loading = true;
-        })
-        .addCase(downloadQuarterlyRevenuePDF.fulfilled, (state) => {
-          state.loading = false;
-        })
-        .addCase(downloadQuarterlyRevenuePDF.rejected, (state, action) => {
-          state.loading = false;
-          state.error = action.payload?.message || "PDF download failed";
-        });
-  
-    },
-  });
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchQuarterlyRevenueReport.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchQuarterlyRevenueReport.fulfilled, (state, action) => {
+        state.loading = false;
+        state.reportData = action.payload.records || [];
+        state.totals = action.payload.totals || {};
+      })
+      .addCase(fetchQuarterlyRevenueReport.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Something went wrong";
+      });
+  },
+});
 
   export default revenueReportSlice.reducer;

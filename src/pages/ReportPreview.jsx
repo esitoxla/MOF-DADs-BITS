@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo} from "react";
+import React, { useEffect, useMemo } from "react";
 import { BsArrowLeftShort } from "react-icons/bs";
 import { RiArrowDownSFill } from "react-icons/ri";
 import { useLocation } from "react-router";
@@ -9,22 +9,37 @@ import { formatReportData } from "../helpers/formatReportData";
 import { fetchQuarterlyReport } from "../store/features/reportSlice";
 import EconomicClassificationTable from "../components/EconomicClassificationTable";
 import { useNavigate } from "react-router";
-import { downloadQuarterlyExcel, downloadQuarterlyPDF } from "../store/features/reportSlice";
+import { fetchQuarterlyRevenueReport } from "../store/features/revenueReport";
+import {
+  downloadQuarterlyExcel,
+  downloadQuarterlyPDF,
+} from "../store/features/reportSlice";
+import { downloadQuarterlyRevenueExcel, downloadQuarterlyRevenuePDF } from "../store/features/revenueReport";
 import RevenuePerformanceTable from "../components/RevenuePerformanceTable";
 
 export default function ReportPreview() {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const { reportData, totals, loading, error } = useSelector((s) => s.report);
+
   const {
     reportType = "EC",
     fundingSource = "ALL",
     date,
   } = location.state || {};
 
+
+  const economicClass = useSelector((store) => store.report);
+  const revenue = useSelector((store) => store.revenueReport);
+
+  const { reportData, totals, loading, error } =
+    reportType === "IRP" ? revenue : economicClass;
+
+
   // compute year & quarter from date (fallback to today)
   const { year, quarter } = useMemo(() => getYearAndQuarter(date), [date]);
+
+  
 
   // fetch from backend when page loads or filters change
   useEffect(() => {
@@ -41,21 +56,29 @@ export default function ReportPreview() {
         );
         break;
 
-      //  case "IRP":
-      //    dispatch(fetchRevenuePerformance({ year, quarter }));
-      //    break;
+      case "IRP":
+        dispatch(fetchQuarterlyRevenueReport({ year, quarter }));
+        break;
 
       // Add other report fetchers as needed
       default:
-        console.warn("Unknown report type selected:", reportType);
+       
     }
   }, [dispatch, reportType, year, quarter, fundingSource]);
 
+
+
   // transform backend payload into your table format
-  const tableData = useMemo(
-    () => formatReportData(reportData, fundingSource),
-    [reportData, fundingSource]
-  );
+ const tableData = useMemo(() => {
+   if (reportType === "IRP") {
+      return reportData;
+   }
+    
+
+   return formatReportData(reportData, fundingSource);
+ }, [reportType, reportData, fundingSource]);
+
+
 
   // Choose which table to render
   const renderTable = () => {
@@ -63,7 +86,7 @@ export default function ReportPreview() {
       case "EC":
         return <EconomicClassificationTable data={tableData} />;
       case "IRP":
-        return <RevenuePerformanceTable data={tableData} />;
+        return <RevenuePerformanceTable data={tableData} totals={totals} />;
       // Extend for R, NA, CP etc.
       default:
         return <p>No table available for this report type.</p>;
@@ -71,11 +94,12 @@ export default function ReportPreview() {
   };
 
   // export handlers use tableData (not local dummy)
-  const handleExport = (type) => {
-    console.log("Export tableData", tableData);
-
-    // PDF & Excel export code — adapt to use tableData and totals
-    if (type === "pdf") {
+ const handleExport = (type) => {
+   // ===============================
+   // ECONOMIC CLASSIFICATION (EC)
+   // ===============================
+   if (reportType === "EC") {
+     if (type === "pdf") {
        dispatch(
          downloadQuarterlyPDF({
            year,
@@ -83,18 +107,43 @@ export default function ReportPreview() {
            sourceOfFunding: fundingSource,
          })
        );
-    }
+     }
 
-    if (type === "excel") {
-      dispatch(
-        downloadQuarterlyExcel({
-          year,
-          quarter,
-          sourceOfFunding: fundingSource,
-        })
-      );
-    }
-  };
+     if (type === "excel") {
+       dispatch(
+         downloadQuarterlyExcel({
+           year,
+           quarter,
+           sourceOfFunding: fundingSource,
+         })
+       );
+     }
+   }
+
+   // ===============================
+   // REVENUE PERFORMANCE (IRP)
+   // ===============================
+   if (reportType === "IRP") {
+     if (type === "pdf") {
+       dispatch(
+         downloadQuarterlyRevenuePDF({
+           year,
+           quarter,
+         })
+       );
+     }
+
+     if (type === "excel") {
+       dispatch(
+         downloadQuarterlyRevenueExcel({
+           year,
+           quarter,
+         })
+       );
+     }
+   }
+ };
+
 
   return (
     <div className="min-h-screen bg-green-50 p-6 flex flex-col ">

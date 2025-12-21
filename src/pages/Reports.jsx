@@ -33,7 +33,10 @@ export default function Reports() {
         </button>
 
         {/* Detailed Report */}
-        <button className="w-full h-full bg-green-200 text-green-600 text-xl font-semibold rounded-2xl shadow-lg hover:bg-white transition duration-300 cursor-pointer flex flex-col gap-3 items-center justify-center">
+        <button
+          onClick={() => navigate("detailedReport")}
+          className="w-full h-full bg-green-200 text-green-600 text-xl font-semibold rounded-2xl shadow-lg hover:bg-white transition duration-300 cursor-pointer flex flex-col gap-3 items-center justify-center"
+        >
           <div>
             <img
               src={detailedPic}

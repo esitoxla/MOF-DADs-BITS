@@ -4,7 +4,7 @@ import userReducer from "../store/features/userSlice";
 import authReducer from "../store/features/authSlice";
 import reportReducer from "../store/features/reportSlice";
 import revenueReducer from "../store/features/revenueSlice";
-import revenueReportReducer from "../store/features/revenueSlice";
+import revenueReportReducer from "../store/features/revenueReport";
 import appropriationReducer from "../store/features/appropriationSlice";
 import budgetDynamicReducer from "../store/features/budgetDynamicSlice";
 

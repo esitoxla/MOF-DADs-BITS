@@ -20,6 +20,7 @@ import RevenueCashPage from "./pages/RevenueCashPage";
 import RevenueForm from "./components/RevenueForm";
 import RevenuePage from "./pages/RevenuePage";
 import AdminDashboard from "./pages/AdminDashboard";
+import DetailedReport from "./pages/DetailedReport";
 
 
 
@@ -68,6 +69,10 @@ function App() {
             {
               path: "summaryReport",
               Component: SummaryReport,
+            },
+            {
+              path: "detailedReport",
+              Component: DetailedReport,
             },
             {
               path: "preview",

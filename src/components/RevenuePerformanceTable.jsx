@@ -1,29 +1,37 @@
 import React from 'react'
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 import logo from "../assets/images/logo.jpeg";
-import { fetchRevenues } from '../store/features/revenueSlice';
+import { useMemo } from 'react';
+
+const REVENUE_CATEGORIES = [
+  "Fees/Charges",
+  "Sale Of Goods and Services",
+  "Fines/Forfeitures",
+  "Licenses",
+  "Interests",
+  "Others",
+];
 
 
 
+export default function RevenuePerformanceTable({ data = [], totals }) {
+  const { authUser } = useSelector((store) => store.auth);
 
-export default function RevenuePerformanceTable({ data }) {
+  //This extracts the values passed from the previous page — including the date
+  const location = useLocation();
+  const { date } = location.state || {};
 
-    const { authUser } = useSelector((store) => store.auth);
-    const { revenues, loading } = useSelector((store) => store.revenue);
 
+  const dataMap = useMemo(() => {
+    const map = {};
+    data.forEach((item) => {
+      map[item.category] = item;
+    });
+    return map;
+  }, [data]);
 
-     //This extracts the values passed from the previous page — including the date
-      const location = useLocation();
-      const { date } = location.state || {};
-
-    const dispatch = useDispatch()
-
-     useEffect(() => {
-         dispatch(fetchRevenues());
-       }, [dispatch]);
-
+  
 
   return (
     <>
@@ -129,104 +137,69 @@ export default function RevenuePerformanceTable({ data }) {
             </tr>
           </thead>
 
-          <tbody className='font-bold text-gray-800'>
-            
-            {/* Fees / Charges row */}
-            <tr>
-              <td className="border border-gray-400 px-4 py-2">Fees/Charges</td>
-              <td className="border border-gray-400 px-4 py-2 text-right">
-                173,887.00
-              </td>
-              <td className="border border-gray-400 px-4 py-2 text-right">
-                0.00
-              </td>
-              <td className="border border-gray-400 px-4 py-2 text-right">
-                0.00
-              </td>
-              <td className="border border-gray-400 px-4 py-2 text-right">
-                0.00
-              </td>
-              <td className="border border-gray-400 px-4 py-2 text-right">
-                28,981.19
-              </td>
-              <td className="border border-gray-400 px-4 py-2"></td>
-            </tr>
+          <tbody className="font-bold text-gray-800">
+            {REVENUE_CATEGORIES.map((category) => {
+              const row = dataMap[category] || {};
 
-            {/* Other revenue categories (empty rows ready for data) */}
-            <tr>
-              <td className="border border-gray-400 px-4 py-2">
-                Sale Of Goods and Services
-              </td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2"></td>
-            </tr>
+              return (
+                <tr key={category}>
+                  <td className="border border-gray-400 px-4 py-2 text-left">
+                    {category}
+                  </td>
 
-            <tr>
-              <td className="border border-gray-400 px-4 py-2">
-                Fines/Forfeitures
-              </td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2"></td>
-            </tr>
+                  <td className="border border-gray-400 px-4 py-2 text-right">
+                    {(row.projection ?? 0).toLocaleString()}
+                  </td>
 
-            <tr>
-              <td className="border border-gray-400 px-4 py-2">Licenses</td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2"></td>
-            </tr>
+                  <td className="border border-gray-400 px-4 py-2 text-right">
+                    {(row.actual ?? 0).toLocaleString()}
+                  </td>
 
-            <tr>
-              <td className="border border-gray-400 px-4 py-2">Interests</td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2"></td>
-            </tr>
+                  <td className="border border-gray-400 px-4 py-2 text-right">
+                    {(row.payment ?? 0).toLocaleString()}
+                  </td>
 
-            <tr>
-              <td className="border border-gray-400 px-4 py-2">Others</td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2 text-right"></td>
-              <td className="border border-gray-400 px-4 py-2"></td>
-            </tr>
+                  <td className="border border-gray-400 px-4 py-2 text-right">
+                    {(row.retention ?? 0).toLocaleString()}
+                  </td>
+
+                  <td className="border border-gray-400 px-4 py-2 text-right">
+                    {(row.projectionDec ?? 0).toLocaleString()}
+                  </td>
+
+                  <td className="border border-gray-400 px-4 py-2">
+                    {row.remarks || ""}
+                  </td>
+                </tr>
+              );
+            })}
 
             {/* TOTAL row */}
             <tr className="font-bold bg-green-50 text-green-800">
               <td className="border border-gray-400 px-4 py-2 text-left">
                 TOTAL
               </td>
+
               <td className="border border-gray-400 px-4 py-2 text-right">
-                173,887.00
+                {(totals?.projection ?? 0).toLocaleString()}
               </td>
+
               <td className="border border-gray-400 px-4 py-2 text-right">
-                0.00
+                {(totals?.actual ?? 0).toLocaleString()}
               </td>
+
               <td className="border border-gray-400 px-4 py-2 text-right">
-                0.00
+                {(totals?.payment ?? 0).toLocaleString()}
               </td>
+
               <td className="border border-gray-400 px-4 py-2 text-right">
-                0.00
+                {(totals?.retention ?? 0).toLocaleString()}
               </td>
+
               <td className="border border-gray-400 px-4 py-2 text-right">
-                28,981.19
+                {(totals?.projectionDec ?? 0).toLocaleString()}
               </td>
+
               <td className="border border-gray-400 px-4 py-2"></td>
             </tr>
           </tbody>

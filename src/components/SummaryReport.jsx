@@ -44,7 +44,7 @@ export default function SummaryReport() {
 
         {/* Header */}
         <h2 className="text-2xl font-semibold text-green-700 text-center mb-4">
-          Generate Report
+          Generate Summary Report
         </h2>
 
         {/* Modal Content */}
