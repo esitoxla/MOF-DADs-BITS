@@ -20,11 +20,11 @@ export default function DetailedReport() {
     const state = { reportType, date };
 
     if (reportType === "EC") {
-      navigate("/dashboard/reports/preview", { state });
+      navigate("/dashboard/reports/detailedEC", { state });
     }
 
     if (reportType === "IRP") {
-        navigate("/dashboard/reports/preview", { state });
+        navigate("/dashboard/reports/detailedRevenue", { state });
     }
 
     

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createLoadedData } from "../store/features/appropriationSlice";
+import toast from "react-hot-toast";
 
 export default function AppropriationSingleForm() {
   const dispatch = useDispatch();
@@ -8,7 +9,7 @@ export default function AppropriationSingleForm() {
     (state) => state.appropriation
   );
 
-  const [form, setForm] = useState({
+  const intialFormState = useState({
     organization: "",
     economicClassification: "",
     sourceOfFunding: "",
@@ -17,6 +18,10 @@ export default function AppropriationSingleForm() {
     allotment: "",
   });
 
+  const [form, setForm] = useState(intialFormState)
+
+ 
+
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -24,9 +29,31 @@ export default function AppropriationSingleForm() {
     });
   };
 
+   const clearForm = () => {
+     setForm(intialFormState);
+   };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // const appropriation = Number(form.appropriation);
+    // const allotment = Number(form.allotment);
+
+    // if (Number.isNaN(appropriation) || Number.isNaN(allotment)) {
+    //   toast.error("Appropriation and Allotment must be valid numbers");
+    //   return;
+    // }
+
+    // if (allotment >= appropriation) {
+    //   toast.error("Allotment must be less than Appropriation");
+    //   return;
+    // }
+
     dispatch(createLoadedData(form));
+    toast.success("Data saved successfully!");
+    clearForm()
+
+
   };
 
   return (
@@ -146,11 +173,7 @@ export default function AppropriationSingleForm() {
           <p className="text-red-500 text-sm mt-2">{error.message || error}</p>
         )}
 
-        {uploadResponse && (
-          <p className="text-green-600 text-sm mt-2">
-            {uploadResponse.message}
-          </p>
-        )}
+  
       </form>
     </div>
   );

@@ -21,6 +21,8 @@ import RevenueForm from "./components/RevenueForm";
 import RevenuePage from "./pages/RevenuePage";
 import AdminDashboard from "./pages/AdminDashboard";
 import DetailedReport from "./pages/DetailedReport";
+import DetailedEC from "./pages/DetailedEC";
+import DetailedRevenue from "./pages/DetailedRevenue";
 
 
 
@@ -73,6 +75,14 @@ function App() {
             {
               path: "detailedReport",
               Component: DetailedReport,
+            },
+            {
+              path: "detailedEC",
+              Component: DetailedEC,
+            },
+            {
+              path: "detailedRevenue",
+              Component: DetailedRevenue,
             },
             {
               path: "preview",
