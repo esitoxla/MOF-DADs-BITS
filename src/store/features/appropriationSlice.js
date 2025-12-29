@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { api } from "../../config/axios";
 
-
 // DOWNLOAD TEMPLATE
 export const downloadTemplate = createAsyncThunk(
   "appropriation/downloadTemplate",
@@ -20,7 +19,9 @@ export const downloadTemplate = createAsyncThunk(
 
       return true;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.response?.data || "Failed to download template");
+      return thunkAPI.rejectWithValue(
+        error.response?.data || "Failed to download template"
+      );
     }
   }
 );
@@ -31,9 +32,25 @@ export const createLoadedData = createAsyncThunk(
   async (payload, thunkAPI) => {
     try {
       const res = await api.post("/loadedData", payload);
-      return res.data; 
+      return res.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.response?.data || "Failed to save record");
+      return thunkAPI.rejectWithValue(
+        error.response?.data || "Failed to save record"
+      );
+    }
+  }
+);
+
+export const fetchAllLoadedData = createAsyncThunk(
+  "appropriation/getLoadedData",
+  async (__, { rejectWithValue }) => {
+    try {
+      const { data } = await api.get("/loadedData");
+      return data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch Loaded Data"
+      );
     }
   }
 );
@@ -46,27 +63,25 @@ export const uploadAppropriationExcel = createAsyncThunk(
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await api.post(
-        "/loadedData/upload-excel",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+      const res = await api.post("/loadedData/upload-excel", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       return res.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.response?.data || "Excel upload failed");
+      return thunkAPI.rejectWithValue(
+        error.response?.data || "Excel upload failed"
+      );
     }
   }
 );
-
 
 const appropriationSlice = createSlice({
   name: "appropriation",
   initialState: {
     loading: false,
     error: null,
+    records: [],
     uploadResponse: null, // used for both single + bulk results
     downloadStatus: null,
   },
@@ -106,6 +121,20 @@ const appropriationSlice = createSlice({
         state.uploadResponse = action.payload;
       })
       .addCase(createLoadedData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // ----------------------
+      // GET ALL LOADED DATA
+      // ----------------------
+      .addCase(fetchAllLoadedData.pending, (state) => {
+        (state.loading = true), (state.error = null);
+      })
+      .addCase(fetchAllLoadedData.fulfilled, (state, action) => {
+        (state.loading = false), (state.records = action.payload);
+      })
+      .addCase(fetchAllLoadedData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

@@ -80,6 +80,21 @@ export const logoutUser = createAsyncThunk("logout", async (_, thunkAPI) => {
   }
 });
 
+export const refreshSession = createAsyncThunk(
+  "auth/refresh",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await axios.get("/auth/refresh", {
+        withCredentials: true,
+      });
+      return res.data.user;
+    } catch (err) {
+      return rejectWithValue(err.response.data);
+    }
+  }
+);
+
+
 export const authSlice = createSlice({
   name: "auth",
   initialState: {
@@ -161,6 +176,16 @@ export const authSlice = createSlice({
         state.loading = false;
         state.authUser = null;
         state.error = action.payload;
+      })
+
+      //for refresh token
+      .addCase(refreshSession.fulfilled, (state, action) => {
+        state.authUser = action.payload;
+        state.isAuthenticated = true;
+      })
+      .addCase(refreshSession.rejected, (state) => {
+        state.authUser = null;
+        state.isAuthenticated = false;
       });
   },
 });

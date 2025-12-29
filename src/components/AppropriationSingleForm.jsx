@@ -1,11 +1,19 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { createLoadedData } from "../store/features/appropriationSlice";
+import {
+  createLoadedData,
+  fetchAllLoadedData,
+} from "../store/features/appropriationSlice";
 import toast from "react-hot-toast";
+import { Trash } from "../helpers/trash";
+import { PencilSquare } from "../helpers/edit";
+import { Search } from "lucide-react";
+import Pagination from "./Pagination";
+import { useEffect } from "react";
 
 export default function AppropriationSingleForm() {
   const dispatch = useDispatch();
-  const { loading, error, uploadResponse } = useSelector(
+  const { loading, error, uploadResponse, records } = useSelector(
     (state) => state.appropriation
   );
 
@@ -18,9 +26,8 @@ export default function AppropriationSingleForm() {
     allotment: "",
   });
 
-  const [form, setForm] = useState(intialFormState)
-
- 
+  const [form, setForm] = useState(intialFormState);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleChange = (e) => {
     setForm({
@@ -29,9 +36,9 @@ export default function AppropriationSingleForm() {
     });
   };
 
-   const clearForm = () => {
-     setForm(intialFormState);
-   };
+  const clearForm = () => {
+    setForm(intialFormState);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -51,10 +58,40 @@ export default function AppropriationSingleForm() {
 
     dispatch(createLoadedData(form));
     toast.success("Data saved successfully!");
-    clearForm()
-
-
+    clearForm();
   };
+
+  /* =========================
+     FETCH DATA
+  ========================== */
+  useEffect(() => {
+    dispatch(fetchAllLoadedData());
+  }, [dispatch]);
+
+  /* =========================
+     PAGINATION
+  ========================== */
+  const PAGE_SIZE = 10;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+  const paginatedRecords = records.slice(startIndex, startIndex + PAGE_SIZE);
+
+  // Reset page when data changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [records]);
+
+  /* =========================
+     STATES
+  ========================== */
+  if (loading) {
+    return <p className="text-center py-4">Loading data...</p>;
+  }
+
+  if (error) {
+    return <p className="text-center text-red-500">{error}</p>;
+  }
 
   return (
     <div className="w-full">
@@ -172,9 +209,91 @@ export default function AppropriationSingleForm() {
         {error && (
           <p className="text-red-500 text-sm mt-2">{error.message || error}</p>
         )}
-
-  
       </form>
+
+      <div className="flex flex-col">
+        {/* --- SEARCH BAR --- */}
+        <div className="flex items-center justify-between mb-6 w-full ">
+          <input
+            type="text"
+            placeholder="Search any field..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="border px-3 py-2 rounded-md w-full lg:w-1/3 md:w-1/2"
+          />
+        </div>
+
+        <table className="min-w-full text-sm text-left">
+          <thead className="bg-green-100 text-gray-700">
+            <tr>
+              <th className="border px-3 py-2">S.N</th>
+              <th className="border px-3 py-2">Organization</th>
+              <th className="border px-3 py-2">Economic Classification</th>
+              <th className="border px-3 py-2">Source of Funding</th>
+              <th className="border px-3 py-2">Natural Account</th>
+              <th className="border px-3 py-2">Appropriation (GHS)</th>
+              <th className="border px-3 py-2">Allotment (GHS)</th>
+              <th className="border px-3 py-2">Date Created</th>
+              <th className="border px-3 py-3 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {records.length === 0 ? (
+              <tr>
+                <td
+                  colSpan="8"
+                  className="text-center text-gray-500 py-4 italic"
+                >
+                  No data available
+                </td>
+              </tr>
+            ) : (
+              paginatedRecords.map((row, index) => (
+                <tr key={row.id} className="text-center">
+                  <td className="border px-2 py-1 bg-gray-50 font-semibold">
+                    {startIndex + index + 1}
+                  </td>
+                  <td className="border px-2 py-1">{row.organization}</td>
+                  <td className="border px-2 py-1">
+                    {row.economicClassification}
+                  </td>
+                  <td className="border px-2 py-1">{row.sourceOfFunding}</td>
+                  <td className="border px-2 py-1">{row.naturalAccount}</td>
+                  <td className="border px-2 py-1 text-right">
+                    {Number(row.appropriation).toLocaleString()}
+                  </td>
+                  <td className="border px-2 py-1 text-right">
+                    {Number(row.allotment).toLocaleString()}
+                  </td>
+                  <td className="border px-2 py-1">
+                    {new Date(row.createdAt).toLocaleDateString("en-GB")}
+                  </td>
+                  <td className="border px-2 py-1 flex items-center justify-center gap-3">
+                    <button
+                      onClick={() => setShowModal(true)}
+                      className="text-blue-600 hover:text-blue-800 cursor-pointer"
+                    >
+                      <PencilSquare className="w-5 h-5" />
+                    </button>
+
+                    <button className="text-red-600 hover:text-red-800 cursor-pointer">
+                      <Trash className="w-5 h-5" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+
+        {/* Pagination (EXTERNAL COMPONENT) */}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={records.length}
+          pageSize={PAGE_SIZE}
+          onPageChange={setCurrentPage}
+        />
+      </div>
     </div>
   );
 }

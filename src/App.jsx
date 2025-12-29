@@ -1,4 +1,4 @@
-import { Component, useState } from "react";
+import { Component, useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import Login from "./pages/Login";
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -23,12 +23,21 @@ import AdminDashboard from "./pages/AdminDashboard";
 import DetailedReport from "./pages/DetailedReport";
 import DetailedEC from "./pages/DetailedEC";
 import DetailedRevenue from "./pages/DetailedRevenue";
-
+import { useDispatch } from "react-redux";
+import { refreshSession } from "./store/features/authSlice";
 
 
 
 
 function App() {
+
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    dispatch(refreshSession());
+  }, [dispatch]);
+
+
   const router = createBrowserRouter([
     {
       path: "/",

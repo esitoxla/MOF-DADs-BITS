@@ -9,7 +9,7 @@ export const fetchAllUsers = createAsyncThunk(
       return data.users;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch QR codes"
+        error.response?.data?.message || "Failed to fetch Users"
       );
     }
   }
