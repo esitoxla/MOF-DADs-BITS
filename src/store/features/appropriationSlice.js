@@ -76,6 +76,22 @@ export const uploadAppropriationExcel = createAsyncThunk(
   }
 );
 
+
+//to update loadedData record
+export const updateLoadedData = createAsyncThunk(
+  "loadedData/updateLoadedData",
+  async ({ id, formData }, { rejectWithValue }) => {
+    try {
+      const response = await api.put(`/loadedData/${id}`, formData);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update loadedData"
+      );
+    }
+  }
+);
+
 const appropriationSlice = createSlice({
   name: "appropriation",
   initialState: {

@@ -109,83 +109,91 @@ export default function RevenueTableDetails({ searchQuery }) {
         </thead>
 
         <tbody>
-          {filteredRecords.map((record, index) => (
-            <tr key={record.id || index} className="text-center">
-              <td className="border px-2 py-1">{index + 1}</td>
-              <td className="border px-2 py-1">{record?.date}</td>
-              <td className="border px-2 py-1">{record.revenue_category}</td>
-              <td className="border px-2 py-1">{record.budgetProjections}</td>
-              <td className="border px-2 py-1">{record.actual_collection}</td>
-              <td className="border px-2 py-1">{record.payment_amount}</td>
-              <td className="border px-2 py-1">{record.retention_rate}</td>
-              <td className="border px-2 py-1">{record.retention_amount}</td>
-              <td className="border px-2 py-1">{record.remarks}</td>
-
-              <td className="border px-2 py-1 font-semibold text-blue-900 border-black">
-                {record.status}
+          {records.length === 0 ? (
+            <tr>
+              <td colSpan="8" className="text-center text-gray-500 py-4 italic">
+                No data available
               </td>
+            </tr>
+          ) : (
+            filteredRecords.map((record, index) => (
+              <tr key={record.id || index} className="text-center">
+                <td className="border px-2 py-1">{index + 1}</td>
+                <td className="border px-2 py-1">{record?.date}</td>
+                <td className="border px-2 py-1">{record.revenue_category}</td>
+                <td className="border px-2 py-1">{record.budgetProjections}</td>
+                <td className="border px-2 py-1">{record.actual_collection}</td>
+                <td className="border px-2 py-1">{record.payment_amount}</td>
+                <td className="border px-2 py-1">{record.retention_rate}</td>
+                <td className="border px-2 py-1">{record.retention_amount}</td>
+                <td className="border px-2 py-1">{record.remarks}</td>
 
-              <td className="px-2 py-1 border text-center">
-                <ul className="menu bg-base-100 w-32 z-10">
-                  {/* === DATA ENTRY USER === */}
-                  {(userRole === "data_entry" || userRole === "admin") &&
-                    record.status === "Pending" && (
-                      <>
-                        <li>
-                          <a
-                            onClick={() => handleEditClick(index, record)}
-                            className="text-yellow-600 font-semibold cursor-pointer"
-                          >
-                            <PencilSquare /> Edit
-                          </a>
-                        </li>
+                <td className="border px-2 py-1 font-semibold text-blue-900 border-black">
+                  {record.status}
+                </td>
 
+                <td className="px-2 py-1 border text-center">
+                  <ul className="menu bg-base-100 w-32 z-10">
+                    {/* === DATA ENTRY USER === */}
+                    {(userRole === "data_entry" || userRole === "admin") &&
+                      record.status === "Pending" && (
+                        <>
+                          <li>
+                            <a
+                              onClick={() => handleEditClick(index, record)}
+                              className="text-yellow-600 font-semibold cursor-pointer"
+                            >
+                              <PencilSquare /> Edit
+                            </a>
+                          </li>
+
+                          <li>
+                            <span
+                              onClick={() => openDeleteModal(record)}
+                              className="text-red-600 font-semibold cursor-pointer"
+                            >
+                              <Trash /> Delete
+                            </span>
+                          </li>
+                        </>
+                      )}
+
+                    {(userRole === "reviewer" || userRole === "admin") &&
+                      record.status === "Pending" && (
                         <li>
                           <span
-                            onClick={() => openDeleteModal(record)}
-                            className="text-red-600 font-semibold cursor-pointer"
+                            onClick={() => handleReviewClick(index, record)}
+                            className="text-blue-700 font-semibold cursor-pointer"
                           >
-                            <Trash /> Delete
+                            <Clipboard /> Review
                           </span>
                         </li>
-                      </>
-                    )}
+                      )}
 
-                  {(userRole === "reviewer" || userRole === "admin") &&
-                    record.status === "Pending" && (
-                      <li>
-                        <span
-                          onClick={() => handleReviewClick(index, record)}
-                          className="text-blue-700 font-semibold cursor-pointer"
-                        >
-                          <Clipboard /> Review
-                        </span>
-                      </li>
-                    )}
+                    {(userRole === "approver" || userRole === "admin") &&
+                      record.status === "Reviewed" && (
+                        <li>
+                          <a
+                            onClick={() => handleApprove(record)}
+                            className="text-green-800 font-semibold cursor-pointer"
+                          >
+                            <Check /> Approve
+                          </a>
+                        </li>
+                      )}
 
-                  {(userRole === "approver" || userRole === "admin") &&
-                    record.status === "Reviewed" && (
+                    {record.status === "Approved" && (
                       <li>
-                        <a
-                          onClick={() => handleApprove(record)}
-                          className="text-green-800 font-semibold cursor-pointer"
-                        >
-                          <Check /> Approve
+                        <a className="text-green-800 font-semibold cursor-pointer">
+                          <CheckFill /> Approved
                         </a>
                       </li>
                     )}
-
-                  {record.status === "Approved" && (
-                    <li>
-                      <a className="text-green-800 font-semibold cursor-pointer">
-                        <CheckFill /> Approved
-                      </a>
-                    </li>
-                  )}
-                </ul>
-              </td>
-            </tr>
-          ))}
+                  </ul>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
 

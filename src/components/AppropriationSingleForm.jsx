@@ -17,17 +17,19 @@ export default function AppropriationSingleForm() {
     (state) => state.appropriation
   );
 
-  const intialFormState = useState({
+  const initialFormState = {
     organization: "",
     economicClassification: "",
     sourceOfFunding: "",
     naturalAccount: "",
     appropriation: "",
     allotment: "",
-  });
+  };
 
-  const [form, setForm] = useState(intialFormState);
+  const [form, setForm] = useState(initialFormState);
   const [searchQuery, setSearchQuery] = useState("");
+  const [editingId, setEditingId] = useState(null);
+
 
   const handleChange = (e) => {
     setForm({
@@ -37,7 +39,8 @@ export default function AppropriationSingleForm() {
   };
 
   const clearForm = () => {
-    setForm(intialFormState);
+    setForm(initialFormState);
+    setEditingId(null);
   };
 
   const handleSubmit = (e) => {
@@ -237,7 +240,7 @@ export default function AppropriationSingleForm() {
               <th className="border px-3 py-3 text-center">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-white">
             {records.length === 0 ? (
               <tr>
                 <td
@@ -250,7 +253,7 @@ export default function AppropriationSingleForm() {
             ) : (
               paginatedRecords.map((row, index) => (
                 <tr key={row.id} className="text-center">
-                  <td className="border px-2 py-1 bg-gray-50 font-semibold">
+                  <td className="border px-2 py-1 font-semibold">
                     {startIndex + index + 1}
                   </td>
                   <td className="border px-2 py-1">{row.organization}</td>
@@ -268,17 +271,19 @@ export default function AppropriationSingleForm() {
                   <td className="border px-2 py-1">
                     {new Date(row.createdAt).toLocaleDateString("en-GB")}
                   </td>
-                  <td className="border px-2 py-1 flex items-center justify-center gap-3">
-                    <button
-                      onClick={() => setShowModal(true)}
-                      className="text-blue-600 hover:text-blue-800 cursor-pointer"
-                    >
-                      <PencilSquare className="w-5 h-5" />
-                    </button>
+                  <td className="border px-2 py-1">
+                    <div className="flex items-center justify-center gap-3">
+                      <button
+                        onClick={() => setShowModal(true)}
+                        className="text-blue-600 hover:text-blue-800 cursor-pointer"
+                      >
+                        <PencilSquare className="w-5 h-5" />
+                      </button>
 
-                    <button className="text-red-600 hover:text-red-800 cursor-pointer">
-                      <Trash className="w-5 h-5" />
-                    </button>
+                      <button className="text-red-600 hover:text-red-800 cursor-pointer">
+                        <Trash className="w-5 h-5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

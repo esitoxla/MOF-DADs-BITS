@@ -84,22 +84,23 @@ export const refreshSession = createAsyncThunk(
   "auth/refresh",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axios.get("/auth/refresh", {
-        withCredentials: true,
-      });
+      const res = await api.get("/auth/refresh");
       return res.data.user;
     } catch (err) {
-      return rejectWithValue(err.response.data);
+      return rejectWithValue(
+        err?.response?.data?.message || "Session refresh failed"
+      );
     }
   }
 );
+
 
 
 export const authSlice = createSlice({
   name: "auth",
   initialState: {
     authUser: null,
-    loading: false,
+    loading: true,
     error: null,
   },
   reducers: {
