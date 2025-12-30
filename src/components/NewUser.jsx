@@ -25,8 +25,8 @@ export default function NewUser({ isOpen, onClose }) {
     designation: "",
   });
 
-  const roles = ["admin", "data_entry", "reviewer", "approver"];
-  const statuses = ["active", "inactive", "suspended"];
+  const roles = ["Select role", "admin", "data_entry", "reviewer", "approver"];
+  const statuses = ["Select status", "active", "inactive", "suspended"];
 
   async function handleAddUser(e) {
     e.preventDefault();
