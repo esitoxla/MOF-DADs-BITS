@@ -104,7 +104,9 @@ export default function AppropriationUpload() {
       {/* Error */}
       {error && (
         <div className="mt-3 text-red-500 text-sm">
-          {error.message || "Error uploading file"}
+          {typeof error.message === "string"
+            ? error.message
+            : error?.message?.message || "Error uploading file"}
         </div>
       )}
 

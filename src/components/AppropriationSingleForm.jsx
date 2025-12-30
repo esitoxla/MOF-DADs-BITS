@@ -209,9 +209,9 @@ export default function AppropriationSingleForm() {
         </div>
 
         {/* Messages */}
-        {error && (
+        {/* {error && (
           <p className="text-red-500 text-sm mt-2">{error.message || error}</p>
-        )}
+        )} */}
       </form>
 
       <div className="flex flex-col">
