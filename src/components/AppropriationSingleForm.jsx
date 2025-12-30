@@ -93,8 +93,13 @@ export default function AppropriationSingleForm() {
   }
 
   if (error) {
-    return <p className="text-center text-red-500">{error}</p>;
+    return (
+      <p className="text-center text-red-500">
+        {typeof error === "string" ? error : error.message}
+      </p>
+    );
   }
+
 
   return (
     <div className="w-full">
