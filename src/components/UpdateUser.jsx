@@ -113,13 +113,19 @@ export default function UpdateUser({ isOpen, onClose, user }) {
                 <label className="block mb-2 text-sm font-medium text-gray-700">
                   Role
                 </label>
-                <input
+                <select
                   type="text"
                   name="role"
                   value={form.role}
                   onChange={(e) => setForm({ ...form, role: e.target.value })}
                   className="w-full p-3 border rounded-lg"
-                />
+                >
+                  <option value="">Select Role</option>
+                  <option value="admin">Admin</option>
+                  <option value="data_entry">Data Entry</option>
+                  <option value="reviewer">Reviewer</option>
+                  <option value="approver">Aprrover</option>
+                </select>
               </div>
 
               <div>
