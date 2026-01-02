@@ -101,18 +101,21 @@ export default function BudgetExpenditure() {
 
   // Fetch budget values when natural account is selected
   useEffect(() => {
-    if (!economicClass || !fundingSource || !selectedAccount) return;
+    const eco = economicClass?.label;
+    const fund = fundingSource?.label;
+    const account = selectedAccount?.value;
 
-    const payload = {
-      eco: economicClass.label.trim(),
-      fund: fundingSource.label.trim(),
-      account: selectedAccount.value.trim(),
-    };
+    if (!eco || !fund || !account) return;
 
-    console.log("Sending to backend:", payload);
+    dispatch(
+      fetchBudgetValues({
+        eco: eco.trim(),
+        fund: fund.trim(),
+        account: account.trim(),
+      })
+    );
+  }, [economicClass, fundingSource, selectedAccount, dispatch]);
 
-    dispatch(fetchBudgetValues(payload));
-  }, [selectedAccount, economicClass, fundingSource, dispatch]);
 
 
 
