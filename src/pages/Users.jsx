@@ -4,9 +4,10 @@ import { Trash } from "../helpers/trash";
 import { PencilSquare } from "../helpers/edit";
 import { NavLink } from "react-router";
 import NewUser from "../components/NewUser";
+import toast from "react-hot-toast";
 import UpdateUser from "../components/UpdateUser";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllUsers } from "../store/features/userSlice";
+import { fetchAllUsers, deleteUser } from "../store/features/userSlice";
 
 export default function Users() {
   const [showModal, setShowModal] = useState(false);
@@ -14,8 +15,19 @@ export default function Users() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [search, setSearch] = useState("");
 
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState(null);
+  console.log(recordToDelete);
+
+  const [selectedUser, setSelectedUser] = useState(null);
+
   const dispatch = useDispatch();
-  const { users, loading, error } = useSelector((state) => state.user);
+  const { users } = useSelector((state) => state.user);
+
+  //ADMIN CHECKS
+  const { authUser } = useSelector((state) => state.auth);
+  const userRole = authUser?.role;
+  const isAdmin = userRole === "admin";
 
   useEffect(() => {
     dispatch(fetchAllUsers());
@@ -55,10 +67,28 @@ export default function Users() {
   //     },
   //   ];
 
+  //DELETE
+  const openDeleteModal = (user) => {
+    setRecordToDelete({ user });
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await dispatch(deleteUser(recordToDelete.user.id)).unwrap();
+      toast.success("User deleted successfully!");
+      dispatch(fetchAllUsers());
+    } catch (err) {
+      toast.error(err || "Failed to delete user.");
+    } finally {
+      setIsDeleteModalOpen(false);
+      setRecordToDelete(null);
+    }
+  };
+
   return (
     <div className=" px-6 bg-green-50 min-h-screen">
       {/* Header */}
-
 
       <div className="py-6 px-6 bg-green-50 sticky top-0 z-10 flex w-full justify-between">
         <div className="relative mb-6 w-full">
@@ -122,18 +152,28 @@ export default function Users() {
                   <td className="px-3 py-3">{user.designation}</td>
                   <td className="px-3 py-3">{user.lastLogin}</td>
                   <td className="px-3 py-3 flex items-center justify-center gap-3">
-                    <NavLink to="">
+                    {isAdmin && (
                       <button
-                        onClick={() => setShowModal(true)}
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setShowModal(true);
+                        }}
                         className="text-blue-600 hover:text-blue-800 cursor-pointer"
+                        title="Edit"
                       >
                         <PencilSquare className="w-5 h-5" />
                       </button>
-                    </NavLink>
+                    )}
 
-                    <button className="text-red-600 hover:text-red-800 cursor-pointer">
-                      <Trash className="w-5 h-5" />
-                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => openDeleteModal(user)}
+                        className="text-red-600 hover:text-red-800 cursor-pointer"
+                        title="Delete"
+                      >
+                        <Trash className="w-5 h-5" />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -187,8 +227,50 @@ export default function Users() {
         </button>
       </div>
 
-      <UpdateUser isOpen={showModal} onClose={() => setShowModal(false)} />
+      <UpdateUser
+        isOpen={showModal}
+        onClose={() => {
+          setShowModal(false);
+          setSelectedUser(null);
+        }}
+        user={selectedUser}
+      />
+
       <NewUser isOpen={showAddModal} onClose={() => setShowAddModal(false)} />
+
+      {/*      DELETE MODAL    */}
+
+      {isDeleteModalOpen && (
+        <dialog open className="modal">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg text-red-400">Confirm Delete</h3>
+            <p className="py-4">
+              Are you sure you want to delete item{" "}
+              <span className="font-semibold text-green-800">
+                “{recordToDelete?.user?.name}”
+              </span>
+              ?
+            </p>
+            <div className="modal-action">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="btn btn-outline"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="btn btn-error text-white"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+          <form method="dialog" className="modal-backdrop">
+            <button onClick={() => setIsDeleteModalOpen(false)}>close</button>
+          </form>
+        </dialog>
+      )}
     </div>
   );
 }

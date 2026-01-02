@@ -1,10 +1,63 @@
 import React from 'react'
 import { NavLink } from "react-router";
 import { useNavigate } from "react-router";
+import { useDispatch } from 'react-redux';
+import { useState, useEffect } from 'react';
+import { updateUser } from '../store/features/userSlice';
+import toast from 'react-hot-toast';
 
-export default function UpdateUser({ isOpen, onClose }) {
-    if (!isOpen) return null;
-//   const navigate = useNavigate();
+export default function UpdateUser({ isOpen, onClose, user }) {
+
+  const dispatch = useDispatch();
+
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    username: "",
+    role: "",
+    status: "",
+    organization: "",
+    designation: "",
+  });
+
+  useEffect(() => {
+    if (user) {
+      setForm({
+        name: user.name || "",
+        email: user.email || "",
+        password: "",
+        username: user.username || "",
+        role: user.role || "",
+        status: user.status || "",
+        organization: user.organization || "",
+        designation: user.designation || "",
+      });
+    }
+  }, [user]);
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      await dispatch(
+        updateUser({
+          id: user.id,
+          data: form,
+        })
+      ).unwrap();
+
+      toast.success("User updated successfully");
+      onClose();
+    } catch (err) {
+      toast.error(err || "Update failed");
+    }
+  };
+
+
+  if (!isOpen) return null;
+  //   const navigate = useNavigate();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -24,7 +77,7 @@ export default function UpdateUser({ isOpen, onClose }) {
         <div className="flex flex-col justify-center py-4 px-4 md:px-8 w-full">
           <span className="mb-6 text-2xl font-semibold">Update user</span>
 
-          <form className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-8">
             {/* First row: Name & Email */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -34,8 +87,9 @@ export default function UpdateUser({ isOpen, onClose }) {
                 <input
                   type="text"
                   name="name"
-                  placeholder="Enter full name"
-                  className="w-full p-3 border border-gray-300 rounded-lg  outline-none"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="w-full p-3 border rounded-lg"
                 />
               </div>
 
@@ -44,42 +98,16 @@ export default function UpdateUser({ isOpen, onClose }) {
                   Email
                 </label>
                 <input
-                  type="email"
-                  name="email"
-                  placeholder="Enter email address"
-                  className="w-full p-3 border border-gray-300 rounded-lg  outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Second row: Password & Username */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Enter password"
-                  className="w-full p-3 border border-gray-300 rounded-lg  outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
-                  Username
-                </label>
-                <input
                   type="text"
-                  name="username"
-                  placeholder="Enter username"
-                  className="w-full p-3 border border-gray-300 rounded-lg  outline-none"
+                  name="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  className="w-full p-3 border rounded-lg"
                 />
               </div>
             </div>
 
-            {/* Third row: Role & Status */}
+            {/* Second row: Role & Status */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-700">
@@ -88,8 +116,9 @@ export default function UpdateUser({ isOpen, onClose }) {
                 <input
                   type="text"
                   name="role"
-                  placeholder="Enter role"
-                  className="w-full p-3 border border-gray-300 rounded-lg  outline-none"
+                  value={form.role}
+                  onChange={(e) => setForm({ ...form, role: e.target.value })}
+                  className="w-full p-3 border rounded-lg"
                 />
               </div>
 
@@ -99,7 +128,9 @@ export default function UpdateUser({ isOpen, onClose }) {
                 </label>
                 <select
                   name="status"
-                  className="w-full p-3 border border-gray-300 rounded-lg  outline-none"
+                  value={form.status}
+                  onChange={(e) => setForm({ ...form, status: e.target.value })}
+                  className="w-full p-3 border rounded-lg"
                 >
                   <option value="">Select Status</option>
                   <option value="active">Active</option>
@@ -118,8 +149,11 @@ export default function UpdateUser({ isOpen, onClose }) {
                 <input
                   type="text"
                   name="organization"
-                  placeholder="Enter organization"
-                  className="w-full p-3 border border-gray-300 rounded-lg  outline-none"
+                  value={form.organization}
+                  onChange={(e) =>
+                    setForm({ ...form, organization: e.target.value })
+                  }
+                  className="w-full p-3 border rounded-lg"
                 />
               </div>
 
@@ -130,8 +164,11 @@ export default function UpdateUser({ isOpen, onClose }) {
                 <input
                   type="text"
                   name="designation"
-                  placeholder="Enter designation"
-                  className="w-full p-3 border border-gray-300 rounded-lg  outline-none"
+                  value={form.designation}
+                  onChange={(e) =>
+                    setForm({ ...form, designation: e.target.value })
+                  }
+                  className="w-full p-3 border rounded-lg"
                 />
               </div>
             </div>

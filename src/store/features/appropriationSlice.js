@@ -80,13 +80,30 @@ export const uploadAppropriationExcel = createAsyncThunk(
 //to update loadedData record
 export const updateLoadedData = createAsyncThunk(
   "loadedData/updateLoadedData",
-  async ({ id, formData }, { rejectWithValue }) => {
+  async ({ id, data }, { rejectWithValue }) => {
     try {
-      const response = await api.put(`/loadedData/${id}`, formData);
+      const response = await api.put(`/loadedData/${id}`, data);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to update loadedData"
+        error.response?.data?.message || "Failed to update loaded data"
+      );
+    }
+  }
+);
+
+
+
+//to delete expenditure
+export const deleteLoadedData = createAsyncThunk(
+  "loadedData/deleteLoadedData",
+  async (id, { rejectWithValue }) => {
+    try {
+      await api.delete(`/loadedData/${id}`);
+      return id; // just return the deleted record ID
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to delete loaded data"
       );
     }
   }
@@ -169,7 +186,54 @@ const appropriationSlice = createSlice({
       .addCase(uploadAppropriationExcel.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // ----------------------
+      // UPDATE LOADED DATA
+      // ----------------------
+      .addCase(updateLoadedData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateLoadedData.fulfilled, (state, action) => {
+        state.loading = false;
+
+        const updatedRecord = action.payload;
+
+        const index = state.records.findIndex(
+          (record) => record.id === updatedRecord.id
+        );
+
+        if (index !== -1) {
+          state.records[index] = updatedRecord;
+        }
+      })
+      .addCase(updateLoadedData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // ----------------------
+      // DELETE LOADED DATA
+      // ----------------------
+      .addCase(deleteLoadedData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteLoadedData.fulfilled, (state, action) => {
+        state.loading = false;
+
+        const deletedId = action.payload;
+
+        state.records = state.records.filter(
+          (record) => record.id !== deletedId
+        );
+      })
+      .addCase(deleteLoadedData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
+
   },
 });
 

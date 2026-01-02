@@ -37,7 +37,6 @@ export default function NewUser({ isOpen, onClose }) {
       password,
       username,
       role,
-      status,
       organization,
       designation,
     } = userDetails;
@@ -60,10 +59,6 @@ export default function NewUser({ isOpen, onClose }) {
     }
     if (!role) {
       toast.error("Role is required");
-      return;
-    }
-    if (!status) {
-      toast.error("Status is required");
       return;
     }
     if (!organization) {

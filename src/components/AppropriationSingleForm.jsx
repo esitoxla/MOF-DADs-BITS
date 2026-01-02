@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   createLoadedData,
-  fetchAllLoadedData,
+  deleteLoadedData,
+  fetchAllLoadedData, updateLoadedData
 } from "../store/features/appropriationSlice";
 import toast from "react-hot-toast";
 import { Trash } from "../helpers/trash";
@@ -17,6 +18,12 @@ export default function AppropriationSingleForm() {
     (state) => state.appropriation
   );
 
+  //ADMIN CHECKS
+  const { authUser } = useSelector((state) => state.auth);
+    const userRole = authUser?.role;
+    const isAdmin = userRole === "admin";
+
+
   const initialFormState = {
     organization: "",
     economicClassification: "",
@@ -29,6 +36,11 @@ export default function AppropriationSingleForm() {
   const [form, setForm] = useState(initialFormState);
   const [searchQuery, setSearchQuery] = useState("");
   const [editingId, setEditingId] = useState(null);
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [recordToDelete, setRecordToDelete] = useState(null);
+
+   
 
 
   const handleChange = (e) => {
@@ -43,26 +55,35 @@ export default function AppropriationSingleForm() {
     setEditingId(null);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+ const handleSubmit = (e) => {
+   e.preventDefault();
 
-    // const appropriation = Number(form.appropriation);
-    // const allotment = Number(form.allotment);
+   if (editingId) {
+     // UPDATE
+     dispatch(updateLoadedData({ id: editingId, data: form }))
+       .unwrap()
+       .then(() => {
+         toast.success("Data updated successfully!");
+         clearForm();
+       })
+       .catch((err) => {
+         toast.error(err || "Update failed");
+       });
+   } else {
+     // CREATE
+     dispatch(createLoadedData(form))
+       .unwrap()
+       .then(() => {
+         toast.success("Data saved successfully!");
+         clearForm();
+       })
+       .catch((err) => {
+         toast.error(err || "Create failed");
+       });
+   }
+ };
 
-    // if (Number.isNaN(appropriation) || Number.isNaN(allotment)) {
-    //   toast.error("Appropriation and Allotment must be valid numbers");
-    //   return;
-    // }
 
-    // if (allotment >= appropriation) {
-    //   toast.error("Allotment must be less than Appropriation");
-    //   return;
-    // }
-
-    dispatch(createLoadedData(form));
-    toast.success("Data saved successfully!");
-    clearForm();
-  };
 
   /* =========================
      FETCH DATA
@@ -84,6 +105,41 @@ export default function AppropriationSingleForm() {
   useEffect(() => {
     setCurrentPage(1);
   }, [records]);
+
+  const handleEdit = (row) => {
+    setEditingId(row.id);
+    setForm({
+      organization: row.organization,
+      economicClassification: row.economicClassification,
+      sourceOfFunding: row.sourceOfFunding,
+      naturalAccount: row.naturalAccount,
+      appropriation: row.appropriation,
+      allotment: row.allotment,
+    });
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+
+  //DELETE
+    const openDeleteModal = (record, serialNumber) => {
+      setRecordToDelete({ record, serialNumber });
+      setIsDeleteModalOpen(true);
+    };
+  
+    const confirmDelete = async () => {
+      try {
+        await dispatch(deleteLoadedData(recordToDelete.record.id)).unwrap();
+        toast.success("Record deleted successfully!");
+        dispatch(fetchAllLoadedData());
+      } catch (err) {
+        toast.error(err || "Failed to delete record.");
+      } finally {
+        setIsDeleteModalOpen(false);
+        setRecordToDelete(null);
+      }
+    };
+
 
   /* =========================
      STATES
@@ -209,7 +265,7 @@ export default function AppropriationSingleForm() {
             disabled={loading}
             className="mt-6 w-full bg-green-500 hover:bg-green-700 text-white px-4 py-2 font-semibold transition duration-300 shadow-md cursor-pointer lg:w-[10%]"
           >
-            {loading ? "Saving..." : "Submit"}
+            {loading ? "Saving..." : editingId ? "Update" : "Submit"}
           </button>
         </div>
 
@@ -278,16 +334,27 @@ export default function AppropriationSingleForm() {
                   </td>
                   <td className="border px-2 py-1">
                     <div className="flex items-center justify-center gap-3">
-                      <button
-                        onClick={() => setShowModal(true)}
-                        className="text-blue-600 hover:text-blue-800 cursor-pointer"
-                      >
-                        <PencilSquare className="w-5 h-5" />
-                      </button>
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleEdit(row)}
+                          className="text-blue-600 hover:text-blue-800 cursor-pointer"
+                          title="Edit"
+                        >
+                          <PencilSquare className="w-5 h-5" />
+                        </button>
+                      )}
 
-                      <button className="text-red-600 hover:text-red-800 cursor-pointer">
-                        <Trash className="w-5 h-5" />
-                      </button>
+                      {isAdmin && (
+                        <button
+                          onClick={() =>
+                            openDeleteModal(row, startIndex + index + 1)
+                          }
+                          className="text-red-600 hover:text-red-800 cursor-pointer"
+                          title="Delete"
+                        >
+                          <Trash className="w-5 h-5" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -304,6 +371,40 @@ export default function AppropriationSingleForm() {
           onPageChange={setCurrentPage}
         />
       </div>
+
+      {/*      DELETE MODAL    */}
+
+      {isDeleteModalOpen && (
+        <dialog open className="modal">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg text-red-400">Confirm Delete</h3>
+            <p className="py-4">
+              Are you sure you want to delete item{" "}
+              <span className="font-semibold text-green-800">
+                “{recordToDelete?.serialNumber}”
+              </span>
+              ?
+            </p>
+            <div className="modal-action">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="btn btn-outline"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="btn btn-error text-white"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+          <form method="dialog" className="modal-backdrop">
+            <button onClick={() => setIsDeleteModalOpen(false)}>close</button>
+          </form>
+        </dialog>
+      )}
     </div>
   );
 }

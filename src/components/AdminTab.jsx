@@ -3,7 +3,7 @@ import React from "react";
 const tabItems = [
   { key: "users", label: "Users" },
   { key: "loading", label: "Appropriation & Allotment Loading" },
-  { key: "virement", label: "Viremnent" },
+  { key: "virement", label: "Virement" },
 ];
 
 export default function AdminTab({  activeTab, changeTab }) {
