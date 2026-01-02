@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import UpdateUser from "../components/UpdateUser";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllUsers, deleteUser } from "../store/features/userSlice";
+import Pagination from "../components/Pagination";
 
 export default function Users() {
   const [showModal, setShowModal] = useState(false);
@@ -33,39 +34,25 @@ export default function Users() {
     dispatch(fetchAllUsers());
   }, [dispatch]);
 
-  useEffect(() => {
-    // Fetch users when page loads or when search changes
-    const delayDebounce = setTimeout(() => {
-      dispatch(fetchAllUsers({ search })); // pass search term to your thunk
-    }, 500); // debounce 500ms to avoid too many requests
+ 
+  //SEARCH LOGIC
+  const filteredUsers = users.filter((user) => {
+    if (!search.trim()) return true;
 
-    return () => clearTimeout(delayDebounce);
-  }, [search, dispatch]);
+    const query = search.toLowerCase();
 
-  //   const users = [
-  //     {
-  //       id: 1,
-  //       name: "Nana Ama",
-  //       email: "nanaama@example.com",
-  //       username: "nana_ama",
-  //       role: "admin",
-  //       status: "active",
-  //       organization: "Ministry of Finance",
-  //       designation: "Budget Analyst",
-  //       lastLogin: "2025-10-21",
-  //     },
-  //     {
-  //       id: 2,
-  //       name: "Kofi Mensah",
-  //       email: "kofi.mensah@example.com",
-  //       username: "kofi_m",
-  //       role: "employee",
-  //       status: "inactive",
-  //       organization: "Ghana Highway Authority",
-  //       designation: "Engineer",
-  //       lastLogin: "2025-09-12",
-  //     },
-  //   ];
+    return (
+      user.name?.toLowerCase().includes(query) ||
+      user.email?.toLowerCase().includes(query) ||
+      user.username?.toLowerCase().includes(query) ||
+      user.role?.toLowerCase().includes(query) ||
+      user.status?.toLowerCase().includes(query) ||
+      user.organization?.toLowerCase().includes(query) ||
+      user.designation?.toLowerCase().includes(query)
+    );
+  });
+
+ 
 
   //DELETE
   const openDeleteModal = (user) => {
@@ -85,6 +72,15 @@ export default function Users() {
       setRecordToDelete(null);
     }
   };
+
+  /* =========================
+       PAGINATION
+    ========================== */
+  const PAGE_SIZE = 10;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+  const paginatedRecords = filteredUsers.slice(startIndex, startIndex + PAGE_SIZE);
 
   return (
     <div className=" px-6 bg-green-50 min-h-screen">
@@ -131,7 +127,7 @@ export default function Users() {
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
+              {paginatedRecords.map((user, index) => (
                 <tr key={user.id} className="border-b hover:bg-green-50">
                   <td className="px-3 py-3">{user.name}</td>
                   <td className="px-3 py-3">{user.email}</td>
@@ -182,50 +178,13 @@ export default function Users() {
         </div>
       </div>
 
-      {/* Pagination */}
-      <div className="flex justify-between items-center mt-6">
-        <button
-          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 cursor-pointer"
-          disabled={true} // change to false when previous page exists
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-5 h-5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          Previous
-        </button>
-
-        <button
-          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 cursor-pointer"
-          disabled={false} // change to true when on the last page
-        >
-          Next
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-5 h-5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
-        </button>
-      </div>
+      {/* Pagination (EXTERNAL COMPONENT) */}
+      <Pagination
+        currentPage={currentPage}
+        totalItems={filteredUsers.length}
+        pageSize={PAGE_SIZE}
+        onPageChange={setCurrentPage}
+      />
 
       <UpdateUser
         isOpen={showModal}

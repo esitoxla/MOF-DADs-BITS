@@ -3,7 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   createLoadedData,
   deleteLoadedData,
-  fetchAllLoadedData, updateLoadedData
+  fetchAllLoadedData,
+  updateLoadedData,
 } from "../store/features/appropriationSlice";
 import toast from "react-hot-toast";
 import { Trash } from "../helpers/trash";
@@ -20,9 +21,8 @@ export default function AppropriationSingleForm() {
 
   //ADMIN CHECKS
   const { authUser } = useSelector((state) => state.auth);
-    const userRole = authUser?.role;
-    const isAdmin = userRole === "admin";
-
+  const userRole = authUser?.role;
+  const isAdmin = userRole === "admin";
 
   const initialFormState = {
     organization: "",
@@ -38,10 +38,7 @@ export default function AppropriationSingleForm() {
   const [editingId, setEditingId] = useState(null);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [recordToDelete, setRecordToDelete] = useState(null);
-
-   
-
+  const [recordToDelete, setRecordToDelete] = useState(null);
 
   const handleChange = (e) => {
     setForm({
@@ -55,35 +52,33 @@ export default function AppropriationSingleForm() {
     setEditingId(null);
   };
 
- const handleSubmit = (e) => {
-   e.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-   if (editingId) {
-     // UPDATE
-     dispatch(updateLoadedData({ id: editingId, data: form }))
-       .unwrap()
-       .then(() => {
-         toast.success("Data updated successfully!");
-         clearForm();
-       })
-       .catch((err) => {
-         toast.error(err || "Update failed");
-       });
-   } else {
-     // CREATE
-     dispatch(createLoadedData(form))
-       .unwrap()
-       .then(() => {
-         toast.success("Data saved successfully!");
-         clearForm();
-       })
-       .catch((err) => {
-         toast.error(err || "Create failed");
-       });
-   }
- };
-
-
+    if (editingId) {
+      // UPDATE
+      dispatch(updateLoadedData({ id: editingId, data: form }))
+        .unwrap()
+        .then(() => {
+          toast.success("Data updated successfully!");
+          clearForm();
+        })
+        .catch((err) => {
+          toast.error(err || "Update failed");
+        });
+    } else {
+      // CREATE
+      dispatch(createLoadedData(form))
+        .unwrap()
+        .then(() => {
+          toast.success("Data saved successfully!");
+          clearForm();
+        })
+        .catch((err) => {
+          toast.error(err || "Create failed");
+        });
+    }
+  };
 
   /* =========================
      FETCH DATA
@@ -93,13 +88,37 @@ export default function AppropriationSingleForm() {
   }, [dispatch]);
 
   /* =========================
+     SEARCH QUERY
+  ========================== */
+
+  const filteredRecords = records.filter((record) => {
+    //If the search box is empty return
+    if (!searchQuery.trim()) return true;
+
+    //makes search case-insensitive.
+    const search = searchQuery.toLowerCase();
+
+    return (
+      record.organization?.toLowerCase().includes(search) ||
+      record.economicClassification?.toLowerCase().includes(search) ||
+      record.sourceOfFunding?.toLowerCase().includes(search) ||
+      record.naturalAccount?.toLowerCase().includes(search) ||
+      String(record.appropriation)?.includes(search) ||
+      String(record.allotment)?.includes(search)
+    );
+  });
+
+  /* =========================
      PAGINATION
   ========================== */
   const PAGE_SIZE = 10;
   const [currentPage, setCurrentPage] = useState(1);
 
   const startIndex = (currentPage - 1) * PAGE_SIZE;
-  const paginatedRecords = records.slice(startIndex, startIndex + PAGE_SIZE);
+  const paginatedRecords = filteredRecords.slice(
+    startIndex,
+    startIndex + PAGE_SIZE
+  );
 
   // Reset page when data changes
   useEffect(() => {
@@ -120,26 +139,24 @@ export default function AppropriationSingleForm() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-
   //DELETE
-    const openDeleteModal = (record, serialNumber) => {
-      setRecordToDelete({ record, serialNumber });
-      setIsDeleteModalOpen(true);
-    };
-  
-    const confirmDelete = async () => {
-      try {
-        await dispatch(deleteLoadedData(recordToDelete.record.id)).unwrap();
-        toast.success("Record deleted successfully!");
-        dispatch(fetchAllLoadedData());
-      } catch (err) {
-        toast.error(err || "Failed to delete record.");
-      } finally {
-        setIsDeleteModalOpen(false);
-        setRecordToDelete(null);
-      }
-    };
+  const openDeleteModal = (record, serialNumber) => {
+    setRecordToDelete({ record, serialNumber });
+    setIsDeleteModalOpen(true);
+  };
 
+  const confirmDelete = async () => {
+    try {
+      await dispatch(deleteLoadedData(recordToDelete.record.id)).unwrap();
+      toast.success("Record deleted successfully!");
+      dispatch(fetchAllLoadedData());
+    } catch (err) {
+      toast.error(err || "Failed to delete record.");
+    } finally {
+      setIsDeleteModalOpen(false);
+      setRecordToDelete(null);
+    }
+  };
 
   /* =========================
      STATES
@@ -155,7 +172,6 @@ export default function AppropriationSingleForm() {
       </p>
     );
   }
-
 
   return (
     <div className="w-full">
@@ -366,7 +382,7 @@ export default function AppropriationSingleForm() {
         {/* Pagination (EXTERNAL COMPONENT) */}
         <Pagination
           currentPage={currentPage}
-          totalItems={records.length}
+          totalItems={filteredRecords.length}
           pageSize={PAGE_SIZE}
           onPageChange={setCurrentPage}
         />
