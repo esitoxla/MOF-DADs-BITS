@@ -150,15 +150,15 @@ export default function DetailedEC() {
                   Appropriation
                 </th>
                 <th className="border border-gray-400 px-3 py-2">Allotment</th>
-                <th className="border border-gray-400 px-3 py-2">
-                  Allotment Balance
-                </th>
                 <th className="border border-gray-400 px-3 py-2">Releases</th>
                 <th className="border border-gray-400 px-3 py-2">
                   Actual Expenditure
                 </th>
                 <th className="border border-gray-400 px-3 py-2">
                   Actual Payment
+                </th>
+                <th className="border border-gray-400 px-3 py-2">
+                  Allotment Balance
                 </th>
               </tr>
             </thead>
@@ -204,9 +204,6 @@ export default function DetailedEC() {
                       {record.allotment}
                     </td>
                     <td className="border border-gray-400 px-2 py-1">
-                      {record.allotmentBalance}
-                    </td>
-                    <td className="border border-gray-400 px-2 py-1">
                       {record.releases}
                     </td>
                     <td className="border border-gray-400 px-2 py-1">
@@ -214,6 +211,9 @@ export default function DetailedEC() {
                     </td>
                     <td className="border border-gray-400 px-2 py-1">
                       {record.actualPayment}
+                    </td>
+                    <td className="border border-gray-400 px-2 py-1">
+                      {record.allotmentBalance}
                     </td>
                   </tr>
                 ))

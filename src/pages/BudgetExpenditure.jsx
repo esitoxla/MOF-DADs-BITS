@@ -49,6 +49,9 @@ export default function BudgetExpenditure() {
   const [showPaymentAlert, setShowPaymentAlert] = useState(false);
   const [showReleasesAlert, setShowReleasesAlert] = useState(false);
 
+  const hasAllotment = Number(allotment) > 0;
+
+
   //BudgetTable
   const [records, setRecords] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -101,21 +104,18 @@ export default function BudgetExpenditure() {
 
   // Fetch budget values when natural account is selected
   useEffect(() => {
-    const eco = economicClass?.label;
-    const fund = fundingSource?.label;
-    const account = selectedAccount?.value;
+    if (!economicClass || !fundingSource || !selectedAccount) return;
 
-    if (!eco || !fund || !account) return;
+    const payload = {
+      eco: economicClass.label.trim(),
+      fund: fundingSource.label.trim(),
+      account: selectedAccount.value.trim(),
+    };
 
-    dispatch(
-      fetchBudgetValues({
-        eco: eco.trim(),
-        fund: fund.trim(),
-        account: account.trim(),
-      })
-    );
-  }, [economicClass, fundingSource, selectedAccount, dispatch]);
+    console.log("Sending to backend:", payload);
 
+    dispatch(fetchBudgetValues(payload));
+  }, [selectedAccount, economicClass, fundingSource, dispatch]);
 
 
 
@@ -148,10 +148,16 @@ export default function BudgetExpenditure() {
   useEffect(() => {
     if (!budgetValues) return;
 
-    setAppropriation(budgetValues.appropriation || "");
-    setAllotment(budgetValues.allotment || "");
-    setAllotmentBalance(budgetValues.balance || "");
+    const fetchedAllotment = Number(budgetValues.allotment ?? 0);
+    const fetchedBalance = Number(budgetValues.balance ?? 0);
+
+    setAppropriation(budgetValues.appropriation);
+    setAllotment(fetchedAllotment);
+
+    // no allotment → no balance
+    setAllotmentBalance(fetchedAllotment === 0 ? 0 : fetchedBalance);
   }, [budgetValues]);
+
 
 
 
@@ -210,24 +216,36 @@ export default function BudgetExpenditure() {
 
   // Handle releases input
  const handleReleasesChange = (e) => {
-   const value = e.target.value;
+   const value = Number(e.target.value || 0);
    setReleases(value);
 
-   const releaseNum = parseFloat(value) || 0;
-   const baseBalance = parseFloat(budgetValues?.balance || 0);
+   const appropriationNum = Number(appropriation || 0);
+   const balanceNum = Number(allotmentBalance || 0);
 
-   // Prevent releases from exceeding current balance
-   if (releaseNum > baseBalance) {
-     toast.error("Releases cannot exceed the remaining allotment balance.");
-     setShowReleasesAlert(true);
-   } else {
+   // NO ALLOTMENT → releases ≤ appropriation
+   if (!hasAllotment) {
+     if (value > appropriationNum) {
+       toast.error("Releases cannot exceed appropriation.");
+       setShowReleasesAlert(true);
+       return;
+     }
+
      setShowReleasesAlert(false);
+     setAllotmentBalance(0); // always 0 when no allotment
+     return;
    }
 
-   // calculate updated balance
-   const updatedBalance = baseBalance - releaseNum;
-   setAllotmentBalance(updatedBalance);
+   // HAS ALLOTMENT → releases ≤ allotment balance
+   if (value > balanceNum) {
+     toast.error("Releases cannot exceed the remaining allotment balance.");
+     setShowReleasesAlert(true);
+     return;
+   }
+
+   setShowReleasesAlert(false);
+   setAllotmentBalance(balanceNum - value);
  };
+
 
 
   // Handle expenditure input
@@ -575,7 +593,7 @@ export default function BudgetExpenditure() {
                 type="number"
                 min="0"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
-                value={allotment || ""}
+                value={allotment ?? 0}
                 readOnly
                 disabled
               />
@@ -589,7 +607,7 @@ export default function BudgetExpenditure() {
                 type="number"
                 min="0"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
-                value={allotmentBalance}
+                value={allotmentBalance ?? 0}
                 readOnly
               />
             </div>
