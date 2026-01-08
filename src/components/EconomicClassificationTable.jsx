@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from "react-router";
 import { useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import { quarterEndMonth } from "../data/BudgetExpenditureData";
+import { getOrganizationLabel } from "../helpers/organizationLabel";
 
 const EconomicClassificationTable = ({ data }) => {
   const { authUser } = useSelector((store) => store.auth);
@@ -41,6 +42,8 @@ const EconomicClassificationTable = ({ data }) => {
 
     // console.log(reportYear, reportMonthName);
 
+
+
   return (
     <>
       <div className="overflow-x-auto bg-white shadow-xl rounded-2xl p-4 sm:p-6 border border-gray-200 w-full">
@@ -58,7 +61,9 @@ const EconomicClassificationTable = ({ data }) => {
                 {" "}
                 {organization === "ALL"
                   ? "ALL ORGANIZATIONS"
-                  : organization || authUser?.organization}
+                  : getOrganizationLabel(
+                      organization || authUser?.organization
+                    )}
               </span>
             </p>
             <p className="text-sm">

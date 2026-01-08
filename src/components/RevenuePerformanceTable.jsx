@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router';
 import toast from 'react-hot-toast';
 import Pagination from './Pagination';
 import { quarterEndMonth } from '../data/BudgetExpenditureData';
+import { getOrganizationLabel } from '../helpers/organizationLabel';
 
 const REVENUE_CATEGORIES = [
   "Fees/Charges",
@@ -97,7 +98,9 @@ export default function RevenuePerformanceTable({ data = [], totals }) {
                 {" "}
                 {organization === "ALL"
                   ? "ALL ORGANIZATIONS"
-                  : organization || authUser?.organization}
+                  : getOrganizationLabel(
+                      organization || authUser?.organization
+                    )}
               </span>
             </p>
             <p className="text-sm">
@@ -190,8 +193,7 @@ export default function RevenuePerformanceTable({ data = [], totals }) {
 
           <tbody className="font-bold text-gray-800">
             {paginatedCategories.map((category) => {
-             const row = dataMap[normalize(category)] || {};
-
+              const row = dataMap[normalize(category)] || {};
 
               return (
                 <tr key={category}>
