@@ -49,7 +49,16 @@ const budgetDynamicSlice = createSlice({
     loading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    resetBudgetValues: (state) => {
+      state.budgetValues = {
+        appropriation: null,
+        allotment: null,
+        balance: null,
+        totalReleases: null,
+      };
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchNaturalAccounts.pending, (state) => {
@@ -79,4 +88,5 @@ const budgetDynamicSlice = createSlice({
   },
 });
 
+export const { resetBudgetValues } = budgetDynamicSlice.actions;
 export default budgetDynamicSlice.reducer;

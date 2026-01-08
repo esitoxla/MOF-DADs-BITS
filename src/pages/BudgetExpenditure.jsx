@@ -10,12 +10,16 @@ import { economicClassOptions } from "../data/BudgetExpenditureData";
 import { sourceOfFundingOptions } from "../data/BudgetExpenditureData";
 import { useSelector, useDispatch } from "react-redux";
 import ReviewModal from "../components/ReviewModal";
+import { resetBudgetValues } from "../store/features/budgetDynamicSlice";
 import {
   updateExpenditure,
   cancelEditing,
   addExpenditure,
 } from "../store/features/budgetSlice";
-import { fetchNaturalAccounts, fetchBudgetValues } from "../store/features/budgetDynamicSlice";
+import {
+  fetchNaturalAccounts,
+  fetchBudgetValues,
+} from "../store/features/budgetDynamicSlice";
 
 export default function BudgetExpenditure() {
   //redux handling the edit functionality
@@ -28,8 +32,6 @@ export default function BudgetExpenditure() {
     budgetValues,
     loading: budgetLoading,
   } = useSelector((state) => state.budgetDynamic);
-
-  
 
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
@@ -49,8 +51,7 @@ export default function BudgetExpenditure() {
   const [showPaymentAlert, setShowPaymentAlert] = useState(false);
   const [showReleasesAlert, setShowReleasesAlert] = useState(false);
 
-  const hasAllotment = Number(allotment) > 0;
-
+  const [previousActualExpenditure, setPreviousActualExpenditure] = useState(0);
 
   //BudgetTable
   const [records, setRecords] = useState([]);
@@ -59,6 +60,15 @@ export default function BudgetExpenditure() {
   //review logic
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [recordToReview, setRecordToReview] = useState(null);
+
+  //for IGF DPF checks for allotment
+  const hasAllotment = Number(allotment) > 0;
+
+  //for goods and services, GOG rule
+  const isGoodsAndServicesGOG =
+    economicClass?.label === "Use of Goods and Services" &&
+    fundingSource?.label === "GOG" &&
+    Number(allotment) > 0;
 
   // Create activities 1–20 as options for react-select
   const activityOptions = Array.from({ length: 20 }, (_, i) => ({
@@ -74,33 +84,31 @@ export default function BudgetExpenditure() {
         )
       : sourceOfFundingOptions;
 
+  //Dynamically switch accounts based on selected economic class
+  const naturalAccountOptions = Array.isArray(naturalAccounts)
+    ? naturalAccounts.map((acc) => {
+        const value = typeof acc === "string" ? acc : acc?.naturalAccount;
+
+        return {
+          label: value,
+          value: value,
+        };
+      })
+    : [];
+
+  ///ALL useEFFECTS LOGIC
+
   // Fetch NATURAL ACCOUNTS dynamically when eco + fund are selected
   useEffect(() => {
     if (!economicClass || !fundingSource) return;
 
-   dispatch(
-     fetchNaturalAccounts({
-       eco: economicClass.label, // instead of value
-       fund: fundingSource.label, // instead of value
-     })
-   );
-
-   
+    dispatch(
+      fetchNaturalAccounts({
+        eco: economicClass.label, // instead of value
+        fund: fundingSource.label, // instead of value
+      })
+    );
   }, [economicClass, fundingSource]);
-
-  //Dynamically switch accounts based on selected economic class
- const naturalAccountOptions = Array.isArray(naturalAccounts)
-   ? naturalAccounts.map((acc) => {
-       const value = typeof acc === "string" ? acc : acc?.naturalAccount;
-
-       return {
-         label: value,
-         value: value,
-       };
-     })
-   : [];
-
-
 
   // Fetch budget values when natural account is selected
   useEffect(() => {
@@ -116,8 +124,6 @@ export default function BudgetExpenditure() {
 
     dispatch(fetchBudgetValues(payload));
   }, [selectedAccount, economicClass, fundingSource, dispatch]);
-
-
 
   //this handles the logic behind the relationship between economic classification and the natural account
   useEffect(() => {
@@ -142,66 +148,88 @@ export default function BudgetExpenditure() {
     }
   }, [economicClass]);
 
-
-
   // Autofill appropriation, allotment, and balance from backend
   useEffect(() => {
-    if (!budgetValues) return;
+    if (!budgetValues || !selectedAccount) return;
 
     const fetchedAllotment = Number(budgetValues.allotment ?? 0);
     const fetchedBalance = Number(budgetValues.balance ?? 0);
 
-    setAppropriation(budgetValues.appropriation);
+    setAppropriation(budgetValues.appropriation ?? "");
     setAllotment(fetchedAllotment);
 
-    // no allotment → no balance
+    setPreviousActualExpenditure(
+      Number(budgetValues.previousActualExpenditure ?? 0)
+    );
+
+    // Goods & Services + GOG rule (data-driven)
+    if (
+      economicClass?.label === "Use of Goods and Services" &&
+      fundingSource?.label === "GOG" &&
+      fetchedAllotment > 0
+    ) {
+      setReleases(0);
+    }
+
     setAllotmentBalance(fetchedAllotment === 0 ? 0 : fetchedBalance);
-  }, [budgetValues]);
-
-
-
+  }, [budgetValues, selectedAccount]);
 
   //handles populating fields that are dependent on each other(natural account, allotment, appropriation, allotment balance)
   // Handles populating fields when editing a record
-  useEffect(() => {
-    if ((!isEditing && !isReviewing) || !formValues) return;
+ useEffect(() => {
+   // Guard: only run when we actually have data to populate
+   if (!formValues) return;
 
-    setSelectedActivity(
-      formValues.activity
-        ? { label: formValues.activity, value: formValues.activity }
-        : null
-    );
-    setSelectedDate(formValues.date || "");
-    setEconomicClass(
-      formValues.economicClassification
-        ? {
-            label: formValues.economicClassification,
-            value: formValues.economicClassification.toLowerCase(),
-          }
-        : null
-    );
-    setFundingSource(
-      formValues.sourceOfFunding
-        ? {
-            label: formValues.sourceOfFunding,
-            value: formValues.sourceOfFunding,
-          }
-        : null
-    );
-    if (formValues.naturalAccount && economicClass) {
-      setSelectedAccount({
-        label: formValues.naturalAccount,
-        value: formValues.naturalAccount,
-      });
-    }
-    setDescription(formValues.description || "");
-    setAppropriation(formValues.appropriation || "");
-    setAllotment(formValues.allotment || "");
-    setAllotmentBalance(formValues.allotmentBalance || "");
-    setReleases(formValues.releases || "");
-    setExpenditure(formValues.actualExpenditure || "");
-    setPayment(formValues.actualPayment || "");
-  }, [isEditing, formValues]);
+   // Guard: only populate when editing or reviewing
+   if (!isEditing && !isReviewing) return;
+
+   setSelectedActivity(
+     formValues.activity
+       ? { label: formValues.activity, value: formValues.activity }
+       : null
+   );
+
+   setSelectedDate(formValues.date || "");
+
+   const eco = formValues.economicClassification
+     ? {
+         label: formValues.economicClassification,
+         value: formValues.economicClassification.toLowerCase(),
+       }
+     : null;
+
+   setEconomicClass(eco);
+
+   setFundingSource(
+     formValues.sourceOfFunding
+       ? {
+           label: formValues.sourceOfFunding,
+           value: formValues.sourceOfFunding,
+         }
+       : null
+   );
+
+   // natural account depends on economic class existing
+   if (formValues.naturalAccount && eco) {
+     setSelectedAccount({
+       label: formValues.naturalAccount,
+       value: formValues.naturalAccount,
+     });
+   } else {
+     setSelectedAccount(null);
+   }
+
+   setDescription(formValues.description || "");
+   setAppropriation(formValues.appropriation || "");
+   setAllotment(formValues.allotment || "");
+   setAllotmentBalance(formValues.allotmentBalance || "");
+   setReleases(formValues.releases || "");
+   setExpenditure(formValues.actualExpenditure || "");
+   setPayment(formValues.actualPayment || "");
+ }, [isEditing, isReviewing, formValues]);
+
+
+
 
   useEffect(() => {
     if (
@@ -214,53 +242,76 @@ export default function BudgetExpenditure() {
 
 
 
+  //OTHER INPUTS LOGICS
+
   // Handle releases input
- const handleReleasesChange = (e) => {
-   const value = Number(e.target.value || 0);
-   setReleases(value);
+  const handleReleasesChange = (e) => {
+    if (isGoodsAndServicesGOG) {
+      return; // releases are fixed to allotment
+    }
 
-   const appropriationNum = Number(appropriation || 0);
-   const balanceNum = Number(allotmentBalance || 0);
+    const value = Number(e.target.value || 0);
+    setReleases(value);
 
-   // NO ALLOTMENT → releases ≤ appropriation
-   if (!hasAllotment) {
-     if (value > appropriationNum) {
-       toast.error("Releases cannot exceed appropriation.");
-       setShowReleasesAlert(true);
-       return;
-     }
+    const appropriationNum = Number(appropriation || 0);
+    const balanceNum = Number(allotmentBalance || 0);
 
-     setShowReleasesAlert(false);
-     setAllotmentBalance(0); // always 0 when no allotment
-     return;
-   }
+    // NO ALLOTMENT → releases ≤ appropriation
+    if (!hasAllotment) {
+      if (value > appropriationNum) {
+        toast.error("Releases cannot exceed appropriation.");
+        setShowReleasesAlert(true);
+        return;
+      }
 
-   // HAS ALLOTMENT → releases ≤ allotment balance
-   if (value > balanceNum) {
-     toast.error("Releases cannot exceed the remaining allotment balance.");
-     setShowReleasesAlert(true);
-     return;
-   }
+      setShowReleasesAlert(false);
+      setAllotmentBalance(0); // always 0 when no allotment
+      return;
+    }
 
-   setShowReleasesAlert(false);
-   setAllotmentBalance(balanceNum - value);
- };
+    // HAS ALLOTMENT → releases ≤ allotment balance
+    if (value > balanceNum) {
+      toast.error("Releases cannot exceed the remaining allotment balance.");
+      setShowReleasesAlert(true);
+      return;
+    }
 
-
+    setShowReleasesAlert(false);
+    setAllotmentBalance(balanceNum - value);
+  };
 
   // Handle expenditure input
   const handleExpenditureChange = (e) => {
     const value = e.target.value;
     setExpenditure(value);
 
-    if (parseFloat(value) > parseFloat(releases || 0)) {
+    const currentActual = Number(value || 0);
+
+    // CASE 1: Goods & Services + GOG
+    if (isGoodsAndServicesGOG && allotment > 0) {
+      const previewBalance =
+        allotment - (previousActualExpenditure + currentActual);
+
+      setAllotmentBalance(previewBalance);
+
+      if (previewBalance < 0) {
+        toast.error("Actual expenditure cannot exceed available allotment!");
+        setShowExpenditureAlert(true);
+      } else {
+        setShowExpenditureAlert(false);
+      }
+
+      return; // STOP HERE — do NOT apply releases rule
+    }
+
+    // CASE 2: All other cases → expenditure ≤ releases
+    if (parseFloat(currentActual) > parseFloat(releases || 0)) {
       toast.error("Actual expenditure cannot exceed releases.");
       setShowExpenditureAlert(true);
     } else {
       setShowExpenditureAlert(false);
     }
   };
-
 
   // Handle payment input
   const handlePaymentChange = (e) => {
@@ -275,6 +326,8 @@ export default function BudgetExpenditure() {
     }
   };
 
+
+  //FORM SUBMISSION
 
   //handles submiting of records and editing a record
   const handleSubmit = async (e) => {
@@ -343,11 +396,26 @@ export default function BudgetExpenditure() {
             updateExpenditure({ id, formData: newRecord })
           ).unwrap();
           toast.success("Record updated successfully!");
+          dispatch(resetBudgetValues());
           dispatch(cancelEditing());
+
+          // reset fetch drivers
+          setEconomicClass(null);
+          setFundingSource(null);
+          setSelectedAccount(null);
         }
       } else {
         await dispatch(addExpenditure(newRecord)).unwrap();
         toast.success("Record added successfully!");
+
+        // RE-FETCH BUDGET VALUES (SOURCE OF TRUTH)
+        dispatch(
+          fetchBudgetValues({
+            eco: economicClass.label.trim(),
+            fund: fundingSource.label.trim(),
+            account: selectedAccount.value.trim(),
+          })
+        );
       }
 
       // clear fields
@@ -516,20 +584,9 @@ export default function BudgetExpenditure() {
               <label className="text-gray-500">NATURAL ACCOUNT</label>
               <Select
                 options={naturalAccountOptions}
-                value={
-                  naturalAccountOptions.find(
-                    (opt) => opt.value === selectedAccount?.value
-                  ) ||
-                  selectedAccount ||
-                  (formValues?.naturalAccount
-                    ? {
-                        label: formValues.naturalAccount,
-                        value: formValues.naturalAccount,
-                      }
-                    : null)
-                }
+                value={selectedAccount}
                 onChange={setSelectedAccount}
-                isDisabled={isReviewing}
+                isDisabled={!economicClass || !fundingSource || isReviewing}
                 placeholder={`Select natural account`}
                 isSearchable
                 filterOption={(option, inputValue) => {
@@ -621,10 +678,16 @@ export default function BudgetExpenditure() {
                 type="number"
                 min="0"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
-                value={releases || ""}
+                value={
+                  isGoodsAndServicesGOG
+                    ? "" // visually empty
+                    : releases || ""
+                }
                 onChange={handleReleasesChange}
-                disabled={isReviewing}
-                placeholder="Enter releases here..."
+                disabled={isReviewing || isGoodsAndServicesGOG}
+                placeholder={
+                  isGoodsAndServicesGOG ? "N/A" : "Enter releases here..."
+                }
               />
             </div>
 

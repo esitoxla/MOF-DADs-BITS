@@ -1,10 +1,13 @@
 import React from "react";
 
+
 export default function BudgetPerformanceTable({ data, selectedFunding }) {
   // Helper to determine whether to show a column
   const showColumn = (fundingType) => {
     return selectedFunding === "All" || selectedFunding === fundingType;
   };
+
+ 
 
   return (
     <div className="overflow-x-auto bg-white shadow-lg rounded-2xl p-4 sm:p-6">
@@ -45,6 +48,7 @@ export default function BudgetPerformanceTable({ data, selectedFunding }) {
 
         <tbody>
           {data.map((row, idx) => {
+            
             // Determine total value dynamically
             const total =
               selectedFunding === "All"

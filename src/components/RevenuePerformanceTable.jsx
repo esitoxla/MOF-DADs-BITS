@@ -2,7 +2,11 @@ import React from 'react'
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 import logo from "../assets/images/logo.jpeg";
-import { useMemo } from 'react';
+import { useMemo, useEffect, useRef, useState} from 'react';
+import { useNavigate } from 'react-router';
+import toast from 'react-hot-toast';
+import Pagination from './Pagination';
+import { quarterEndMonth } from '../data/BudgetExpenditureData';
 
 const REVENUE_CATEGORIES = [
   "Fees/Charges",
@@ -20,17 +24,60 @@ export default function RevenuePerformanceTable({ data = [], totals }) {
 
   //This extracts the values passed from the previous page — including the date
   const location = useLocation();
-  const { date } = location.state || {};
+
+   const navigate = useNavigate();
+    //this prevents showing toast more than once
+    const hasShownToast = useRef(false);
+
+
+  const { year, quarter, organization } = location.state || {};
+
+  const PAGE_SIZE = 5; // choose what you want
+  const [currentPage, setCurrentPage] = useState(1);
+
+
+
+  useEffect(() => {
+    if ((!year || !quarter) && !hasShownToast.current) {
+      hasShownToast.current = true;
+      toast.error(
+        "No reporting period selected. Please generate the report again."
+      );
+      navigate("/dashboard/reports/summaryReport");
+    }
+  }, [year, quarter, navigate]);
+
+
+  const normalize = (str = "") => str.trim().toLowerCase();
 
 
   const dataMap = useMemo(() => {
     const map = {};
     data.forEach((item) => {
-      map[item.category] = item;
+      map[normalize(item.category)] = item;
     });
     return map;
   }, [data]);
 
+
+
+  const paginatedCategories = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    return REVENUE_CATEGORIES.slice(start, end);
+  }, [currentPage]);
+
+  const totalPages = Math.ceil(REVENUE_CATEGORIES.length / PAGE_SIZE);
+
+
+
+
+
+  // ===============================
+  // REPORT DATE DERIVATION
+  // ===============================
+  const reportYear = year || "";
+   const reportMonthName = quarter ? quarterEndMonth[quarter] : "";
   
 
   return (
@@ -41,18 +88,20 @@ export default function RevenuePerformanceTable({ data = [], totals }) {
           {/* Left Text Section */}
           <div className="flex flex-col space-y-1 pr-6 p-4 font-bold text-lg w-[80%] min-w-[600px]">
             <h1>
-              Summary of IGF Performance as at end-December 2025 by Revenue
-              Categories (in GH₵)
+              Summary of IGF Performance as at {reportMonthName} {reportYear} by
+              Revenue Categories (in GH₵)
             </h1>
             <p className="text-sm">
               <span> DADs: </span>
-              <span>{authUser?.organization}</span>
+              <span>
+                {" "}
+                {organization === "ALL"
+                  ? "ALL ORGANIZATIONS"
+                  : organization || authUser?.organization}
+              </span>
             </p>
             <p className="text-sm">
-              Date:{" "}
-              {date
-                ? new Date(date).toLocaleDateString("en-GB")
-                : "No date selected"}
+              Reporting Period: Q{quarter} ({reportMonthName} {reportYear})
             </p>
 
             <p className="text-sm">Currency: Ghana cedis (GHS)</p>
@@ -86,25 +135,27 @@ export default function RevenuePerformanceTable({ data = [], totals }) {
                 rowSpan={2}
                 className="border border-gray-400 px-4 py-2 align-middle"
               >
-                ACTUAL COLLECTION AS AT END AUGUST 2025
+                ACTUAL COLLECTION AS AT END {reportMonthName} {reportYear}
               </th>
               <th
                 rowSpan={2}
                 className="border border-gray-400 px-4 py-2 align-middle"
               >
-                PAYMENT INTO THE CONSOLIDATED FUND AS AT END AUGUST 2025
+                PAYMENT INTO THE CONSOLIDATED FUND AS AT END {reportMonthName}{" "}
+                {reportYear}
               </th>
               <th
                 rowSpan={2}
                 className="border border-gray-400 px-4 py-2 align-middle"
               >
-                RETENTION FOR 2025 AS AT END AUGUST 2025
+                RETENTION FOR {reportYear} AS AT END {reportMonthName}{" "}
+                {reportYear}
               </th>
               <th
                 rowSpan={2}
                 className="border border-gray-400 px-4 py-2 align-middle"
               >
-                PROJECTION AS AT 31 DEC 2025
+                PROJECTION AS AT 31 DEC {reportYear}
               </th>
               <th
                 rowSpan={2}
@@ -138,8 +189,9 @@ export default function RevenuePerformanceTable({ data = [], totals }) {
           </thead>
 
           <tbody className="font-bold text-gray-800">
-            {REVENUE_CATEGORIES.map((category) => {
-              const row = dataMap[category] || {};
+            {paginatedCategories.map((category) => {
+             const row = dataMap[normalize(category)] || {};
+
 
               return (
                 <tr key={category}>
@@ -205,6 +257,14 @@ export default function RevenuePerformanceTable({ data = [], totals }) {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination (EXTERNAL COMPONENT) */}
+      <Pagination
+        currentPage={currentPage}
+        totalItems={totalPages}
+        pageSize={PAGE_SIZE}
+        onPageChange={setCurrentPage}
+      />
     </>
   );
 }

@@ -54,3 +54,50 @@ export const sourceOfFundingOptions = [
   { value: "DPF", label: "DPF" },
   { value: "IGF", label: "IGF" },
 ];
+
+//DATA FOR REPORT
+export const organizationOptions = [
+  { value: "FH", label: "Finance Headquarters" },
+  { value: "CAGD", label: "Controller and Acct. Generals Dept" },
+  { value: "SS", label: "Statistical Service" },
+  { value: "PPA", label: "Public Procurement Authority" },
+  { value: "IAT", label: "Institute of Accountancy Training" },
+  { value: "SEC", label: "Securities and Exchange Commission" },
+  { value: "GRA", label: "Ghana Revenue Authority" },
+  { value: "ITAB", label: "Independent Tax Appeals Board (ITAB)" },
+  { value: "FIC", label: "Financial Intelligence Centre" },
+  { value: "SIGA", label: "State Interest and Governance Authority" },
+  { value: "IAA", label: "Internal Audit Agency" },
+  { value: "NPRA", label: "National Pensions and Regulatory Authority" },
+  { value: "ALL", label: "All Organizations" },
+];
+
+export const fundingSourceOptions = [
+  { value: "GOG", label: "GOG" },
+  { value: "DPF", label: "DPF" },
+  { value: "IGF", label: "IGF" },
+  { value: "ALL", label: "ALL" },
+];
+
+
+export const reportTypeOptions = [
+  {value: "EC", label: "Economic Classification"},
+  {value: "IRP", label: "IGF Revenue Performance"},
+  {value: "CP", label: "Cash Position"},
+  {value: "R", label: "Reallocation"},
+  {value: "NA", label: "Natural Account"}
+]
+
+export const quarterOptions = [
+  { value: 1, label: "Q1 (Jan - Mar)" },
+  { value: 2, label: "Q2 (Apr - Jun)" },
+  { value: 3, label: "Q3 (Jul - Sep)" },
+  { value: 4, label: "Q4 (Oct - Dec)" },
+];
+
+export const quarterEndMonth = {
+  1: "MARCH",
+  2: "JUNE",
+  3: "SEPTEMBER",
+  4: "DECEMBER",
+};

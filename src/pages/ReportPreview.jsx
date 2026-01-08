@@ -4,7 +4,6 @@ import { RiArrowDownSFill } from "react-icons/ri";
 import { useLocation } from "react-router";
 import { FaFilePdf, FaFileExcel } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import { getYearAndQuarter } from "../helpers/dateHelper";
 import { formatReportData } from "../helpers/formatReportData";
 import { fetchQuarterlyReport } from "../store/features/reportSlice";
 import EconomicClassificationTable from "../components/EconomicClassificationTable";
@@ -22,49 +21,61 @@ export default function ReportPreview() {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const {
-    reportType = "EC",
-    fundingSource = "ALL",
-    date,
-  } = location.state || {};
-
-
   const economicClass = useSelector((store) => store.report);
   const revenue = useSelector((store) => store.revenueReport);
+
+  
+const {
+  reportType = "EC",
+  fundingSource = "ALL",
+  year,
+  quarter,
+  organization,
+} = location.state || {};
+
+useEffect(() => {
+  if (!year || !quarter) {
+    navigate("/dashboard/reports/summaryReport");
+  }
+}, [year, quarter, navigate]);
+
+
+  
 
   const { reportData, totals, loading, error } =
     reportType === "IRP" ? revenue : economicClass;
 
 
-  // compute year & quarter from date (fallback to today)
-  const { year, quarter } = useMemo(() => getYearAndQuarter(date), [date]);
+ 
 
   
 
   // fetch from backend when page loads or filters change
-  useEffect(() => {
-    if (!reportType) return;
+ useEffect(() => {
+   if (!reportType || !year || !quarter) return;
 
-    switch (reportType) {
-      case "EC":
-        dispatch(
-          fetchQuarterlyReport({
-            year,
-            quarter,
-            sourceOfFunding: fundingSource,
-          })
-        );
-        break;
+   if (reportType === "EC") {
+     dispatch(
+       fetchQuarterlyReport({
+         year,
+         quarter,
+         sourceOfFunding: fundingSource,
+         organization,
+       })
+     );
+   }
 
-      case "IRP":
-        dispatch(fetchQuarterlyRevenueReport({ year, quarter }));
-        break;
+   if (reportType === "IRP") {
+     dispatch(
+       fetchQuarterlyRevenueReport({
+         year,
+         quarter,
+         organization,
+       })
+     );
+   }
+ }, [dispatch, reportType, year, quarter, fundingSource, organization]);
 
-      // Add other report fetchers as needed
-      default:
-       
-    }
-  }, [dispatch, reportType, year, quarter, fundingSource]);
 
 
 

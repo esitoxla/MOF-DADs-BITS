@@ -6,7 +6,7 @@ export default function Pagination({ currentPage, totalItems, pageSize = 10, onP
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex justify-between items-center mt-4 px-4">
+    <div className="flex justify-between items-center mt-4 px-4 mb-8">
       {/* Previous */}
       <button
         onClick={() => onPageChange(currentPage - 1)}

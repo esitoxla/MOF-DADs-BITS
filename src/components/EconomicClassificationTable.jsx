@@ -2,7 +2,10 @@ import React from "react";
 import { Fragment } from "react";
 import logo from "../assets/images/logo.jpeg"
 import { useSelector } from "react-redux";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
+import { useEffect, useRef } from "react";
+import toast from "react-hot-toast";
+import { quarterEndMonth } from "../data/BudgetExpenditureData";
 
 const EconomicClassificationTable = ({ data }) => {
   const { authUser } = useSelector((store) => store.auth);
@@ -10,12 +13,37 @@ const EconomicClassificationTable = ({ data }) => {
 
   //This extracts the values passed from the previous page — including the date
   const location = useLocation();
-  const { date, fundingSource } = location.state || {};
+  const navigate = useNavigate();
+  //this prevents showing toast more than once
+  const hasShownToast = useRef(false);
+
+  const { year, quarter, fundingSource, organization } = location.state || {};
+
+
+
+ useEffect(() => {
+   if ((!year || !quarter) && !hasShownToast.current) {
+     hasShownToast.current = true;
+     toast.error(
+       "No reporting period selected. Please generate the report again."
+     );
+     navigate("/dashboard/reports/summaryReport");
+   }
+ }, [year, quarter, navigate]);
+
+
+
+  // ===============================
+  // REPORT DATE DERIVATION
+  // ===============================
+ const reportYear = year || "";
+ const reportMonthName = quarter ? quarterEndMonth[quarter] : "";
+
+    // console.log(reportYear, reportMonthName);
 
   return (
     <>
       <div className="overflow-x-auto bg-white shadow-xl rounded-2xl p-4 sm:p-6 border border-gray-200 w-full">
-
         {/* Header Section */}
         <div className="min-w-[750px] flex justify-between items-center mb-2 bg-[#F7F7F7]">
           {/* Left Text Section */}
@@ -26,13 +54,15 @@ const EconomicClassificationTable = ({ data }) => {
             </h1>
             <p className="text-sm">
               <span> DADs: </span>
-              <span>{authUser?.organization}</span>
+              <span>
+                {" "}
+                {organization === "ALL"
+                  ? "ALL ORGANIZATIONS"
+                  : organization || authUser?.organization}
+              </span>
             </p>
             <p className="text-sm">
-              Date:{" "}
-              {date
-                ? new Date(date).toLocaleDateString("en-GB")
-                : "No date selected"}
+              Reporting Period: Q{quarter} ({reportMonthName} {reportYear})
             </p>
 
             <p className="text-sm">Currency: Ghana cedis (GHS)</p>
@@ -55,30 +85,29 @@ const EconomicClassificationTable = ({ data }) => {
               >
                 EXPENDITURE ITEM
               </th>
-              
             </tr>
             <tr className="text-center font-semibold bg-blue-50">
               <th className="border border-gray-400 px-3 py-2">
-                2025 APPROVED BUDGET / APPROPRIATION
+                {reportYear} APPROVED BUDGET / APPROPRIATION
               </th>
               <th className="border border-gray-400 px-3 py-2">
-                AMOUNT RELEASED AS AT END AUG 2025
+                AMOUNT RELEASED AS AT END {reportMonthName} {reportYear}
               </th>
               <th className="border border-gray-400 px-3 py-2">
-                ACTUAL EXPENDITURE AS AT END AUG 2025
+                ACTUAL EXPENDITURE AS AT END {reportMonthName} {reportYear}
               </th>
               <th className="border border-gray-400 px-3 py-2">
-                ACTUAL PAYMENTS AS AT END AUG 2025
+                ACTUAL PAYMENTS AS AT END {reportMonthName} {reportYear}
               </th>
               <th className="border border-gray-400 px-3 py-2">
-                PROJECTIONS AS AT 31 DEC 2025
+                PROJECTIONS AS AT 31 DEC {reportYear}
               </th>
             </tr>
           </thead>
 
           <tbody>
             {data.map((item, index) => {
-              const filteredBreakdown =  
+              const filteredBreakdown =
                 fundingSource === "ALL"
                   ? item.breakdown
                   : item.breakdown.filter((b) => b.source === fundingSource);

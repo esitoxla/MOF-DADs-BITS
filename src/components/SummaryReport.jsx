@@ -1,29 +1,67 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
+import Select from "react-select";
+import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
+import { organizationOptions } from "../data/BudgetExpenditureData";
+import { fundingSourceOptions } from "../data/BudgetExpenditureData";
+import { reportTypeOptions } from "../data/BudgetExpenditureData";
+import { quarterOptions } from "../data/BudgetExpenditureData";
 
 export default function SummaryReport() {
   const navigate = useNavigate();
 
   // State for selected options
-  const [reportType, setReportType] = useState("EC");
-  const [fundingSource, setFundingSource] = useState("ALL");
+  const [reportType, setReportType] = useState(null);
+  const [fundingSource, setFundingSource] = useState(null);
+  const [organization, setOrganization] = useState(null);
 
-  const [date, setDate] = useState("");
+  const [quarter, setQuarter] = useState(null);
+  const [year, setYear] = useState("");
+
+
+  //ADMIN CHECKS
+  const { authUser } = useSelector((state) => state.auth);
+  const userRole = authUser?.role;
+  const isAdmin = userRole === "admin";
+
+
+  useEffect(() => {
+    const now = new Date();
+    const currentQuarter = Math.ceil((now.getMonth() + 1) / 3);
+
+    setQuarter(quarterOptions.find((q) => q.value === currentQuarter));
+    setYear(now.getFullYear());
+  }, []);
+
 
   // Handle generate button click
   //these states are being passed via React Router:
   const handleGenerate = () => {
-    // Build the state dynamically based on selected report type
-    const state = { reportType, date };
-
-    if (reportType === "EC") {
-      state.fundingSource = fundingSource;
+    if (!reportType) {
+      toast.error("Please select report type");
+      return;
     }
-      
-      
-      navigate("/dashboard/reports/preview", { state });
+
+    if (reportType.value === "EC" && !fundingSource) {
+      toast.error("Please select source of funding");
+      return;
+    }
+
+    const state = {
+      reportType: reportType.value,
+      quarter: quarter.value, // 1–4
+      year: Number(year),
+      organization: isAdmin ? organization?.value : authUser?.organization,
+    };
+
+    if (reportType.value === "EC") {
+      state.fundingSource = fundingSource.value;
+    }
+
+    navigate("/dashboard/reports/preview", { state });
   };
 
   return (
@@ -49,53 +87,77 @@ export default function SummaryReport() {
 
         {/* Modal Content */}
         <div className="flex flex-col gap-6">
+          {isAdmin && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Organization
+              </label>
+              <Select
+                options={organizationOptions}
+                placeholder="Search or select organization"
+                value={organization}
+                onChange={setOrganization}
+                filterOption={(option, inputValue) =>
+                  option.label.toLowerCase().includes(inputValue.toLowerCase())
+                }
+              />
+            </div>
+          )}
+
           {/* Report By */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Report Type
             </label>
-            <select
+            <Select
+              options={reportTypeOptions}
               value={reportType}
-              onChange={(e) => setReportType(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg"
-            >
-              <option value="EC">Economic Classification</option>
-              <option value="IRP">IGF Revenue Performance</option>
-              <option value="CP">Cash Position</option>
-              <option value="R">Reallocation</option>
-              <option value="NA">Natural Account</option>
-            </select>
+              onChange={setReportType}
+              placeholder="Search or select a report type"
+              filterOption={(option, inputValue) =>
+                option.label.toLowerCase().includes(inputValue.toLowerCase())
+              }
+            />
           </div>
 
           {/* Source of Funding (only visible for EC) */}
-          {reportType === "EC" && (
+          {reportType?.value === "EC" && (
             <div className="transition-all duration-300">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Source of Funding
               </label>
-              <select
+              <Select
+                options={fundingSourceOptions}
                 value={fundingSource}
-                onChange={(e) => setFundingSource(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg"
-              >
-                <option value="GOG">GOG</option>
-                <option value="DPF">DPF</option>
-                <option value="IGF">IGF</option>
-                <option value="ALL">ALL</option>
-              </select>
+                onChange={setFundingSource}
+                placeholder="Search or select funding source"
+                filterOption={(option, inputValue) =>
+                  option.label.toLowerCase().includes(inputValue.toLowerCase())
+                }
+              />
             </div>
           )}
 
-          <div className="flex flex-col gap-2">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Date
+          <div className="flex flex-col gap-4">
+            <label className="block text-sm font-semibold text-gray-700">
+              Reporting Period
             </label>
 
+            <Select
+              options={quarterOptions}
+              value={quarter}
+              onChange={setQuarter}
+              placeholder="Select Quarter"
+            />
+
             <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-3  border border-gray-300 rounded-lg"
+              type="number"
+              min={2000}
+              max={2100}
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+              placeholder="Year (e.g. 2025)"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
             />
           </div>
 
