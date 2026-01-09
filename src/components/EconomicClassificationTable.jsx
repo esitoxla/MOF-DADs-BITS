@@ -28,8 +28,6 @@ const EconomicClassificationTable = ({ data }) => {
   const [appropriationMap, setAppropriationMap] = useState({});
   const [appropriationTotal, setAppropriationTotal] = useState(0);
 
-  const resolvedOrganization =
-    authUser?.role === "admin" ? organization || "ALL" : authUser?.organization;
 
   useEffect(() => {
     if ((!year || !quarter) && !hasShownToast.current) {
@@ -42,38 +40,45 @@ const EconomicClassificationTable = ({ data }) => {
   }, [year, quarter, navigate]);
 
   // Fetch appropriation summary
-  useEffect(() => {
-    const fetchAppropriation = async () => {
-      try {
-        if (!year) return;
+ useEffect(() => {
+   const fetchAppropriation = async () => {
+     try {
+       if (!year) return;
 
-        const res = await api.get("/appropriation/summary", {
-          params: {
-            year,
-            organization: resolvedOrganization,
-            sourceOfFunding: fundingSource || "ALL",
-          },
-        });
+       const params = {
+         year,
+         sourceOfFunding: fundingSource || "ALL",
+       };
 
-        const map = {};
-        res.data.data.forEach((row) => {
-          const key = `${row.economicClassification}__${row.sourceOfFunding}`;
-          map[key] = Number(row.totalAppropriation || 0);
-        });
+       // STRICT role-based rule
+       if (authUser?.role === "admin") {
+         params.organization = organization || "ALL";
+       } else {
+         params.organization = authUser?.organization;
+       }
 
-        setAppropriationMap(map);
-        setAppropriationTotal(res.data.totals.totalAppropriation);
-      } catch (err) {
-        console.error("Failed to fetch appropriation", err);
-        toast.error("Failed to load appropriation data");
-      }
-    };
+       const res = await api.get("/appropriation/summary", { params });
 
-    fetchAppropriation();
-  }, [year, resolvedOrganization, fundingSource]);
+       const map = {};
+       res.data.data.forEach((row) => {
+         const key = `${row.economicClassification}__${row.sourceOfFunding}`;
+         map[key] = Number(row.totalAppropriation || 0);
+       });
+
+       setAppropriationMap(map);
+       setAppropriationTotal(res.data.totals.totalAppropriation);
+     } catch (err) {
+       console.error(err);
+       toast.error("Failed to load appropriation data");
+     }
+   };
+
+   fetchAppropriation();
+ }, [year, fundingSource, organization, authUser]);
 
 
-  
+
+
   // ===============================
   // REPORT DATE DERIVATION
   // ===============================
