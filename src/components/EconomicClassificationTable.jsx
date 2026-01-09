@@ -1,12 +1,17 @@
 import React from "react";
+import { api } from "../config/axios";
 import { Fragment } from "react";
-import logo from "../assets/images/logo.jpeg"
+import logo from "../assets/images/logo.jpeg";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { quarterEndMonth } from "../data/BudgetExpenditureData";
 import { getOrganizationLabel } from "../helpers/organizationLabel";
+
+
+
+
 
 const EconomicClassificationTable = ({ data }) => {
   const { authUser } = useSelector((store) => store.auth);
@@ -20,29 +25,62 @@ const EconomicClassificationTable = ({ data }) => {
 
   const { year, quarter, fundingSource, organization } = location.state || {};
 
+  const [appropriationMap, setAppropriationMap] = useState({});
+  const [appropriationTotal, setAppropriationTotal] = useState(0);
+
+  const resolvedOrganization =
+    authUser?.role === "admin" ? organization || "ALL" : authUser?.organization;
+
+  useEffect(() => {
+    if ((!year || !quarter) && !hasShownToast.current) {
+      hasShownToast.current = true;
+      toast.error(
+        "No reporting period selected. Please generate the report again."
+      );
+      navigate("/dashboard/reports/summaryReport");
+    }
+  }, [year, quarter, navigate]);
+
+  // Fetch appropriation summary
+  useEffect(() => {
+    const fetchAppropriation = async () => {
+      try {
+        if (!year) return;
+
+        const res = await api.get("/appropriation/summary", {
+          params: {
+            year,
+            organization: resolvedOrganization,
+            sourceOfFunding: fundingSource || "ALL",
+          },
+        });
+
+        const map = {};
+        res.data.data.forEach((row) => {
+          const key = `${row.economicClassification}__${row.sourceOfFunding}`;
+          map[key] = Number(row.totalAppropriation || 0);
+        });
+
+        setAppropriationMap(map);
+        setAppropriationTotal(res.data.totals.totalAppropriation);
+      } catch (err) {
+        console.error("Failed to fetch appropriation", err);
+        toast.error("Failed to load appropriation data");
+      }
+    };
+
+    fetchAppropriation();
+  }, [year, resolvedOrganization, fundingSource]);
 
 
- useEffect(() => {
-   if ((!year || !quarter) && !hasShownToast.current) {
-     hasShownToast.current = true;
-     toast.error(
-       "No reporting period selected. Please generate the report again."
-     );
-     navigate("/dashboard/reports/summaryReport");
-   }
- }, [year, quarter, navigate]);
-
-
-
+  
   // ===============================
   // REPORT DATE DERIVATION
   // ===============================
- const reportYear = year || "";
- const reportMonthName = quarter ? quarterEndMonth[quarter] : "";
+  const reportYear = year || "";
+  const reportMonthName = quarter ? quarterEndMonth[quarter] : "";
 
-    // console.log(reportYear, reportMonthName);
-
-
+  // console.log(reportYear, reportMonthName);
 
   return (
     <>
@@ -125,8 +163,17 @@ const EconomicClassificationTable = ({ data }) => {
                       {item.title}
                     </td>
                     <td className="border border-gray-400 px-4 py-2 text-right">
-                      {item.totalBudget.toLocaleString()}
+                      {(fundingSource === "ALL"
+                        ? Object.entries(appropriationMap)
+                            .filter(([key]) =>
+                              key.startsWith(`${item.title}__`)
+                            )
+                            .reduce((sum, [, val]) => sum + val, 0)
+                        : appropriationMap[`${item.title}__${fundingSource}`] ||
+                          0
+                      ).toLocaleString()}
                     </td>
+
                     <td className="border border-gray-400 px-4 py-2 text-right">
                       {item.amountReleased.toLocaleString()}
                     </td>
@@ -148,7 +195,9 @@ const EconomicClassificationTable = ({ data }) => {
                         {b.source}
                       </td>
                       <td className="border border-gray-400 px-4 py-2 text-right">
-                        {(b.appropriation ?? 0).toLocaleString()}
+                        {(
+                          appropriationMap[`${item.title}__${b.source}`] || 0
+                        ).toLocaleString()}
                       </td>
                       <td className="border border-gray-400 px-4 py-2 text-right">
                         {(b.releases ?? 0).toLocaleString()}
@@ -174,7 +223,7 @@ const EconomicClassificationTable = ({ data }) => {
                 TOTAL
               </td>
               <td className="border border-gray-400 px-4 py-2 text-right">
-                {data.reduce((a, b) => a + b.totalBudget, 0).toLocaleString()}
+                {appropriationTotal.toLocaleString()}
               </td>
               <td className="border border-gray-400 px-4 py-2 text-right">
                 {data
@@ -204,9 +253,9 @@ const EconomicClassificationTable = ({ data }) => {
 
 export default EconomicClassificationTable;
 
-
-
 //That converts the selected date (like "2025-10-14") into a readable format ("14/10/2025").
-{/* <p className="text-sm">
+{
+  /* <p className="text-sm">
   Date: {date ? new Date(date).toLocaleDateString("en-GB") : "No date selected"}
-</p>; */}
+</p>; */
+}
