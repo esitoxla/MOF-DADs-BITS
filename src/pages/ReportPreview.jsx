@@ -81,13 +81,9 @@ useEffect(() => {
 
   // transform backend payload into your table format
  const tableData = useMemo(() => {
-   if (reportType === "IRP") {
-      return reportData;
-   }
-    
+   return reportData;
+ }, [reportData]);
 
-   return formatReportData(reportData, fundingSource);
- }, [reportType, reportData, fundingSource]);
 
 
 

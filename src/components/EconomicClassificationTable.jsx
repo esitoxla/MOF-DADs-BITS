@@ -107,23 +107,6 @@ const EconomicClassificationTable = ({ data, totals }) => {
 
           <tbody>
             {data.map((item, index) => {
-              const parentTotals = item.breakdown.reduce(
-                (acc, b) => {
-                  acc.totalBudget += b.totalBudget || 0;
-                  acc.amountReleased += b.amountReleased || 0;
-                  acc.actualExpenditure += b.actualExpenditure || 0;
-                  acc.actualPayments += b.actualPayments || 0;
-                  acc.projection += b.projection || 0;
-                  return acc;
-                },
-                {
-                  totalBudget: 0,
-                  amountReleased: 0,
-                  actualExpenditure: 0,
-                  actualPayments: 0,
-                  projection: 0,
-                }
-              );
 
               const filteredBreakdown =
                 fundingSource === "ALL"
@@ -138,7 +121,7 @@ const EconomicClassificationTable = ({ data, totals }) => {
                       {item.title}
                     </td>
                     <td className="border border-gray-400 px-4 py-2 text-right">
-                      {(parentTotals.appropriation ?? 0).toLocaleString()}
+                      {(item.totalBudget ?? 0).toLocaleString()}
                     </td>
 
                     <td className="border border-gray-400 px-4 py-2 text-right">
@@ -162,16 +145,16 @@ const EconomicClassificationTable = ({ data, totals }) => {
                         {b.source}
                       </td>
                       <td className="border border-gray-400 px-4 py-2 text-right">
-                        {(b.appropriation ?? 0).toLocaleString()}
+                        {(b.totalBudget ?? 0).toLocaleString()}
                       </td>
                       <td className="border border-gray-400 px-4 py-2 text-right">
-                        {(b.releases ?? 0).toLocaleString()}
+                        {(b.amountReleased ?? 0).toLocaleString()}
                       </td>
                       <td className="border border-gray-400 px-4 py-2 text-right">
-                        {(b.expenditure ?? 0).toLocaleString()}
+                        {(b.actualExpenditure ?? 0).toLocaleString()}
                       </td>
                       <td className="border border-gray-400 px-4 py-2 text-right">
-                        {(b.payment ?? 0).toLocaleString()}
+                        {(b.actualPayments ?? 0).toLocaleString()}
                       </td>
                       <td className="border border-gray-400 px-4 py-2 text-right">
                         {(b.projection ?? 0).toLocaleString()}
