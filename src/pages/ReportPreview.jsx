@@ -95,7 +95,7 @@ useEffect(() => {
   const renderTable = () => {
     switch (reportType) {
       case "EC":
-        return <EconomicClassificationTable data={tableData} />;
+        return <EconomicClassificationTable data={tableData} totals={totals} />;
       case "IRP":
         return <RevenuePerformanceTable data={tableData} totals={totals} />;
       // Extend for R, NA, CP etc.

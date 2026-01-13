@@ -9,11 +9,7 @@ import toast from "react-hot-toast";
 import { quarterEndMonth } from "../data/BudgetExpenditureData";
 import { getOrganizationLabel } from "../helpers/organizationLabel";
 
-
-
-
-
-const EconomicClassificationTable = ({ data }) => {
+const EconomicClassificationTable = ({ data, totals }) => {
   const { authUser } = useSelector((store) => store.auth);
   console.log(authUser);
 
@@ -25,10 +21,6 @@ const EconomicClassificationTable = ({ data }) => {
 
   const { year, quarter, fundingSource, organization } = location.state || {};
 
-  const [appropriationMap, setAppropriationMap] = useState({});
-  const [appropriationTotal, setAppropriationTotal] = useState(0);
-
-
   useEffect(() => {
     if ((!year || !quarter) && !hasShownToast.current) {
       hasShownToast.current = true;
@@ -38,46 +30,6 @@ const EconomicClassificationTable = ({ data }) => {
       navigate("/dashboard/reports/summaryReport");
     }
   }, [year, quarter, navigate]);
-
-  // Fetch appropriation summary
- useEffect(() => {
-   const fetchAppropriation = async () => {
-     try {
-       if (!year) return;
-
-       const params = {
-         year,
-         sourceOfFunding: fundingSource || "ALL",
-       };
-
-       // STRICT role-based rule
-       if (authUser?.role === "admin") {
-         params.organization = organization || "ALL";
-       } else {
-         params.organization = authUser?.organization;
-       }
-
-       const res = await api.get("/appropriation/summary", { params });
-
-       const map = {};
-       res.data.data.forEach((row) => {
-         const key = `${row.economicClassification}__${row.sourceOfFunding}`;
-         map[key] = Number(row.totalAppropriation || 0);
-       });
-
-       setAppropriationMap(map);
-       setAppropriationTotal(res.data.totals.totalAppropriation);
-     } catch (err) {
-       console.error(err);
-       toast.error("Failed to load appropriation data");
-     }
-   };
-
-   fetchAppropriation();
- }, [year, fundingSource, organization, authUser]);
-
-
-
 
   // ===============================
   // REPORT DATE DERIVATION
@@ -155,6 +107,24 @@ const EconomicClassificationTable = ({ data }) => {
 
           <tbody>
             {data.map((item, index) => {
+              const parentTotals = item.breakdown.reduce(
+                (acc, b) => {
+                  acc.totalBudget += b.totalBudget || 0;
+                  acc.amountReleased += b.amountReleased || 0;
+                  acc.actualExpenditure += b.actualExpenditure || 0;
+                  acc.actualPayments += b.actualPayments || 0;
+                  acc.projection += b.projection || 0;
+                  return acc;
+                },
+                {
+                  totalBudget: 0,
+                  amountReleased: 0,
+                  actualExpenditure: 0,
+                  actualPayments: 0,
+                  projection: 0,
+                }
+              );
+
               const filteredBreakdown =
                 fundingSource === "ALL"
                   ? item.breakdown
@@ -168,28 +138,20 @@ const EconomicClassificationTable = ({ data }) => {
                       {item.title}
                     </td>
                     <td className="border border-gray-400 px-4 py-2 text-right">
-                      {(fundingSource === "ALL"
-                        ? Object.entries(appropriationMap)
-                            .filter(([key]) =>
-                              key.startsWith(`${item.title}__`)
-                            )
-                            .reduce((sum, [, val]) => sum + val, 0)
-                        : appropriationMap[`${item.title}__${fundingSource}`] ||
-                          0
-                      ).toLocaleString()}
+                      {(parentTotals.appropriation ?? 0).toLocaleString()}
                     </td>
 
                     <td className="border border-gray-400 px-4 py-2 text-right">
-                      {item.amountReleased.toLocaleString()}
+                      {(item.amountReleased ?? 0).toLocaleString()}
                     </td>
                     <td className="border border-gray-400 px-4 py-2 text-right">
-                      {item.actualExpenditure.toLocaleString()}
+                      {(item.actualExpenditure ?? 0).toLocaleString()}
                     </td>
                     <td className="border border-gray-400 px-4 py-2 text-right">
-                      {item.actualPayments.toLocaleString()}
+                      {(item.actualPayments ?? 0).toLocaleString()}
                     </td>
                     <td className="border border-gray-400 px-4 py-2 text-right">
-                      {item.projection.toLocaleString()}
+                      {(item.projection ?? 0).toLocaleString()}
                     </td>
                   </tr>
 
@@ -200,9 +162,7 @@ const EconomicClassificationTable = ({ data }) => {
                         {b.source}
                       </td>
                       <td className="border border-gray-400 px-4 py-2 text-right">
-                        {(
-                          appropriationMap[`${item.title}__${b.source}`] || 0
-                        ).toLocaleString()}
+                        {(b.appropriation ?? 0).toLocaleString()}
                       </td>
                       <td className="border border-gray-400 px-4 py-2 text-right">
                         {(b.releases ?? 0).toLocaleString()}
@@ -227,26 +187,25 @@ const EconomicClassificationTable = ({ data }) => {
               <td className="border border-gray-400 px-4 py-2 text-left">
                 TOTAL
               </td>
+
               <td className="border border-gray-400 px-4 py-2 text-right">
-                {appropriationTotal.toLocaleString()}
+                {(totals?.totalAppropriation ?? 0).toLocaleString()}
               </td>
+
               <td className="border border-gray-400 px-4 py-2 text-right">
-                {data
-                  .reduce((a, b) => a + b.amountReleased, 0)
-                  .toLocaleString()}
+                {(totals?.totalReleases ?? 0).toLocaleString()}
               </td>
+
               <td className="border border-gray-400 px-4 py-2 text-right">
-                {data
-                  .reduce((a, b) => a + b.actualExpenditure, 0)
-                  .toLocaleString()}
+                {(totals?.totalExpenditure ?? 0).toLocaleString()}
               </td>
+
               <td className="border border-gray-400 px-4 py-2 text-right">
-                {data
-                  .reduce((a, b) => a + b.actualPayments, 0)
-                  .toLocaleString()}
+                {(totals?.totalPayment ?? 0).toLocaleString()}
               </td>
+
               <td className="border border-gray-400 px-4 py-2 text-right">
-                {data.reduce((a, b) => a + b.projection, 0).toLocaleString()}
+                {(totals?.projection ?? 0).toLocaleString()}
               </td>
             </tr>
           </tbody>

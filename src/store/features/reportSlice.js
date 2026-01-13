@@ -78,9 +78,13 @@ export const downloadQuarterlyPDF = createAsyncThunk(
       return true;
     } catch (error) {
       console.error("PDF download failed:", error);
-      return thunkAPI.rejectWithValue(
-        error.response?.data || { message: "PDF download failed" }
-      );
+      // NEVER return a Blob
+      return thunkAPI.rejectWithValue({
+        message:
+          error.response?.status === 500
+            ? "Server failed to generate PDF"
+            : "PDF download failed",
+      });
     }
   }
 );
