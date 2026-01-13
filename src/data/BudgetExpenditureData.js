@@ -57,18 +57,42 @@ export const sourceOfFundingOptions = [
 
 //DATA FOR REPORT
 export const organizationOptions = [
-  { value: "FH", label: "Finance Headquarters" },
-  { value: "CAGD", label: "Controller and Acct. Generals Dept" },
-  { value: "SS", label: "Statistical Service" },
-  { value: "PPA", label: "Public Procurement Authority" },
-  { value: "IAT", label: "Institute of Accountancy Training" },
-  { value: "SEC", label: "Securities and Exchange Commission" },
-  { value: "GRA", label: "Ghana Revenue Authority" },
-  { value: "ITAB", label: "Independent Tax Appeals Board (ITAB)" },
-  { value: "FIC", label: "Financial Intelligence Centre" },
-  { value: "SIGA", label: "State Interest and Governance Authority" },
-  { value: "IAA", label: "Internal Audit Agency" },
-  { value: "NPRA", label: "National Pensions and Regulatory Authority" },
+  { value: "Finance Headquarters", label: "Finance Headquarters" },
+  {
+    value: "Controller and Acct. Generals Dept",
+    label: "Controller and Acct. Generals Dept",
+  },
+  { value: "Statistical Service", label: "Statistical Service" },
+  {
+    value: "Public Procurement Authority",
+    label: "Public Procurement Authority",
+  },
+  {
+    value: "Institute of Accountancy Training",
+    label: "Institute of Accountancy Training",
+  },
+  {
+    value: "Securities and Exchange Commission",
+    label: "Securities and Exchange Commission",
+  },
+  { value: "Ghana Revenue Authority", label: "Ghana Revenue Authority" },
+  {
+    value: "Independent Tax Appeals Board (ITAB)",
+    label: "Independent Tax Appeals Board (ITAB)",
+  },
+  {
+    value: "Financial Intelligence Centre",
+    label: "Financial Intelligence Centre",
+  },
+  {
+    value: "State Interest and Governance Authority",
+    label: "State Interest and Governance Authority",
+  },
+  { value: "Internal Audit Agency", label: "Internal Audit Agency" },
+  {
+    value: "National Pensions and Regulatory Authority",
+    label: "National Pensions and Regulatory Authority",
+  },
   { value: "ALL", label: "All Organizations" },
 ];
 
