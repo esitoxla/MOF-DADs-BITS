@@ -15,11 +15,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { logoutUser, getUser } from "../store/features/authSlice";
 import toast from "react-hot-toast";
 
-export default function Sidebar({ toggleSidebar }) {
+export default function Sidebar({ toggleSidebar, preview }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const { authUser } = useSelector((store) => store.auth);
+
+  //Decide which image to show
+    const avatarSrc = preview || authUser?.avatarUrl || profile; // fallback default image
   // console.log(authUser);
 
   useEffect(() => {
@@ -58,7 +61,7 @@ export default function Sidebar({ toggleSidebar }) {
         <div className="flex gap-2 sm:gap-4 items-center">
           <div>
             <img
-              src={profile}
+              src={avatarSrc}
               alt="Profile"
               className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full"
             />

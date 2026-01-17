@@ -21,7 +21,7 @@ export const registerUser = createAsyncThunk(
 
 //for login
 export const loginUser = createAsyncThunk(
-  "login",
+  "auth/login",
   async (loginData, thunkAPI) => {
     try {
       const res = await api.post("/auth/login", loginData);
@@ -37,7 +37,7 @@ export const loginUser = createAsyncThunk(
 );
 
 //for getting a user details
-export const getUser = createAsyncThunk("getUser", async (_, thunkAPI) => {
+export const getUser = createAsyncThunk("auth/getUser", async (_, thunkAPI) => {
   try {
     const res = await api.get("/auth/me");
     // console.log(res.data.user);
@@ -52,33 +52,34 @@ export const getUser = createAsyncThunk("getUser", async (_, thunkAPI) => {
 });
 
 export const changePassword = createAsyncThunk(
-  "changePass",
-  async (CData, thunkAPI) => {
+  "auth/changePassword",
+  async (data, thunkAPI) => {
     try {
-      const res = await api.post("/auth/change-password", CData);
-      // console.log(res.data);
-      return thunkAPI.fulfillWithValue(res.data);
+      const res = await api.post("/auth/change-password", data);
+      return res.data;
     } catch (error) {
-      if (error.response && error.response.data.message) {
-        return thunkAPI.rejectWithValue(null);
-      }
-      return thunkAPI.rejectWithValue(null);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Password change failed"
+      );
     }
   }
 );
 
 //for logout
-export const logoutUser = createAsyncThunk("logout", async (_, thunkAPI) => {
-  try {
-    const res = await api.post("/auth/logout");
-    return res.data;
-  } catch (error) {
-    console.log(error);
-    if (error.response && error.response.data.message) {
-      return thunkAPI.rejectWithValue(error.response.data.message);
+export const logoutUser = createAsyncThunk(
+  "auth/logout",
+  async (_, thunkAPI) => {
+    try {
+      const res = await api.post("/auth/logout");
+      return res.data;
+    } catch (error) {
+      console.log(error);
+      if (error.response && error.response.data.message) {
+        return thunkAPI.rejectWithValue(error.response.data.message);
+      }
     }
   }
-});
+);
 
 export const refreshSession = createAsyncThunk(
   "auth/refresh",
@@ -95,17 +96,61 @@ export const refreshSession = createAsyncThunk(
 );
 
 
+export const uploadAvatar = createAsyncThunk(
+  "auth/uploadAvatar",
+  async (formData, { rejectWithValue }) => {
+    try {
+      const res = await api.patch("/auth/upload-avatar", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      return res.data.user;
+    } catch (err) {
+      return rejectWithValue(
+        err?.response?.data?.message || "Avatar upload failed"
+      );
+    }
+  }
+);
+
+
+export const removeProfilePic = createAsyncThunk(
+  "auth/removeProfilePic",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await api.patch("/auth/remove-avatar");
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(
+        err?.response?.data?.message || "Failed to remove profile picture"
+      );
+    }
+  }
+);
+
+
+
 
 export const authSlice = createSlice({
   name: "auth",
   initialState: {
     authUser: null,
-    loading: true,
+    loading: false,
     error: null,
+    passwordChanged: false,
+    isAuthenticated: false,
+    authChecked: false,
   },
+
   reducers: {
     setUser: (state, action) => {
       state.authUser = action.payload;
+    },
+    resetPasswordState: (state) => {
+      state.passwordChanged = false;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -119,7 +164,7 @@ export const authSlice = createSlice({
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
-        state.user = null;
+        state.authUser = null;
         state.error = action.payload;
       })
 
@@ -152,16 +197,17 @@ export const authSlice = createSlice({
       })
 
       //this is for change password cases
-      .addCase(changePassword.pending, (state, action) => {
+      .addCase(changePassword.pending, (state) => {
         state.loading = true;
+        state.error = null;
+        state.passwordChanged = false;
       })
-      .addCase(changePassword.fulfilled, (state, action) => {
+      .addCase(changePassword.fulfilled, (state) => {
         state.loading = false;
-        state.message = action.payload;
+        state.passwordChanged = true;
       })
       .addCase(changePassword.rejected, (state, action) => {
         state.loading = false;
-        state.message = null;
         state.error = action.payload;
       })
 
@@ -172,6 +218,7 @@ export const authSlice = createSlice({
       .addCase(logoutUser.fulfilled, (state, action) => {
         state.loading = false;
         state.authUser = null;
+        state.isAuthenticated = false;
       })
       .addCase(logoutUser.rejected, (state, action) => {
         state.loading = false;
@@ -180,16 +227,59 @@ export const authSlice = createSlice({
       })
 
       //for refresh token
+      .addCase(refreshSession.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(refreshSession.fulfilled, (state, action) => {
+        state.loading = false;
         state.authUser = action.payload;
         state.isAuthenticated = true;
+        //This guarantees auth is “checked” exactly once.
+        state.authChecked = true; //
       })
       .addCase(refreshSession.rejected, (state) => {
+        state.loading = false;
         state.authUser = null;
         state.isAuthenticated = false;
+        state.authChecked = true; //
+      })
+
+      //this is for profile pic upload
+      .addCase(uploadAvatar.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(uploadAvatar.fulfilled, (state, action) => {
+        state.loading = false;
+
+        if (state.authUser) {
+          state.authUser = {
+            ...state.authUser,
+            ...action.payload, 
+          };
+        }
+      })
+
+      .addCase(uploadAvatar.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // REMOVE PROFILE PIC
+      .addCase(removeProfilePic.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(removeProfilePic.fulfilled, (state, action) => {
+        state.loading = false;
+        state.authUser = action.payload.user;
+      })
+      .addCase(removeProfilePic.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
+
+
   },
 });
 
-export const { setUser } = authSlice.actions;
+export const { setUser, resetPasswordState } = authSlice.actions;
 export default authSlice.reducer;

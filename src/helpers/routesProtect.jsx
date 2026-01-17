@@ -1,29 +1,27 @@
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { getUser } from "../store/features/authSlice";
-import { useEffect } from "react";
+import { useSelector } from "react-redux";
 import { Navigate } from "react-router";
 
 export default function PrivateRoute({ children, allowedRoles }) {
-  const { authUser, loading, error } = useSelector((store) => store.auth);
-  const dispatch = useDispatch();
+  const { authUser, authChecked, loading } = useSelector((store) => store.auth);
 
-  useEffect(() => {
-    dispatch(getUser());
-  }, [dispatch]);
+  // Wait ONLY until auth is checked
+  if (!authChecked) {
+    return <div>Loading...</div>;
+  }
 
-  if (loading) return <div>Loading...</div>;
+  //After check, block dashboard if logged out
+  if (!authUser) {
+    return <Navigate to="/" replace />;
+  }
 
-  // Check if user is logged in
-  if (!authUser) return <Navigate to="/" replace />;
-
-  // Check role authorization
-  if (allowedRoles && !allowedRoles.includes(authUser?.role)) {
+  if (allowedRoles && !allowedRoles.includes(authUser.role)) {
     return <Navigate to="/dashboard" replace />;
   }
 
   return children;
 }
+
 
 
 export const PublicRoute = ({ children }) => {

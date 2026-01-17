@@ -45,7 +45,11 @@ function App() {
     },
     {
       path: "/dashboard",
-      Component: DashboardLayout,
+      element: (
+        <PrivateRoute>
+          <DashboardLayout />
+        </PrivateRoute>
+      ),
       children: [
         {
           index: true,
@@ -112,7 +116,7 @@ function App() {
               Component: AdminDashboard,
             },
             {
-              path:"users" ,
+              path: "users",
               Component: Users,
             },
             {

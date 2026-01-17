@@ -8,7 +8,7 @@ import {
 } from "react-icons/ai";
 import { CiLock } from "react-icons/ci";
 import { getUser, loginUser } from "../store/features/authSlice";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 
 
@@ -25,7 +25,7 @@ export default function Login() {
     e.preventDefault();
 
     if (!username) {
-      toast.error("Email should not be empty");
+      toast.error("Username should not be empty");
       return;
     }
 
