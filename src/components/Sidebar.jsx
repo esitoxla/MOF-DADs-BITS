@@ -91,7 +91,7 @@ export default function Sidebar({ toggleSidebar, preview }) {
             )}
           </NavLink>
 
-          <NavLink to="revenue&cash">
+          <NavLink to="/dashboard/revenue&cash">
             {({ isActive }) => (
               <div
                 className={`flex gap-2 items-center px-4 py-2 ${
@@ -106,7 +106,7 @@ export default function Sidebar({ toggleSidebar, preview }) {
             )}
           </NavLink>
 
-          <NavLink to="budget">
+          <NavLink to="/dashboard/budget">
             {({ isActive }) => (
               <div
                 className={`flex gap-2 items-center px-4 py-2 ${
@@ -121,7 +121,7 @@ export default function Sidebar({ toggleSidebar, preview }) {
             )}
           </NavLink>
 
-          <NavLink to="reports">
+          <NavLink to="/dashboard/reports">
             {({ isActive }) => (
               <div
                 className={`flex gap-2 items-center px-4 py-2 ${
@@ -137,7 +137,7 @@ export default function Sidebar({ toggleSidebar, preview }) {
           </NavLink>
 
           {authUser?.role === "admin" && (
-            <NavLink to="users">
+            <NavLink to="/dashboard/users">
               {({ isActive }) => (
                 <div
                   className={`flex gap-2 items-center px-4 py-2 ${
