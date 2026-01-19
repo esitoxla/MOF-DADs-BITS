@@ -108,10 +108,7 @@ const EconomicClassificationTable = ({ data, totals }) => {
           <tbody>
             {data.map((item, index) => {
 
-              const filteredBreakdown =
-                fundingSource === "ALL"
-                  ? item.breakdown
-                  : item.breakdown.filter((b) => b.source === fundingSource);
+              
 
               return (
                 <Fragment key={index}>
@@ -139,7 +136,7 @@ const EconomicClassificationTable = ({ data, totals }) => {
                   </tr>
 
                   {/* Breakdown rows */}
-                  {filteredBreakdown.map((b, i) => (
+                  {item.breakdown.map((b, i) => (
                     <tr key={i} className="text-gray-700">
                       <td className="border border-gray-400 px-8 py-2 text-left italic">
                         {b.source}

@@ -112,6 +112,7 @@ useEffect(() => {
            year,
            quarter,
            sourceOfFunding: fundingSource,
+           organization
          })
        );
      }
@@ -122,6 +123,7 @@ useEffect(() => {
            year,
            quarter,
            sourceOfFunding: fundingSource,
+           organization
          })
        );
      }
