@@ -2,9 +2,11 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getBase64Image } from "../imageToBase64";
 import logo from "../../assets/images/logo.jpeg";
+import { formatGHS } from "../numberFormat";
 
-export const exportToPDF = async (records, meta = {}) => {
-  if (!records || records.length === 0) return;
+
+export const exportToPDF = async (detailedRecords, meta = {}) => {
+  if (!detailedRecords || detailedRecords.length === 0) return;
 
   const doc = new jsPDF("l", "pt", "a4"); // Landscape
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -23,8 +25,12 @@ export const exportToPDF = async (records, meta = {}) => {
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text(`Organization: ${meta.organization || ""}`, 40, 60);
-  doc.text(`Date: ${meta.date || ""}`, 40, 75);
+  doc.text(`DADs: ${meta.organization || ""}`, 40, 60);
+  doc.text(
+    `Reporting Period: Q${meta.quarter || ""} ${meta.year || ""}`,
+    40,
+    75
+  );
   doc.text("Currency: Ghana Cedis (GHS)", 40, 90);
 
   /* =========================
@@ -54,7 +60,7 @@ export const exportToPDF = async (records, meta = {}) => {
   /* =========================
      TABLE
   ========================== */
-  const tableBody = records.map((r, index) => [
+  const tableBody = detailedRecords.map((r, index) => [
     index + 1,
     r.activity,
     r.date,
@@ -62,12 +68,12 @@ export const exportToPDF = async (records, meta = {}) => {
     r.sourceOfFunding,
     r.naturalAccount,
     r.description,
-    r.appropriation,
-    r.allotment,
-    r.allotmentBalance,
-    r.releases,
-    r.actualExpenditure,
-    r.actualPayment,
+    formatGHS(r.appropriation),
+    formatGHS(r.allotment),
+    formatGHS(r.releases),
+    formatGHS(r.actualExpenditure),
+    formatGHS(r.actualPayment),
+    formatGHS(r.allotmentBalance),
   ]);
 
   autoTable(doc, {
@@ -83,10 +89,10 @@ export const exportToPDF = async (records, meta = {}) => {
         "Description",
         "Appropriation",
         "Allotment",
-        "Allotment Balance",
         "Releases",
         "Actual Expenditure",
         "Actual Payment",
+        "Allotment Balance",
       ],
     ],
     body: tableBody,
@@ -128,6 +134,7 @@ export const exportToPDF = async (records, meta = {}) => {
       );
     },
   });
+
 
   doc.save("Detailed_EC_Report.pdf");
 };

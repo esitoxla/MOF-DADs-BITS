@@ -2,12 +2,12 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
 export const exportRevenueToExcel = (
-  records,
+  detailedRecords,
   fileName = "Detailed_Revenue_Report.xlsx"
 ) => {
-  if (!records || records.length === 0) return;
+  if (!detailedRecords || detailedRecords.length === 0) return;
 
-  const formattedData = records.map((r, index) => ({
+  const formattedData = detailedRecords.map((r, index) => ({
     "S.N": index + 1,
     Date: r.date,
     "Revenue Category": r.revenue_category,

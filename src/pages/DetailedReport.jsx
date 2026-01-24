@@ -4,8 +4,11 @@ import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { reportTypeOptions } from '../data/BudgetExpenditureData';
 import { organizationOptions } from '../data/BudgetExpenditureData';
+import { quarterOptions } from '../data/BudgetExpenditureData';
 import Select from "react-select";
 import { useSelector } from 'react-redux';
+import toast from 'react-hot-toast';
+
 
 
 export default function DetailedReport() {
@@ -14,9 +17,10 @@ export default function DetailedReport() {
   // State for selected options
   const [reportType, setReportType] = useState(null);
   const [organization, setOrganization] = useState(null);
+  const [quarter, setQuarter] = useState(null);
+  const [year, setYear] = useState("");
 
-  const [date, setDate] = useState("");
-
+  
   //ADMIN CHECKS
   const { authUser } = useSelector((state) => state.auth);
   const userRole = authUser?.role;
@@ -25,14 +29,25 @@ export default function DetailedReport() {
   // Handle generate button click
   //these states are being passed via React Router:
  const handleGenerate = () => {
-   if (!reportType || !date) {
-     alert("Please select report type and date");
+   if (!reportType ) {
+     toast.error("Please select report type.");
+     return;
+   }
+
+   if (!quarter ) {
+     toast.error("Please select report period.");
+     return;
+   }
+
+   if (!year) {
+     toast.error("Please select report period.");
      return;
    }
 
    const state = {
      reportType: reportType.value,
-     date,
+     quarter: quarter.value,
+     year,
      organization: isAdmin ? organization?.value : authUser?.organization,
    };
 
@@ -101,19 +116,28 @@ export default function DetailedReport() {
             />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Date
+          <div className="flex flex-col gap-4">
+            <label className="block text-sm font-semibold text-gray-700">
+              Reporting Period
             </label>
 
+            <Select
+              options={quarterOptions}
+              value={quarter}
+              onChange={setQuarter}
+              placeholder="Select Quarter"
+            />
+
             <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-2  border border-gray-300 rounded-lg"
+              type="number"
+              min={2000}
+              max={2100}
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+              placeholder="Year (e.g. 2025)"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
             />
           </div>
-
           {/* Action Button */}
           <div className="flex justify-end mt-4">
             <button

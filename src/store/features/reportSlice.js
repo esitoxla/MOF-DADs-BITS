@@ -89,6 +89,24 @@ export const downloadQuarterlyPDF = createAsyncThunk(
   }
 );
 
+//fetching detailed data record
+export const fetchDetailedECReport = createAsyncThunk(
+  "report/fetchDetailedECReport",
+  async ({ year, quarter, organization }, thunkAPI) => {
+    try {
+      const response = await api.get("/reports/detailed", {
+        params: { year, quarter, organization },
+      });
+      return response.data.records;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data || { message: "Error fetching detailed EC report" }
+      );
+    }
+  }
+);
+
+
 
 
 
@@ -96,8 +114,13 @@ const reportSlice = createSlice({
   name: "report",
   initialState: {
     loading: false,
+
+    // Summary EC
     reportData: [],
     totals: {},
+
+    // Detailed EC
+    detailedRecords: [],
     error: null,
   },
   reducers: {},
@@ -139,6 +162,22 @@ const reportSlice = createSlice({
       .addCase(downloadQuarterlyPDF.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || "PDF download failed";
+      })
+
+
+      //DETAILED REPORT
+      .addCase(fetchDetailedECReport.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchDetailedECReport.fulfilled, (state, action) => {
+        state.loading = false;
+        state.detailedRecords = action.payload || [];
+      })
+      .addCase(fetchDetailedECReport.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.payload?.message || "Failed to load detailed EC report";
       });
 
   },

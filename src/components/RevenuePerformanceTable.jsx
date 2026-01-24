@@ -1,6 +1,5 @@
 import React from 'react'
 import { useSelector } from 'react-redux';
-import { useLocation } from 'react-router';
 import logo from "../assets/images/logo.jpeg";
 import { useMemo, useEffect, useRef, useState} from 'react';
 import { useNavigate } from 'react-router';
@@ -20,23 +19,22 @@ const REVENUE_CATEGORIES = [
 
 
 
-export default function RevenuePerformanceTable({ data = [], totals }) {
+export default function RevenuePerformanceTable({
+  data = [],
+  totals,
+  year,
+  quarter,
+  organization,
+}) {
   const { authUser } = useSelector((store) => store.auth);
 
-  //This extracts the values passed from the previous page — including the date
-  const location = useLocation();
+  const navigate = useNavigate();
+  //this prevents showing toast more than once
+  const hasShownToast = useRef(false);
 
-   const navigate = useNavigate();
-    //this prevents showing toast more than once
-    const hasShownToast = useRef(false);
-
-
-  const { year, quarter, organization } = location.state || {};
 
   const PAGE_SIZE = 5; // choose what you want
   const [currentPage, setCurrentPage] = useState(1);
-
-
 
   useEffect(() => {
     if ((!year || !quarter) && !hasShownToast.current) {
@@ -48,9 +46,7 @@ export default function RevenuePerformanceTable({ data = [], totals }) {
     }
   }, [year, quarter, navigate]);
 
-
   const normalize = (str = "") => str.trim().toLowerCase();
-
 
   const dataMap = useMemo(() => {
     const map = {};
@@ -60,8 +56,6 @@ export default function RevenuePerformanceTable({ data = [], totals }) {
     return map;
   }, [data]);
 
-
-
   const paginatedCategories = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     const end = start + PAGE_SIZE;
@@ -70,16 +64,11 @@ export default function RevenuePerformanceTable({ data = [], totals }) {
 
   const totalPages = Math.ceil(REVENUE_CATEGORIES.length / PAGE_SIZE);
 
-
-
-
-
   // ===============================
   // REPORT DATE DERIVATION
   // ===============================
   const reportYear = year || "";
-   const reportMonthName = quarter ? quarterEndMonth[quarter] : "";
-  
+  const reportMonthName = quarter ? quarterEndMonth[quarter] : "";
 
   return (
     <>

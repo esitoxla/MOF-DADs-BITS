@@ -4,7 +4,6 @@ import { RiArrowDownSFill } from "react-icons/ri";
 import { useLocation } from "react-router";
 import { FaFilePdf, FaFileExcel } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import { formatReportData } from "../helpers/formatReportData";
 import { fetchQuarterlyReport } from "../store/features/reportSlice";
 import EconomicClassificationTable from "../components/EconomicClassificationTable";
 import { useNavigate } from "react-router";
@@ -13,7 +12,10 @@ import {
   downloadQuarterlyExcel,
   downloadQuarterlyPDF,
 } from "../store/features/reportSlice";
-import { downloadQuarterlyRevenueExcel, downloadQuarterlyRevenuePDF } from "../store/features/revenueReport";
+import {
+  downloadQuarterlyRevenueExcel,
+  downloadQuarterlyRevenuePDF,
+} from "../store/features/revenueReport";
 import RevenuePerformanceTable from "../components/RevenuePerformanceTable";
 
 export default function ReportPreview() {
@@ -24,76 +26,78 @@ export default function ReportPreview() {
   const economicClass = useSelector((store) => store.report);
   const revenue = useSelector((store) => store.revenueReport);
 
-  
-const {
-  reportType = "EC",
-  fundingSource = "ALL",
-  year,
-  quarter,
-  organization,
-} = location.state || {};
+  const {
+    reportType = "EC",
+    fundingSource = "ALL",
+    year,
+    quarter,
+    organization,
+  } = location.state || {};
 
-useEffect(() => {
-  if (!year || !quarter) {
-    navigate("/dashboard/reports/summaryReport");
-  }
-}, [year, quarter, navigate]);
-
-
-  
+  useEffect(() => {
+    if (!year || !quarter) {
+      navigate("/dashboard/reports/summaryReport");
+    }
+  }, [year, quarter, navigate]);
 
   const { reportData, totals, loading, error } =
     reportType === "IRP" ? revenue : economicClass;
 
-
- 
-
-  
-
   // fetch from backend when page loads or filters change
- useEffect(() => {
-   if (!reportType || !year || !quarter) return;
+  useEffect(() => {
+    if (!reportType || !year || !quarter) return;
 
-   if (reportType === "EC") {
-     dispatch(
-       fetchQuarterlyReport({
-         year,
-         quarter,
-         sourceOfFunding: fundingSource,
-         organization,
-       })
-     );
-   }
+    if (reportType === "EC") {
+      dispatch(
+        fetchQuarterlyReport({
+          year,
+          quarter,
+          sourceOfFunding: fundingSource,
+          organization,
+        })
+      );
+    }
 
-   if (reportType === "IRP") {
-     dispatch(
-       fetchQuarterlyRevenueReport({
-         year,
-         quarter,
-         organization,
-       })
-     );
-   }
- }, [dispatch, reportType, year, quarter, fundingSource, organization]);
-
-
-
+    if (reportType === "IRP") {
+      dispatch(
+        fetchQuarterlyRevenueReport({
+          year,
+          quarter,
+          organization,
+        })
+      );
+    }
+  }, [dispatch, reportType, year, quarter, fundingSource, organization]);
 
   // transform backend payload into your table format
- const tableData = useMemo(() => {
-   return reportData;
- }, [reportData]);
-
-
-
+  const tableData = useMemo(() => {
+    return reportData;
+  }, [reportData]);
 
   // Choose which table to render
   const renderTable = () => {
     switch (reportType) {
       case "EC":
-        return <EconomicClassificationTable data={tableData} totals={totals} />;
+        return (
+          <EconomicClassificationTable
+            data={tableData}
+            totals={totals}
+            year={year}
+            quarter={quarter}
+            fundingSource={fundingSource}
+            organization={organization}
+          />
+        );
       case "IRP":
-        return <RevenuePerformanceTable data={tableData} totals={totals} />;
+        return (
+          <RevenuePerformanceTable
+            data={tableData}
+            totals={totals}
+            year={year}
+            quarter={quarter}
+            organization={organization}
+          />
+        );
       // Extend for R, NA, CP etc.
       default:
         return <p>No table available for this report type.</p>;
@@ -101,58 +105,59 @@ useEffect(() => {
   };
 
   // export handlers use tableData (not local dummy)
- const handleExport = (type) => {
-   // ===============================
-   // ECONOMIC CLASSIFICATION (EC)
-   // ===============================
-   if (reportType === "EC") {
-     if (type === "pdf") {
-       dispatch(
-         downloadQuarterlyPDF({
-           year,
-           quarter,
-           sourceOfFunding: fundingSource,
-           organization
-         })
-       );
-     }
+  const handleExport = (type) => {
+    // ===============================
+    // ECONOMIC CLASSIFICATION (EC)
+    // ===============================
+    if (reportType === "EC") {
+      if (type === "pdf") {
+        dispatch(
+          downloadQuarterlyPDF({
+            year,
+            quarter,
+            sourceOfFunding: fundingSource,
+            organization,
+          })
+        );
+      }
 
-     if (type === "excel") {
-       dispatch(
-         downloadQuarterlyExcel({
-           year,
-           quarter,
-           sourceOfFunding: fundingSource,
-           organization
-         })
-       );
-     }
-   }
+      if (type === "excel") {
+        dispatch(
+          downloadQuarterlyExcel({
+            year,
+            quarter,
+            sourceOfFunding: fundingSource,
+            organization,
+          })
+        );
+      }
+    }
 
-   // ===============================
-   // REVENUE PERFORMANCE (IRP)
-   // ===============================
-   if (reportType === "IRP") {
-     if (type === "pdf") {
-       dispatch(
-         downloadQuarterlyRevenuePDF({
-           year,
-           quarter,
-         })
-       );
-     }
+    // ===============================
+    // REVENUE PERFORMANCE (IRP)
+    // ===============================
+    if (reportType === "IRP") {
+      if (type === "pdf") {
+        dispatch(
+          downloadQuarterlyRevenuePDF({
+            year,
+            quarter,
+            organization,
+          })
+        );
+      }
 
-     if (type === "excel") {
-       dispatch(
-         downloadQuarterlyRevenueExcel({
-           year,
-           quarter,
-         })
-       );
-     }
-   }
- };
-
+      if (type === "excel") {
+        dispatch(
+          downloadQuarterlyRevenueExcel({
+            year,
+            quarter,
+            organization,
+          })
+        );
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-green-50 p-6 flex flex-col ">

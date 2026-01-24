@@ -3,8 +3,8 @@ import autoTable from "jspdf-autotable";
 import { getBase64Image } from "../imageToBase64";
 import logo from "../../assets/images/logo.jpeg";
 
-export const exportRevenueToPDF = async (records, meta = {}) => {
-  if (!records || records.length === 0) return;
+export const exportRevenueToPDF = async (detailedRecords, meta = {}) => {
+  if (!detailedRecords || detailedRecords.length === 0) return;
 
   const doc = new jsPDF("l", "pt", "a4"); // landscape
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -26,7 +26,7 @@ export const exportRevenueToPDF = async (records, meta = {}) => {
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.text(`Organization: ${meta.organization || ""}`, 40, 60);
-  doc.text(`Date: ${meta.date || ""}`, 40, 75);
+  doc.text( `Reporting Period: Q${meta.quarter || ""} ${meta.year || ""}`, 40, 75);
   doc.text("Currency: Ghana Cedis (GHS)", 40, 90);
 
   /* =========================

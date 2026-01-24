@@ -5,59 +5,75 @@ import { RiArrowDownSFill } from "react-icons/ri";
 import logo from "../assets/images/logo.jpeg";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router";
-import { fetchExpenditures } from "../store/features/budgetSlice";
+import { fetchDetailedECReport } from "../store/features/reportSlice";
 import { useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 import Pagination from "../components/Pagination";
 import { exportToExcel } from "../utils/economicClass/excelExport";
 import { exportToPDF } from "../utils/economicClass/pdfExport";
+import { getOrganizationLabel } from "../helpers/organizationLabel";
+
+
 
 export default function DetailedEC() {
   const { authUser } = useSelector((store) => store.auth);
   const location = useLocation();
-  const { date } = location.state || {};
 
-  const navigate = useNavigate()
+  const { year, quarter, organization } = location.state || {};
+
+  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { records, loading, error } = useSelector((store) => store.budget);
+  const { detailedRecords, loading, error } = useSelector(
+    (store) => store.report
+  );
 
-   
+  const resolvedOrganization =
+    organization === "ALL"
+      ? "ALL ORGANIZATIONS"
+      : organization || authUser?.organization;
+
+
 
   useEffect(() => {
-    dispatch(fetchExpenditures());
-  }, [dispatch]);
+    if (!year || !quarter) return;
 
+    dispatch(
+      fetchDetailedECReport({
+        year,
+        quarter,
+        organization,
+      })
+    );
+  }, [dispatch, year, quarter, organization]);
 
   //Pagination logic
   const PAGE_SIZE = 10;
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalItems = records.length;
+  const totalItems = detailedRecords.length;
 
   const startIndex = (currentPage - 1) * PAGE_SIZE;
-  const paginatedRecords = records.slice(startIndex, startIndex + PAGE_SIZE);
-
-
+  const paginatedRecords = detailedRecords.slice(startIndex, startIndex + PAGE_SIZE);
 
   //If filters or date change, you must reset to page 1.
   useEffect(() => {
     setCurrentPage(1);
-  }, [records]);
+  }, [detailedRecords]);
 
   const handleExport = (type) => {
     if (type === "pdf") {
-      exportToPDF(records, {
-        organization: authUser?.organization,
-        date: date ? new Date(date).toLocaleDateString("en-GB") : "",
+      exportToPDF(detailedRecords, {
+        organization: resolvedOrganization,
+        year,
+        quarter,
       });
+
     }
 
     if (type === "excel") {
-      exportToExcel(records, "Detailed_EC_Report.xlsx");
+      exportToExcel(detailedRecords, "Detailed_EC_Report.xlsx");
     }
   };
-
-
 
   if (loading) return <p className="text-center py-4">Loading records...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
@@ -107,13 +123,18 @@ export default function DetailedEC() {
             </h1>
             <p className="text-sm">
               <span> DADs: </span>
-              <span>{authUser?.organization}</span>
+              <span>
+                {" "}
+                {organization === "ALL"
+                  ? "ALL ORGANIZATIONS"
+                  : getOrganizationLabel(
+                      organization || authUser?.organization
+                    )}
+              </span>
             </p>
+
             <p className="text-sm">
-              Date:{" "}
-              {date
-                ? new Date(date).toLocaleDateString("en-GB")
-                : "No date selected"}
+              Reporting Period: Q{quarter} {year}
             </p>
 
             <p className="text-sm">Currency: Ghana cedis (GHS)</p>
@@ -163,7 +184,7 @@ export default function DetailedEC() {
               </tr>
             </thead>
             <tbody className="text-gray-900">
-              {records.length === 0 ? (
+              {detailedRecords.length === 0 ? (
                 <tr>
                   <td
                     colSpan="15"
@@ -173,47 +194,47 @@ export default function DetailedEC() {
                   </td>
                 </tr>
               ) : (
-                paginatedRecords.map((record, index) => (
-                  <tr key={record.id || index} className="text-center">
+                paginatedRecords.map((detailedRecords, index) => (
+                  <tr key={detailedRecords.id || index} className="text-center">
                     <td className="border border-gray-400 px-2 py-1 bg-gray-50 font-semibold">
                       {startIndex + index + 1}
                     </td>
 
                     <td className="border border-gray-400 px-2 py-1">
-                      {record.activity}
+                      {detailedRecords.activity}
                     </td>
                     <td className="border border-gray-400 px-2 py-1">
-                      {record.date}
+                      {detailedRecords.date}
                     </td>
                     <td className="border border-gray-400 px-2 py-1">
-                      {record.economicClassification}
+                      {detailedRecords.economicClassification}
                     </td>
                     <td className="border border-gray-400 px-2 py-1">
-                      {record.sourceOfFunding}
+                      {detailedRecords.sourceOfFunding}
                     </td>
                     <td className="border border-gray-400 px-2 py-1">
-                      {record.naturalAccount}
+                      {detailedRecords.naturalAccount}
                     </td>
                     <td className="border border-gray-400 px-2 py-1">
-                      {record.description}
+                      {detailedRecords.description}
                     </td>
                     <td className="border border-gray-400 px-2 py-1">
-                      {record.appropriation}
+                      {detailedRecords.appropriation}
                     </td>
                     <td className="border border-gray-400 px-2 py-1">
-                      {record.allotment}
+                      {detailedRecords.allotment}
                     </td>
                     <td className="border border-gray-400 px-2 py-1">
-                      {record.releases}
+                      {detailedRecords.releases}
                     </td>
                     <td className="border border-gray-400 px-2 py-1">
-                      {record.actualExpenditure}
+                      {detailedRecords.actualExpenditure}
                     </td>
                     <td className="border border-gray-400 px-2 py-1">
-                      {record.actualPayment}
+                      {detailedRecords.actualPayment}
                     </td>
                     <td className="border border-gray-400 px-2 py-1">
-                      {record.allotmentBalance}
+                      {detailedRecords.allotmentBalance}
                     </td>
                   </tr>
                 ))

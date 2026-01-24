@@ -3,23 +3,27 @@ import { api } from "../config/axios";
 import { Fragment } from "react";
 import logo from "../assets/images/logo.jpeg";
 import { useSelector } from "react-redux";
-import { useLocation, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { quarterEndMonth } from "../data/BudgetExpenditureData";
 import { getOrganizationLabel } from "../helpers/organizationLabel";
 
-const EconomicClassificationTable = ({ data, totals }) => {
+const EconomicClassificationTable = ({
+  data,
+  totals,
+  year,
+  quarter,
+  fundingSource,
+  organization,
+}) => {
   const { authUser } = useSelector((store) => store.auth);
   console.log(authUser);
 
-  //This extracts the values passed from the previous page — including the date
-  const location = useLocation();
   const navigate = useNavigate();
   //this prevents showing toast more than once
   const hasShownToast = useRef(false);
 
-  const { year, quarter, fundingSource, organization } = location.state || {};
 
   useEffect(() => {
     if ((!year || !quarter) && !hasShownToast.current) {
@@ -107,7 +111,6 @@ const EconomicClassificationTable = ({ data, totals }) => {
 
           <tbody>
             {data.map((item, index) => {
-
               const filteredBreakdown =
                 fundingSource === "ALL"
                   ? item.breakdown

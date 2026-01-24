@@ -8,47 +8,61 @@ import { useLocation, useNavigate } from "react-router";
 import { useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 import Pagination from "../components/Pagination";
-import { fetchRevenues } from "../store/features/revenueSlice";
+import { fetchDetailedRevenueReport } from "../store/features/revenueReport";
 import { exportRevenueToExcel } from "../utils/revenue/exportToExcel";
 import { exportRevenueToPDF } from "../utils/revenue/exportToPdf";
 
 export default function DetailedRevenue() {
   const { authUser } = useSelector((store) => store.auth);
-  const { records, loading, error } = useSelector((store) => store.revenue);
+ const { detailedRecords, loading, error } = useSelector(
+   (state) => state.revenueReport
+ );
+
+ console.log(detailedRecords);
+
   const location = useLocation();
-  const { date } = location.state || {};
+ const { year, quarter, organization } = location.state || {};
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    dispatch(fetchRevenues());
-  }, [dispatch]);
+ useEffect(() => {
+   if (!year || !quarter) return;
+
+   dispatch(
+     fetchDetailedRevenueReport({
+       year,
+       quarter,
+       organization,
+     })
+   );
+ }, [dispatch, year, quarter, organization]);
 
   //Pagination logic
   const PAGE_SIZE = 10;
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalItems = records.length;
+  const totalItems = detailedRecords.length;
 
   const startIndex = (currentPage - 1) * PAGE_SIZE;
-  const paginatedRecords = records.slice(startIndex, startIndex + PAGE_SIZE);
+  const paginatedRecords = detailedRecords.slice(startIndex, startIndex + PAGE_SIZE);
 
   //If filters or date change, you must reset to page 1.
   useEffect(() => {
     setCurrentPage(1);
-  }, [records]);
+  }, [detailedRecords]);
 
 
   const handleExport = async (type) => {
     if (type === "excel") {
-      exportRevenueToExcel(records, "Detailed_Revenue_Report.xlsx");
+      exportRevenueToExcel(detailedRecords, "Detailed_Revenue_Report.xlsx");
     }
 
     if (type === "pdf") {
-      await exportRevenueToPDF(records, {
-        organization: authUser?.organization,
-        date: date ? new Date(date).toLocaleDateString("en-GB") : "",
+      await exportRevenueToPDF(detailedRecords, {
+        organization: organization || authUser?.organization,
+        year,
+        quarter,
       });
     }
   };
@@ -100,13 +114,15 @@ export default function DetailedRevenue() {
             <h1>Detailed Report of IGF Performance by Revenue Categories</h1>
             <p className="text-sm">
               <span> DADs: </span>
-              <span>{authUser?.organization}</span>
+              <span>
+                {" "}
+                {organization === "ALL"
+                  ? "ALL ORGANIZATIONS"
+                  : organization || authUser?.organization}
+              </span>
             </p>
             <p className="text-sm">
-              Date:{" "}
-              {date
-                ? new Date(date).toLocaleDateString("en-GB")
-                : "No date selected"}
+              Reporting Period: Q{quarter} {year}
             </p>
 
             <p className="text-sm">Currency: Ghana cedis (GHS)</p>
@@ -146,7 +162,7 @@ export default function DetailedRevenue() {
           </thead>
 
           <tbody className="text-gray-900">
-            {records.length === 0 ? (
+            {detailedRecords.length === 0 ? (
               <tr>
                 <td
                   colSpan="15"
@@ -156,34 +172,34 @@ export default function DetailedRevenue() {
                 </td>
               </tr>
             ) : (
-              paginatedRecords.map((record, index) => (
-                <tr key={record.id || index} className="text-center">
+              paginatedRecords.map((row, index) => (
+                <tr key={row.id || index} className="text-center">
                   <td className="border border-gray-400 px-2 py-1 bg-gray-50 font-semibold">
                     {startIndex + index + 1}
                   </td>
                   <td className="border border-gray-400  px-2 py-1">
-                    {record?.date}
+                    {row.date}
                   </td>
                   <td className="border border-gray-400 px-2 py-1">
-                    {record.revenue_category}
+                    {row.revenue_category}
                   </td>
                   <td className="border border-gray-400 px-2 py-1">
-                    {record.budgetProjections}
+                    {row.budgetProjections}
                   </td>
                   <td className="border border-gray-400 px-2 py-1">
-                    {record.actual_collection}
+                    {row.actual_collection}
                   </td>
                   <td className="border border-gray-400 px-2 py-1">
-                    {record.payment_amount}
+                    {row.payment_amount}
                   </td>
                   <td className="border border-gray-400 px-2 py-1">
-                    {record.retention_rate}
+                    {row.retention_rate}
                   </td>
                   <td className="border border-gray-400 px-2 py-1">
-                    {record.retention_amount}
+                    {row.retention_amount}
                   </td>
                   <td className="border border-gray-400 px-2 py-1">
-                    {record.remarks}
+                    {row.remarks}
                   </td>
                 </tr>
               ))

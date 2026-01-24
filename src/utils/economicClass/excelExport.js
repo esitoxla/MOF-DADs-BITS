@@ -1,10 +1,10 @@
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
-export const exportToExcel = (records, fileName = "report.xlsx") => {
-  if (!records || records.length === 0) return;
+export const exportToExcel = (detailedRecords, fileName = "report.xlsx") => {
+  if (!detailedRecords || detailedRecords.length === 0) return;
 
-  const formattedData = records.map((r, index) => ({
+  const formattedData = detailedRecords.map((r, index) => ({
     "S.N": index + 1,
     Activity: r.activity,
     Date: r.date,

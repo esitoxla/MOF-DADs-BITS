@@ -4,10 +4,10 @@ import { api } from "../../config/axios";
 // Async thunk for fetching the quarterly report
 export const fetchQuarterlyRevenueReport = createAsyncThunk(
   "revenueReport/fetchQuarterlyReport",
-  async ({ year, quarter }, thunkAPI) => {
+  async ({ year, quarter, organization }, thunkAPI) => {
     try {
       const response = await api.get("/revenueReport/quarterly", {
-        params: { year, quarter },
+        params: { year, quarter, organization },
       });
       return response.data;
     } catch (error) {
@@ -22,10 +22,10 @@ export const fetchQuarterlyRevenueReport = createAsyncThunk(
 
 export const downloadQuarterlyRevenueExcel = createAsyncThunk(
   "revenueReport/downloadQuarterlyRevenueExcel",
-  async ({ year, quarter }, thunkAPI) => {
+  async ({ year, quarter, organization }, thunkAPI) => {
     try {
       const response = await api.get("/revenueReport/quarterly/excel", {
-        params: { year, quarter },
+        params: { year, quarter, organization },
         responseType: "blob",
       });
 
@@ -37,7 +37,7 @@ export const downloadQuarterlyRevenueExcel = createAsyncThunk(
       link.click();
       link.remove();
 
-      return
+      
     } catch (error) {
       console.error("Excel download failed:", error);
       
@@ -52,10 +52,10 @@ export const downloadQuarterlyRevenueExcel = createAsyncThunk(
 
 export const downloadQuarterlyRevenuePDF = createAsyncThunk(
   "revenueReport/downloadQuarterlyRevenuePDF",
-  async ({ year, quarter }, thunkAPI) => {
+  async ({ year, quarter, organization }, thunkAPI) => {
     try {
       const response = await api.get("/revenueReport/quarterly/pdf", {
-        params: { year, quarter },
+        params: { year, quarter, organization },
         responseType: "blob",
       });
 
@@ -69,7 +69,7 @@ export const downloadQuarterlyRevenuePDF = createAsyncThunk(
       link.click();
       link.remove();
 
-      return
+      
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data || { message: "PDF download failed" }
@@ -78,6 +78,27 @@ export const downloadQuarterlyRevenuePDF = createAsyncThunk(
   }
 );
 
+/* THIS IS FOR DETAILED REPORT */
+export const fetchDetailedRevenueReport = createAsyncThunk(
+  "revenueReport/fetchDetailedRevenueReport",
+  async ({ year, quarter, organization }, thunkAPI) => {
+    try {
+      const response = await api.get("/revenueReport/detailed", {
+        params: { year, quarter, organization },
+      });
+
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data || {
+          message: "Failed to fetch detailed revenue report",
+        }
+      );
+    }
+  }
+);
+
+
 
 
 const revenueReportSlice = createSlice({
@@ -85,6 +106,7 @@ const revenueReportSlice = createSlice({
   initialState: {
     loading: false,
     reportData: [],
+    detailedRecords: [],
     totals: {},
     error: null,
   },
@@ -103,6 +125,23 @@ const revenueReportSlice = createSlice({
       .addCase(fetchQuarterlyRevenueReport.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || "Something went wrong";
+      })
+
+      // =======================
+      // DETAILED REVENUE
+      // =======================
+      .addCase(fetchDetailedRevenueReport.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchDetailedRevenueReport.fulfilled, (state, action) => {
+        state.loading = false;
+        state.detailedRecords = action.payload.records || [];
+      })
+      .addCase(fetchDetailedRevenueReport.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.payload?.message || "Failed to load detailed revenue report";
       });
   },
 });
