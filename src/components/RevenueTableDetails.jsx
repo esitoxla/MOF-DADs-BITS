@@ -26,6 +26,8 @@ export default function RevenueTableDetails({ searchQuery }) {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
+  const [serialToDelete, setSerialToDelete] = useState(null);
+
 
   useEffect(() => {
     dispatch(fetchRevenues());
@@ -47,14 +49,27 @@ export default function RevenueTableDetails({ searchQuery }) {
   });
 
   const handleEditClick = (index, record) => {
+    const serialNumber = index + 1;
+
     dispatch(startEditing({ index, record }));
+
+    toast.success(`Ready to edit record ${serialNumber}`);
+
     navigate("/dashboard/revenue&cash/revenue");
   };
 
+
+
   const handleReviewClick = (index, record) => {
+    const serialNumber = index + 1;
+
     dispatch(startReviewing({ index, record }));
+
+    toast.success(`Ready to review record ${serialNumber}`);
+
     navigate("/dashboard/revenue&cash/revenue");
   };
+
 
   if (loading) return <p className="text-center py-4">Loading records...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
@@ -71,10 +86,12 @@ export default function RevenueTableDetails({ searchQuery }) {
   };
 
   //DELETE
-  const openDeleteModal = (record) => {
+  const openDeleteModal = (record, index) => {
     setRecordToDelete(record);
+    setSerialToDelete(index + 1); //  S.N
     setIsDeleteModalOpen(true);
   };
+
 
   const confirmDelete = async () => {
     try {
@@ -149,7 +166,7 @@ export default function RevenueTableDetails({ searchQuery }) {
 
                           <li>
                             <span
-                              onClick={() => openDeleteModal(record)}
+                              onClick={() => openDeleteModal(record, index)}
                               className="text-red-600 font-semibold cursor-pointer"
                             >
                               <Trash /> Delete
@@ -158,6 +175,7 @@ export default function RevenueTableDetails({ searchQuery }) {
                         </>
                       )}
 
+                    {/* === REVIEWER === */}
                     {(userRole === "reviewer" || userRole === "admin") &&
                       record.status === "Pending" && (
                         <li>
@@ -206,7 +224,7 @@ export default function RevenueTableDetails({ searchQuery }) {
             <p className="py-4">
               Are you sure you want to delete item{" "}
               <span className="font-semibold text-green-800">
-                “{recordToDelete?.id}”
+                “{serialToDelete}”
               </span>
               ?
             </p>

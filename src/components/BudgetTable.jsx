@@ -192,10 +192,6 @@ export default function BudgetTable({
                                 dispatch(startReviewing({ record, index }));
                                 onEdit(record);
 
-                                // Open the review modal
-                                setRecordToReview(record);
-                                setIsReviewModalOpen(false);
-
                                 // Notify the reviewer
                                 toast.success(
                                   `Ready to review "${record.activity}"`

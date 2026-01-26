@@ -1,12 +1,12 @@
 
 
 export const revenueCategoriesOptions = [
-  { value: "fees", label: "Fees/Charges" },
-  { value: "sale", label: "Sale Of Goods and Services" },
-  { value: "fines", label: "Fines/Forfeitures" },
-  { value: "licenses", label: "Licenses" },
-  { value: "interests", label: "Interests" },
-  { value: "others", label: "Others" },
+  { value: "Fees/Charges", label: "Fees/Charges" },
+  { value: "Sale Of Goods and Services", label: "Sale Of Goods and Services" },
+  { value: "Fines/Forfeitures", label: "Fines/Forfeitures" },
+  { value: "Licenses", label: "Licenses" },
+  { value: "Interests", label: "Interests" },
+  { value: "Others", label: "Others" },
 ];
 
 

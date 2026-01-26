@@ -8,7 +8,12 @@ import {
 } from "../data/RevenueFormsData";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { addRevenue, updateRevenue, reviewRevenue, cancelEditing } from "../store/features/revenueSlice";
+import {
+  addRevenue,
+  updateRevenue,
+  reviewRevenue,
+  cancelEditing,
+} from "../store/features/revenueSlice";
 import toast from "react-hot-toast";
 import ReviewModal from "./ReviewModal";
 
@@ -23,11 +28,9 @@ export default function RevenueForm() {
   const [remarks, setRemarks] = useState("");
   const [retentionRate, setRetentionRate] = useState(0);
 
-
   //review logic
-    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-    const [recordToReview, setRecordToReview] = useState(null);
-  
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [recordToReview, setRecordToReview] = useState(null);
 
   const { authUser: user } = useSelector((state) => state.auth);
 
@@ -86,7 +89,6 @@ export default function RevenueForm() {
     }
   }, [isEditing, isReviewing, formValues]);
 
-
   const clearForm = () => {
     setSelectedDate("");
     setRevenue(null);
@@ -96,6 +98,27 @@ export default function RevenueForm() {
     setRetention("");
     setRemarks("");
   };
+
+  //reset branch to Revenue
+  useEffect(() => {
+    if (!isEditing && !isReviewing) {
+      clearForm();
+      return;
+    }
+
+    if ((isEditing || isReviewing) && formValues) {
+      setSelectedDate(formValues.date || "");
+      setRevenue({
+        label: formValues.revenue_category,
+        value: formValues.revenue_category,
+      });
+      setProjectionB(formValues.budgetProjections || "");
+      setCollections(formValues.actual_collection || "");
+      setPayment(formValues.payment_amount || "");
+      setRetention(formValues.retention_amount || "");
+      setRemarks(formValues.remarks || "");
+    }
+  }, [isEditing, isReviewing, formValues]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -146,24 +169,6 @@ export default function RevenueForm() {
       return;
     }
 
-    //review functionality
-    if (isReviewing) {
-      dispatch(
-        reviewRevenue({
-          id: formValues.id,
-          reviewComment: remarks, // the remarks act as the review comment
-        })
-      )
-        .unwrap()
-        .then(() => {
-          toast.success("Revenue reviewed successfully!");
-          clearForm();
-          dispatch(cancelEditing());
-        })
-        .catch((err) => toast.error(err));
-      return;
-    }
-
     dispatch(addRevenue(formData))
       .unwrap()
       .then(() => {
@@ -171,6 +176,14 @@ export default function RevenueForm() {
         clearForm(); // RESET FORM
       })
       .catch((err) => toast.error(err));
+  };
+
+  const handleRevenueReview = async ({ id, comment }) => {
+    await dispatch(reviewRevenue({ id, reviewComment: comment })).unwrap();
+
+    toast.success("Revenue reviewed successfully!");
+    clearForm();
+    dispatch(cancelEditing());
   };
 
   return (
@@ -296,8 +309,6 @@ export default function RevenueForm() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
-            
-
             <div className="flex flex-col gap-2">
               <label htmlFor="" className="text-gray-500">
                 REMARKS
@@ -334,10 +345,11 @@ export default function RevenueForm() {
           </button>
 
           <button
-            type="submit"
+            type={isReviewing ? "button" : "submit"}
             onClick={(e) => {
               if (isReviewing) {
                 e.preventDefault();
+                setRecordToReview(formValues);
                 setIsReviewModalOpen(true);
               } else {
                 handleSubmit(e);
@@ -357,8 +369,11 @@ export default function RevenueForm() {
       </form>
 
       <ReviewModal
-        isReviewModalOpen={isReviewModalOpen}
+        isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
+        record={recordToReview}
+        onSubmit={handleRevenueReview}
+        title="Review Revenue"
       />
     </div>
   );

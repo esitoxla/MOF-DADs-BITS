@@ -12,9 +12,11 @@ import { useSelector, useDispatch } from "react-redux";
 import ReviewModal from "../components/ReviewModal";
 import { resetBudgetValues } from "../store/features/budgetDynamicSlice";
 import {
+  fetchExpenditures,
   updateExpenditure,
   cancelEditing,
   addExpenditure,
+  reviewExpenditure
 } from "../store/features/budgetSlice";
 import {
   fetchNaturalAccounts,
@@ -114,11 +116,11 @@ export default function BudgetExpenditure() {
   useEffect(() => {
     if (!economicClass || !fundingSource || !selectedAccount) return;
 
-    const payload = {
-      eco: economicClass.label.trim(),
-      fund: fundingSource.label.trim(),
-      account: selectedAccount.value.trim(),
-    };
+   const payload = {
+     eco: (economicClass?.label ?? "").trim(),
+     fund: (fundingSource?.label ?? "").trim(),
+     account: (selectedAccount?.value ?? "").trim(),
+   };
 
     console.log("Sending to backend:", payload);
 
@@ -177,11 +179,25 @@ export default function BudgetExpenditure() {
   //handles populating fields that are dependent on each other(natural account, allotment, appropriation, allotment balance)
   // Handles populating fields when editing a record
  useEffect(() => {
-   // Guard: only run when we actually have data to populate
-   if (!formValues) return;
+   //RESET FORM when NOT editing or reviewing
+   if (!isEditing && !isReviewing) {
+     setSelectedActivity(null);
+     setSelectedDate("");
+     setEconomicClass(null);
+     setFundingSource(null);
+     setSelectedAccount(null);
+     setDescription("");
+     setAppropriation("");
+     setAllotment("");
+     setAllotmentBalance("");
+     setReleases("");
+     setExpenditure("");
+     setPayment("");
+     return;
+   }
 
-   // Guard: only populate when editing or reviewing
-   if (!isEditing && !isReviewing) return;
+   // POPULATE FORM when editing or reviewing
+   if (!formValues) return;
 
    setSelectedActivity(
      formValues.activity
@@ -209,7 +225,6 @@ export default function BudgetExpenditure() {
        : null
    );
 
-   // natural account depends on economic class existing
    if (formValues.naturalAccount && eco) {
      setSelectedAccount({
        label: formValues.naturalAccount,
@@ -227,6 +242,7 @@ export default function BudgetExpenditure() {
    setExpenditure(formValues.actualExpenditure || "");
    setPayment(formValues.actualPayment || "");
  }, [isEditing, isReviewing, formValues]);
+
 
 
 
@@ -464,6 +480,15 @@ export default function BudgetExpenditure() {
     setExpenditure(record.expenditure);
     setPayment(record.payment);
   };
+
+  //THIS HANDLES REVIEWING AN EXPENDITURE RECORD
+  const handleExpenditureReview = async ({ id, comment }) => {
+    await dispatch(reviewExpenditure({ id, reviewComment: comment })).unwrap();
+
+    dispatch(fetchExpenditures());
+    dispatch(cancelEditing());
+  };
+
 
   return (
     <div className="flex flex-col gap-6 justify-center lg:px-4">
@@ -748,10 +773,10 @@ export default function BudgetExpenditure() {
 
           {/* Submit Button */}
           <button
-            type="submit"
+            type={isReviewing ? "button" : "submit"}
             onClick={(e) => {
               if (isReviewing) {
-                e.preventDefault();
+                setRecordToReview(formValues); // record already in Redux
                 setIsReviewModalOpen(true);
               } else {
                 handleSubmit(e);
@@ -792,6 +817,8 @@ export default function BudgetExpenditure() {
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
         record={recordToReview}
+        onSubmit={handleExpenditureReview}
+        title="Review Expenditure"
       />
     </div>
   );
