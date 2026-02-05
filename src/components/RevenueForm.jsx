@@ -35,7 +35,7 @@ export default function RevenueForm() {
   const { authUser: user } = useSelector((state) => state.auth);
 
   const { formValues, isEditing, isReviewing } = useSelector(
-    (state) => state.revenue
+    (state) => state.revenue,
   );
 
   const dispatch = useDispatch();
@@ -72,22 +72,7 @@ export default function RevenueForm() {
     setPayment(D.toFixed(2));
   };
 
-  //update your form component to load formValues when editing, or reviewing
 
-  useEffect(() => {
-    if ((isEditing || isReviewing) && formValues) {
-      setSelectedDate(formValues.date || "");
-      setRevenue({
-        label: formValues.revenue_category,
-        value: formValues.revenue_category,
-      });
-      setProjectionB(formValues.budgetProjections || "");
-      setCollections(formValues.actual_collection || "");
-      setPayment(formValues.payment_amount || "");
-      setRetention(formValues.retention_amount || "");
-      setRemarks(formValues.remarks || "");
-    }
-  }, [isEditing, isReviewing, formValues]);
 
   const clearForm = () => {
     setSelectedDate("");
@@ -99,7 +84,7 @@ export default function RevenueForm() {
     setRemarks("");
   };
 
-  //reset branch to Revenue
+  //update your form component to load formValues when editing, or reviewing and reset branch to Revenue
   useEffect(() => {
     if (!isEditing && !isReviewing) {
       clearForm();
@@ -128,19 +113,19 @@ export default function RevenueForm() {
       return;
     }
     if (!revenue) {
-      toast.error("Date is required!");
+      toast.error("Revenue is required!");
       return;
     }
     if (!projectionB) {
-      toast.error("Date is required!");
+      toast.error("ProjectionB is required!");
       return;
     }
     if (!collections) {
-      toast.error("Date is required!");
+      toast.error("Collections is required!");
       return;
     }
     if (!remarks) {
-      toast.error("Date is required!");
+      toast.error("Remarks is required!");
       return;
     }
 
@@ -359,8 +344,8 @@ export default function RevenueForm() {
               isReviewing
                 ? "bg-blue-600 hover:bg-blue-700"
                 : isEditing
-                ? "bg-yellow-600 hover:bg-yellow-700"
-                : "bg-green-600 hover:bg-green-700"
+                  ? "bg-yellow-600 hover:bg-yellow-700"
+                  : "bg-green-600 hover:bg-green-700"
             } text-white px-4 py-2 font-semibold transition duration-300 shadow-md cursor-pointer lg:w-[10%]`}
           >
             {isEditing ? "OK" : isReviewing ? "Review" : "Submit"}
@@ -373,7 +358,7 @@ export default function RevenueForm() {
         onClose={() => setIsReviewModalOpen(false)}
         record={recordToReview}
         onSubmit={handleRevenueReview}
-        title="Review Revenue"
+        title="Review Revenue Record"
       />
     </div>
   );

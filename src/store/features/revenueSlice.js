@@ -76,7 +76,7 @@ export const reviewRevenue = createAsyncThunk(
   }
 );
 
-//approve expenditure by a user with role approver
+//approve revenue by a user with role approver
 export const approveRevenue = createAsyncThunk(
   "revenue/approveRevenue",
   async (id, { rejectWithValue }) => {
@@ -143,7 +143,7 @@ const revenueSlice = createSlice({
         state.error = action.payload;
       })
 
-      // addExpenditure
+      // addRevenue
       .addCase(addRevenue.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -157,7 +157,7 @@ const revenueSlice = createSlice({
         state.error = action.payload;
       })
 
-      //update expenditure
+      //update revenue
       .addCase(updateRevenue.fulfilled, (state, action) => {
         state.loading = false;
         const index = state.records.findIndex(
@@ -168,12 +168,12 @@ const revenueSlice = createSlice({
         }
       })
 
-      //delete expenditure
+      //delete revenue
       .addCase(deleteRevenue.fulfilled, (state, action) => {
         state.records = state.records.filter((r) => r.id !== action.payload);
       })
 
-      //review expense
+      //review revenue
       .addCase(reviewRevenue.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -188,7 +188,7 @@ const revenueSlice = createSlice({
         state.error = action.payload;
       })
 
-      //approve expense
+      //approve revenue
       .addCase(approveRevenue.fulfilled, (state, action) => {
         const index = state.records.findIndex(
           (r) => r.id === action.payload.id

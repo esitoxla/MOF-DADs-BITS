@@ -25,6 +25,7 @@ import DetailedEC from "./pages/DetailedEC";
 import DetailedRevenue from "./pages/DetailedRevenue";
 import { useDispatch } from "react-redux";
 import { refreshSession } from "./store/features/authSlice";
+import CashPage from "./pages/CashPage";
 
 
 
@@ -70,6 +71,10 @@ function App() {
             {
               path: "revenue",
               Component: RevenuePage,
+            },
+            {
+              path: "cash",
+              Component: CashPage,
             },
           ],
         },

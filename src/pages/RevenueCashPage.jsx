@@ -25,7 +25,7 @@ export default function RevenueCashPage() {
           <span>IGF Revenue Collection</span>
         </button>
 
-        <button className="flex-col gap-3 w-full h-full bg-white text-green-600 text-xl font-semibold rounded-2xl shadow-lg hover:bg-green-100 transition duration-300 cursor-pointer flex items-center justify-center">
+        <button onClick={() => navigate("cash")} className="flex-col gap-3 w-full h-full bg-white text-green-600 text-xl font-semibold rounded-2xl shadow-lg hover:bg-green-100 transition duration-300 cursor-pointer flex items-center justify-center">
           <div>
             <img
               src={cashPic}
