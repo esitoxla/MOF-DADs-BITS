@@ -181,10 +181,12 @@ export default function RevenueForm() {
           IGF Revenue Collections
         </div>
 
-        <div className="font-semibold cursor-pointer shadow bg-white h-full py-8 px-4 mb-6">
+        <div className=" cursor-pointer shadow bg-white h-full py-8 px-4 mb-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
             <div className="flex flex-col gap-2">
-              <label className="text-gray-500">DATE</label>
+              <label className="block text-gray-600 mb-1 font-semibold">
+                DATE
+              </label>
               <div className="">
                 <input
                   type="date"
@@ -192,13 +194,15 @@ export default function RevenueForm() {
                   disabled={isReviewing}
                   onChange={(e) => setSelectedDate(e.target.value)}
                   // disabled={isReviewing}
-                  className="border w-full py-[0.7rem] px-2 rounded"
+                  className="border border-black w-full py-[0.7rem] px-2 rounded"
                 />
               </div>
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-gray-500">REVENUE CATEGORIES</label>
+              <label className="block text-gray-600 mb-1 font-semibold">
+                REVENUE CATEGORIES
+              </label>
 
               <Select
                 options={revenueCategoriesOptions}
@@ -221,7 +225,6 @@ export default function RevenueForm() {
                     boxShadow: "none",
                     borderColor: "black",
                     fontSize: "1rem",
-                    fontWeight: 600,
                     backgroundColor: "white",
                   }),
                   placeholder: (base) => ({
@@ -235,7 +238,10 @@ export default function RevenueForm() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
             <div className="flex flex-col gap-2">
-              <label htmlFor="" className="text-gray-500">
+              <label
+                htmlFor=""
+                className="block text-gray-600 mb-1 font-semibold"
+              >
                 BUDGET PROJECTIONS
               </label>
               <input
@@ -249,7 +255,9 @@ export default function RevenueForm() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-gray-500">ACTUAL COLLECTIONS</label>
+              <label className="block text-gray-600 mb-1 font-semibold">
+                ACTUAL COLLECTIONS
+              </label>
               <input
                 type="number"
                 min="0"
@@ -265,7 +273,10 @@ export default function RevenueForm() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
             <div className="flex flex-col gap-2">
-              <label htmlFor="" className="text-gray-500">
+              <label
+                htmlFor=""
+                className="block text-gray-600 mb-1 font-semibold"
+              >
                 PAYMENT INTO CONSOLIDATED FUND
               </label>
               <input
@@ -279,7 +290,10 @@ export default function RevenueForm() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="" className="text-gray-500">
+              <label
+                htmlFor=""
+                className="block text-gray-600 mb-1 font-semibold"
+              >
                 RETENTION
               </label>
               <input
@@ -295,7 +309,10 @@ export default function RevenueForm() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
             <div className="flex flex-col gap-2">
-              <label htmlFor="" className="text-gray-500">
+              <label
+                htmlFor=""
+                className="block text-gray-600 mb-1 font-semibold"
+              >
                 REMARKS
               </label>
               <input

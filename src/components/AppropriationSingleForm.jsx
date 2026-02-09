@@ -192,7 +192,7 @@ export default function AppropriationSingleForm() {
                 value={form.organization}
                 onChange={handleChange}
                 className="py-[0.7rem] px-2 w-full outline rounded"
-                placeholder="Organization"
+                placeholder="Enter organization"
               />
             </div>
 
@@ -206,7 +206,7 @@ export default function AppropriationSingleForm() {
                 value={form.economicClassification}
                 onChange={handleChange}
                 className="py-[0.7rem] px-2 w-full outline rounded"
-                placeholder="Economic classification"
+                placeholder="Enter economic classification"
               />
             </div>
           </div>
@@ -223,7 +223,7 @@ export default function AppropriationSingleForm() {
                 value={form.sourceOfFunding}
                 onChange={handleChange}
                 className="py-[0.7rem] px-2 w-full outline rounded"
-                placeholder="Source of funding"
+                placeholder="Enter source of funding"
               />
             </div>
 
@@ -237,7 +237,7 @@ export default function AppropriationSingleForm() {
                 value={form.naturalAccount}
                 onChange={handleChange}
                 className="py-[0.7rem] px-2 w-full outline rounded"
-                placeholder="Natural account"
+                placeholder="Enter natural account"
               />
             </div>
           </div>
@@ -254,7 +254,7 @@ export default function AppropriationSingleForm() {
                 value={form.appropriation}
                 onChange={handleChange}
                 className="py-[0.7rem] px-2 w-full outline rounded"
-                placeholder="Appropriation"
+                placeholder="Enter appropriation"
               />
             </div>
 
@@ -268,7 +268,7 @@ export default function AppropriationSingleForm() {
                 value={form.allotment}
                 onChange={handleChange}
                 className="py-[0.7rem] px-2 w-full outline rounded"
-                placeholder="Allotment"
+                placeholder="Enter allotment"
               />
             </div>
           </div>

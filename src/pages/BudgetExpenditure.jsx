@@ -16,7 +16,7 @@ import {
   updateExpenditure,
   cancelEditing,
   addExpenditure,
-  reviewExpenditure
+  reviewExpenditure,
 } from "../store/features/budgetSlice";
 import {
   fetchNaturalAccounts,
@@ -47,6 +47,8 @@ export default function BudgetExpenditure() {
   const [payment, setPayment] = useState("");
   const [expenditure, setExpenditure] = useState("");
   const [allotmentBalance, setAllotmentBalance] = useState("");
+  const [appropriationBalance, setAppropriationBalance] = useState("");
+
   const [isFormValid, setIsFormValid] = useState(true);
 
   const [showExpenditureAlert, setShowExpenditureAlert] = useState(false);
@@ -54,6 +56,8 @@ export default function BudgetExpenditure() {
   const [showReleasesAlert, setShowReleasesAlert] = useState(false);
 
   const [previousActualExpenditure, setPreviousActualExpenditure] = useState(0);
+  const [previousReleases, setPreviousReleases] = useState(0);
+
 
   //BudgetTable
   const [records, setRecords] = useState([]);
@@ -66,11 +70,6 @@ export default function BudgetExpenditure() {
   //for IGF DPF checks for allotment
   const hasAllotment = Number(allotment) > 0;
 
-  //for goods and services, GOG rule
-  const isGoodsAndServicesGOG =
-    economicClass?.label === "Use of Goods and Services" &&
-    fundingSource?.label === "GOG" &&
-    Number(allotment) > 0;
 
   // Create activities 1–20 as options for react-select
   const activityOptions = Array.from({ length: 20 }, (_, i) => ({
@@ -82,7 +81,7 @@ export default function BudgetExpenditure() {
   const filteredFundingOptions =
     economicClass?.value === "compensation of employees"
       ? sourceOfFundingOptions.filter(
-          (opt) => opt.value === "GOG" || opt.value === "IGF"
+          (opt) => opt.value === "DPF" || opt.value === "IGF",
         )
       : sourceOfFundingOptions;
 
@@ -98,6 +97,12 @@ export default function BudgetExpenditure() {
       })
     : [];
 
+    const usesAllotmentBalance =
+      economicClass?.label === "Use of Goods and Services" &&
+      fundingSource?.label === "GOG" // &&
+     // hasAllotment;
+
+
   ///ALL useEFFECTS LOGIC
 
   // Fetch NATURAL ACCOUNTS dynamically when eco + fund are selected
@@ -108,24 +113,28 @@ export default function BudgetExpenditure() {
       fetchNaturalAccounts({
         eco: economicClass.label, // instead of value
         fund: fundingSource.label, // instead of value
-      })
+      }),
     );
   }, [economicClass, fundingSource]);
+
+
 
   // Fetch budget values when natural account is selected
   useEffect(() => {
     if (!economicClass || !fundingSource || !selectedAccount) return;
 
-   const payload = {
-     eco: (economicClass?.label ?? "").trim(),
-     fund: (fundingSource?.label ?? "").trim(),
-     account: (selectedAccount?.value ?? "").trim(),
-   };
+    const payload = {
+      eco: (economicClass?.label ?? "").trim(),
+      fund: (fundingSource?.label ?? "").trim(),
+      account: (selectedAccount?.value ?? "").trim(),
+    };
 
-    console.log("Sending to backend:", payload);
+    // console.log("Sending to backend:", payload);
 
     dispatch(fetchBudgetValues(payload));
   }, [selectedAccount, economicClass, fundingSource, dispatch]);
+
+
 
   //this handles the logic behind the relationship between economic classification and the natural account
   useEffect(() => {
@@ -141,7 +150,7 @@ export default function BudgetExpenditure() {
         : capitalExpenditureAccounts;
 
     const isStillValid = validOptions.some(
-      (opt) => opt.value === selectedAccount?.value
+      (opt) => opt.value === selectedAccount?.value,
     );
 
     //if natural account selected does not correspond to that of the economic classification, set it to its default
@@ -150,102 +159,95 @@ export default function BudgetExpenditure() {
     }
   }, [economicClass]);
 
+
+
   // Autofill appropriation, allotment, and balance from backend
-  useEffect(() => {
-    if (!budgetValues || !selectedAccount) return;
+useEffect(() => {
+  if (!budgetValues || !selectedAccount) return;
 
-    const fetchedAllotment = Number(budgetValues.allotment ?? 0);
-    const fetchedBalance = Number(budgetValues.balance ?? 0);
+  setAppropriation(budgetValues.appropriation ?? "");
+  setAllotment(Number(budgetValues.allotment ?? 0));
 
-    setAppropriation(budgetValues.appropriation ?? "");
-    setAllotment(fetchedAllotment);
+  setPreviousActualExpenditure(
+    Number(budgetValues.previousActualExpenditure ?? 0),
+  );
 
-    setPreviousActualExpenditure(
-      Number(budgetValues.previousActualExpenditure ?? 0)
-    );
+   setPreviousReleases(
+     Number(budgetValues.previousReleases ?? 0), 
+   );
 
-    // Goods & Services + GOG rule (data-driven)
-    if (
-      economicClass?.label === "Use of Goods and Services" &&
-      fundingSource?.label === "GOG" &&
-      fetchedAllotment > 0
-    ) {
-      setReleases(0);
-    }
+  setAllotmentBalance(Number(budgetValues.allotmentBalance ?? 0));
+  setAppropriationBalance(Number(budgetValues.appropriationBalance ?? 0));
+}, [budgetValues, selectedAccount]);
 
-    setAllotmentBalance(fetchedAllotment === 0 ? 0 : fetchedBalance);
-  }, [budgetValues, selectedAccount]);
+
 
   //handles populating fields that are dependent on each other(natural account, allotment, appropriation, allotment balance)
   // Handles populating fields when editing a record
- useEffect(() => {
-   //RESET FORM when NOT editing or reviewing
-   if (!isEditing && !isReviewing) {
-     setSelectedActivity(null);
-     setSelectedDate("");
-     setEconomicClass(null);
-     setFundingSource(null);
-     setSelectedAccount(null);
-     setDescription("");
-     setAppropriation("");
-     setAllotment("");
-     setAllotmentBalance("");
-     setReleases("");
-     setExpenditure("");
-     setPayment("");
-     return;
-   }
+  useEffect(() => {
+    //RESET FORM when NOT editing or reviewing
+    if (!isEditing && !isReviewing) {
+      setSelectedActivity(null);
+      setSelectedDate("");
+      setEconomicClass(null);
+      setFundingSource(null);
+      setSelectedAccount(null);
+      setDescription("");
+      setAppropriation("");
+      setAllotment("");
+      setAllotmentBalance("");
+      setReleases("");
+      setExpenditure("");
+      setPayment("");
+      return;
+    }
 
-   // POPULATE FORM when editing or reviewing
-   if (!formValues) return;
+    // POPULATE FORM when editing or reviewing
+    if (!formValues) return;
 
-   setSelectedActivity(
-     formValues.activity
-       ? { label: formValues.activity, value: formValues.activity }
-       : null
-   );
+    setSelectedActivity(
+      formValues.activity
+        ? { label: formValues.activity, value: formValues.activity }
+        : null,
+    );
 
-   setSelectedDate(formValues.date || "");
+    setSelectedDate(formValues.date || "");
 
-   const eco = formValues.economicClassification
-     ? {
-         label: formValues.economicClassification,
-         value: formValues.economicClassification.toLowerCase(),
-       }
-     : null;
+    const eco = formValues.economicClassification
+      ? {
+          label: formValues.economicClassification,
+          value: formValues.economicClassification.toLowerCase(),
+        }
+      : null;
 
-   setEconomicClass(eco);
+    setEconomicClass(eco);
 
-   setFundingSource(
-     formValues.sourceOfFunding
-       ? {
-           label: formValues.sourceOfFunding,
-           value: formValues.sourceOfFunding,
-         }
-       : null
-   );
+    setFundingSource(
+      formValues.sourceOfFunding
+        ? {
+            label: formValues.sourceOfFunding,
+            value: formValues.sourceOfFunding,
+          }
+        : null,
+    );
 
-   if (formValues.naturalAccount && eco) {
-     setSelectedAccount({
-       label: formValues.naturalAccount,
-       value: formValues.naturalAccount,
-     });
-   } else {
-     setSelectedAccount(null);
-   }
+    if (formValues.naturalAccount && eco) {
+      setSelectedAccount({
+        label: formValues.naturalAccount,
+        value: formValues.naturalAccount,
+      });
+    } else {
+      setSelectedAccount(null);
+    }
 
-   setDescription(formValues.description || "");
-   setAppropriation(formValues.appropriation || "");
-   setAllotment(formValues.allotment || "");
-   setAllotmentBalance(formValues.allotmentBalance || "");
-   setReleases(formValues.releases || "");
-   setExpenditure(formValues.actualExpenditure || "");
-   setPayment(formValues.actualPayment || "");
- }, [isEditing, isReviewing, formValues]);
-
-
-
-
+    setDescription(formValues.description || "");
+    setAppropriation(formValues.appropriation || "");
+    setAllotment(formValues.allotment || "");
+    setAllotmentBalance(formValues.allotmentBalance || "");
+    setReleases(formValues.releases || "");
+    setExpenditure(formValues.actualExpenditure || "");
+    setPayment(formValues.actualPayment || "");
+  }, [isEditing, isReviewing, formValues]);
 
   useEffect(() => {
     if (
@@ -256,45 +258,29 @@ export default function BudgetExpenditure() {
     }
   }, [economicClass, fundingSource]);
 
-
-
   //OTHER INPUTS LOGICS
 
   // Handle releases input
-  const handleReleasesChange = (e) => {
-    if (isGoodsAndServicesGOG) {
-      return; // releases are fixed to allotment
-    }
+ const handleReleasesChange = (e) => {
+   const value = Number(e.target.value || 0);
+   setReleases(value);
 
-    const value = Number(e.target.value || 0);
-    setReleases(value);
+   const appropriationNum = Number(appropriation || 0);
+   const prevReleases = Number(previousReleases || 0);
 
-    const appropriationNum = Number(appropriation || 0);
-    const balanceNum = Number(allotmentBalance || 0);
+   const remainingAppropriation = appropriationNum - (prevReleases + value);
 
-    // NO ALLOTMENT → releases ≤ appropriation
-    if (!hasAllotment) {
-      if (value > appropriationNum) {
-        toast.error("Releases cannot exceed appropriation.");
-        setShowReleasesAlert(true);
-        return;
-      }
+   // releases can NEVER exceed appropriation
+   if (remainingAppropriation < 0) {
+     toast.error("Releases cannot exceed available appropriation.");
+     setShowReleasesAlert(true);
+     return;
+   }
 
-      setShowReleasesAlert(false);
-      setAllotmentBalance(0); // always 0 when no allotment
-      return;
-    }
+   setShowReleasesAlert(false);
+   setAppropriationBalance(remainingAppropriation);
+ };
 
-    // HAS ALLOTMENT → releases ≤ allotment balance
-    if (value > balanceNum) {
-      toast.error("Releases cannot exceed the remaining allotment balance.");
-      setShowReleasesAlert(true);
-      return;
-    }
-
-    setShowReleasesAlert(false);
-    setAllotmentBalance(balanceNum - value);
-  };
 
   // Handle expenditure input
   const handleExpenditureChange = (e) => {
@@ -303,10 +289,10 @@ export default function BudgetExpenditure() {
 
     const currentActual = Number(value || 0);
 
-    // CASE 1: Goods & Services + GOG
-    if (isGoodsAndServicesGOG && allotment > 0) {
+    // CASE 1: Goods & Services WITH allotment
+    if (economicClass?.value === "Use of Goods and Services" && hasAllotment) {
       const previewBalance =
-        allotment - (previousActualExpenditure + currentActual);
+        Number(allotment) - (Number(previousActualExpenditure) + currentActual);
 
       setAllotmentBalance(previewBalance);
 
@@ -317,11 +303,11 @@ export default function BudgetExpenditure() {
         setShowExpenditureAlert(false);
       }
 
-      return; // STOP HERE — do NOT apply releases rule
+      return; // stop here — releases do NOT apply
     }
 
-    // CASE 2: All other cases → expenditure ≤ releases
-    if (parseFloat(currentActual) > parseFloat(releases || 0)) {
+    // CASE 2: All other scenarios → expenditure ≤ releases
+    if (currentActual > Number(releases || 0)) {
       toast.error("Actual expenditure cannot exceed releases.");
       setShowExpenditureAlert(true);
     } else {
@@ -341,7 +327,6 @@ export default function BudgetExpenditure() {
       setShowPaymentAlert(false);
     }
   };
-
 
   //FORM SUBMISSION
 
@@ -409,7 +394,7 @@ export default function BudgetExpenditure() {
           toast.error("Cannot update: record id not found.");
         } else {
           await dispatch(
-            updateExpenditure({ id, formData: newRecord })
+            updateExpenditure({ id, formData: newRecord }),
           ).unwrap();
           toast.success("Record updated successfully!");
           dispatch(resetBudgetValues());
@@ -430,7 +415,7 @@ export default function BudgetExpenditure() {
             eco: economicClass.label.trim(),
             fund: fundingSource.label.trim(),
             account: selectedAccount.value.trim(),
-          })
+          }),
         );
       }
 
@@ -489,13 +474,12 @@ export default function BudgetExpenditure() {
     dispatch(cancelEditing());
   };
 
-
   return (
     <div className="flex flex-col gap-6 justify-center lg:px-4">
       <form className="min-h-screen w-full p-4 sm:p-6 flex flex-col">
         {/* --- ACTIVITIES FIELD --- */}
-        <div className="flex flex-col sm:flex-row sm:items-center text-2xl font-bold text-green-800 mb-8 border-0 shadow bg-white px-4 py-4 w-full gap-4">
-          <label className="text-center sm:w-1/3">ACTIVITIES</label>
+        <div className="flex flex-col sm:flex-row sm:items-center text-2xl  text-green-800 mb-8 border-0 shadow bg-white px-4 py-4 w-full gap-4">
+          <label className="text-center sm:w-1/3 font-bold">ACTIVITIES</label>
           <div className="w-full sm:w-2/3">
             <Select
               options={activityOptions}
@@ -514,8 +498,8 @@ export default function BudgetExpenditure() {
                   backgroundColor: state.isSelected
                     ? "#16a34a"
                     : state.isFocused
-                    ? "#dcfce7"
-                    : "white",
+                      ? "#dcfce7"
+                      : "white",
                   color: state.isSelected ? "white" : "black",
                 }),
               }}
@@ -527,11 +511,13 @@ export default function BudgetExpenditure() {
           </div>
         </div>
 
-        <div className="font-semibold cursor-pointer shadow bg-white h-full py-8 px-4 mb-6">
+        <div className="cursor-pointer shadow bg-white h-full py-8 px-4 mb-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-center justify-between gap-4 bg-white  w-full px-4 mb-8">
             {/* --- DATE FIELD --- */}
             <div className="flex flex-col gap-2">
-              <label className="text-gray-500">DATE</label>
+              <label className="block text-gray-600 mb-1 font-semibold">
+                DATE
+              </label>
               <div className="">
                 <input
                   type="date"
@@ -544,7 +530,9 @@ export default function BudgetExpenditure() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-gray-500">ECONOMIC CLASSIFICATION</label>
+              <label className="block text-gray-600 mb-1 font-semibold">
+                ECONOMIC CLASSIFICATION
+              </label>
               <Select
                 options={economicClassOptions}
                 value={economicClass} // should be an object like {value, label}
@@ -562,7 +550,7 @@ export default function BudgetExpenditure() {
                     boxShadow: "none",
                     borderColor: "black",
                     fontSize: "1rem",
-                    fontWeight: 600,
+
                     backgroundColor: "white",
                   }),
                   placeholder: (base) => ({
@@ -574,7 +562,9 @@ export default function BudgetExpenditure() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-gray-500">SOURCE OF FUNDING</label>
+              <label className="block text-gray-600 mb-1 font-semibold">
+                SOURCE OF FUNDING
+              </label>
               <Select
                 options={filteredFundingOptions}
                 value={fundingSource} // should be an object like {value, label}
@@ -592,7 +582,7 @@ export default function BudgetExpenditure() {
                     boxShadow: "none",
                     borderColor: "black",
                     fontSize: "1rem",
-                    fontWeight: 600,
+
                     backgroundColor: "white",
                   }),
                   placeholder: (base) => ({
@@ -606,7 +596,9 @@ export default function BudgetExpenditure() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
             <div className="flex flex-col gap-2">
-              <label className="text-gray-500">NATURAL ACCOUNT</label>
+              <label className="block text-gray-600 mb-1 font-semibold">
+                NATURAL ACCOUNT
+              </label>
               <Select
                 options={naturalAccountOptions}
                 value={selectedAccount}
@@ -626,7 +618,7 @@ export default function BudgetExpenditure() {
                     boxShadow: "none",
                     borderColor: "black",
                     fontSize: "1rem",
-                    fontWeight: 600,
+
                     backgroundColor: "white",
                   }),
                   placeholder: (base) => ({
@@ -638,7 +630,10 @@ export default function BudgetExpenditure() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="" className="text-gray-500">
+              <label
+                htmlFor=""
+                className="block text-gray-600 mb-1 font-semibold"
+              >
                 DESCRIPTION
               </label>
               <input
@@ -654,7 +649,10 @@ export default function BudgetExpenditure() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-center justify-between gap-4 w-full px-4 mb-8">
             <div className="flex flex-col gap-2">
-              <label htmlFor="" className="text-gray-500">
+              <label
+                htmlFor=""
+                className="block text-gray-600 mb-1 font-semibold"
+              >
                 APPROPRIATION
               </label>
               <input
@@ -668,7 +666,10 @@ export default function BudgetExpenditure() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="" className="text-gray-500">
+              <label
+                htmlFor=""
+                className="block text-gray-600 mb-1 font-semibold"
+              >
                 ALLOTMENT
               </label>
               <input
@@ -681,44 +682,61 @@ export default function BudgetExpenditure() {
               />
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label htmlFor="" className="text-gray-500">
-                ALLOTMENT BALANCE
-              </label>
-              <input
-                type="number"
-                min="0"
-                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
-                value={allotmentBalance ?? 0}
-                readOnly
-              />
-            </div>
+            {usesAllotmentBalance ? (
+              <div className="flex flex-col gap-2">
+                <label className="block text-gray-600 mb-1 font-semibold">
+                  ALLOTMENT BALANCE
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  className="py-[0.7rem] px-2 w-full outline rounded"
+                  value={allotmentBalance ?? 0}
+                  readOnly
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <label className="block text-gray-600 mb-1 font-semibold">
+                  APPROPRIATION BALANCE
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  className="py-[0.7rem] px-2 w-full outline rounded"
+                  value={appropriationBalance ?? 0}
+                  readOnly
+                />
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-center justify-between gap-4 bg-white w-full px-4 mb-8">
             {/* RELEASES */}
             <div className="flex flex-col gap-2">
-              <label className="text-gray-500">RELEASES</label>
+              <label className="block text-gray-600 mb-1 font-semibold">
+                RELEASES
+              </label>
               <input
                 type="number"
                 min="0"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
-                value={
-                  isGoodsAndServicesGOG
-                    ? "" // visually empty
-                    : releases || ""
-                }
+                value={releases || ""}
                 onChange={handleReleasesChange}
-                disabled={isReviewing || isGoodsAndServicesGOG}
+                disabled={isReviewing || hasAllotment}
                 placeholder={
-                  isGoodsAndServicesGOG ? "N/A" : "Enter releases here..."
+                  hasAllotment
+                    ? "Releases not applicable"
+                    : "Enter releases here..."
                 }
               />
             </div>
 
             {/* ACTUAL EXPENDITURE */}
             <div className="flex flex-col gap-2">
-              <label className="text-gray-500">ACTUAL EXPENDITURE</label>
+              <label className="block text-gray-600 mb-1 font-semibold">
+                ACTUAL EXPENDITURE
+              </label>
               <input
                 type="number"
                 min="0"
@@ -732,7 +750,9 @@ export default function BudgetExpenditure() {
 
             {/* ACTUAL PAYMENT */}
             <div className="flex flex-col gap-2">
-              <label className="text-gray-500">ACTUAL PAYMENT</label>
+              <label className="block text-gray-600 mb-1 font-semibold">
+                ACTUAL PAYMENT
+              </label>
               <input
                 type="number"
                 min="0"
@@ -763,6 +783,7 @@ export default function BudgetExpenditure() {
               setExpenditure("");
               setPayment("");
               setAllotmentBalance("");
+              setAppropriationBalance("");
               dispatch(cancelEditing());
               toast.success("Form reset successfully!");
             }}
@@ -787,8 +808,8 @@ export default function BudgetExpenditure() {
               isReviewing
                 ? "bg-blue-600 hover:bg-blue-700"
                 : isEditing
-                ? "bg-yellow-600 hover:bg-yellow-700"
-                : "bg-green-600 hover:bg-green-700"
+                  ? "bg-yellow-600 hover:bg-yellow-700"
+                  : "bg-green-600 hover:bg-green-700"
             } text-white px-4 py-2 font-semibold transition duration-300 shadow-md cursor-pointer lg:w-[10%]`}
           >
             {isReviewing ? "Review" : isEditing ? "OK" : "Submit"}

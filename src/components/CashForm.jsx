@@ -141,10 +141,12 @@ export default function CashForm() {
           Cash Position
         </div>
 
-        <div className="font-semibold cursor-pointer shadow bg-white h-full py-8 px-4 mb-6">
+        <div className=" cursor-pointer shadow bg-white h-full py-8 px-4 mb-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
             <div className="flex flex-col gap-2">
-              <label className="text-gray-500">DATE</label>
+              <label className="block text-gray-600 mb-1 font-semibold">
+                DATE
+              </label>
               <div className="">
                 <input
                   type="date"
@@ -157,7 +159,9 @@ export default function CashForm() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-gray-500">ACCOUNT NAME</label>
+              <label className="block text-gray-600 mb-1 font-semibold">
+                ACCOUNT NAME
+              </label>
 
               <Select
                 options={cashAccountOptions}
@@ -178,7 +182,6 @@ export default function CashForm() {
                     boxShadow: "none",
                     borderColor: "black",
                     fontSize: "1rem",
-                    fontWeight: 600,
                     backgroundColor: "white",
                   }),
                   placeholder: (base) => ({
@@ -192,7 +195,10 @@ export default function CashForm() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
             <div className="flex flex-col gap-2">
-              <label htmlFor="" className="text-gray-500">
+              <label
+                htmlFor=""
+                className="block text-gray-600 mb-1 font-semibold"
+              >
                 CURRENCY
               </label>
               <Select
@@ -214,7 +220,6 @@ export default function CashForm() {
                     boxShadow: "none",
                     borderColor: "black",
                     fontSize: "1rem",
-                    fontWeight: 600,
                     backgroundColor: "white",
                   }),
                   placeholder: (base) => ({
@@ -226,7 +231,9 @@ export default function CashForm() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-gray-500">BALANCE</label>
+              <label className="block text-gray-600 mb-1 font-semibold">
+                BALANCE
+              </label>
               <input
                 type="number"
                 min="0"

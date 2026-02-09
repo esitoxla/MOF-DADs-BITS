@@ -113,6 +113,7 @@ export default function BudgetTable({
               <th className="border px-2 py-1">Appropriation</th>
               <th className="border px-2 py-1">Allotment</th>
               <th className="border px-2 py-1">Allotment Balance</th>
+              <th className="border px-2 py-1">Appropriation Balance</th>
               <th className="border px-2 py-1">Releases</th>
               <th className="border px-2 py-1">Actual Expenditure</th>
               <th className="border px-2 py-1">Actual Payment</th>
@@ -146,6 +147,9 @@ export default function BudgetTable({
                   <td className="border px-2 py-1">{record.allotment}</td>
                   <td className="border px-2 py-1">
                     {record.allotmentBalance}
+                  </td>
+                  <td className="border px-2 py-1">
+                    {record.appropriationBalance}
                   </td>
                   <td className="border px-2 py-1">{record.releases}</td>
                   <td className="border px-2 py-1">

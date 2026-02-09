@@ -4,6 +4,7 @@ import {
   downloadTemplate,
   uploadAppropriationExcel,
 } from "../store/features/appropriationSlice";
+import toast from "react-hot-toast";
 
 export default function AppropriationUpload() {
   const dispatch = useDispatch();
@@ -35,7 +36,7 @@ export default function AppropriationUpload() {
 
   const handleSubmit = () => {
     if (!file) {
-      alert("Please select an Excel file first.");
+      toast("Please select an Excel file first.");
       return;
     }
     dispatch(uploadAppropriationExcel(file));
