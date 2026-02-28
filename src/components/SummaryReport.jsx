@@ -21,21 +21,20 @@ export default function SummaryReport() {
   const [quarter, setQuarter] = useState(null);
   const [year, setYear] = useState("");
 
-
   //ADMIN CHECKS
   const { authUser } = useSelector((state) => state.auth);
   const userRole = authUser?.role;
   const isAdmin = userRole === "admin";
 
-
+  //It is automatically setting current quarter and current year, also because of [] It runs only once when the component mounts. 
   useEffect(() => {
     const now = new Date();
+    // getMonth() gets the index of the month then adds 1 and divide by 3. Math.ceil always rounds up the number after the . does not have to be 5 and above e.g Math.ceil(2.1)   // 3
     const currentQuarter = Math.ceil((now.getMonth() + 1) / 3);
 
     setQuarter(quarterOptions.find((q) => q.value === currentQuarter));
     setYear(now.getFullYear());
   }, []);
-
 
   // Handle generate button click
   //these states are being passed via React Router:

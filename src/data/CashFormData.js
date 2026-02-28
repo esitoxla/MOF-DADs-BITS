@@ -4,7 +4,7 @@ export const cashAccountOptions = [
     value: "Internally Generated Fund (IGF)",
     label: "Internally Generated Fund (IGF)",
   },
-  { value: "DF Funds", label: "DF Funds" },
+  { value: "DP Funds", label: "DP Funds" },
   { value: "Other Accounts", label: "Other Accounts" },
 ];
 

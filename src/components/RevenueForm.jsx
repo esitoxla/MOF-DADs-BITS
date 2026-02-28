@@ -249,8 +249,8 @@ export default function RevenueForm() {
                 min="0"
                 className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black placeholder:text-sm"
                 value={projectionB || ""}
-                readOnly
-                disabled
+                onChange={(e) => setProjectionB(e.target.value)}
+                disabled={isReviewing}
               />
             </div>
 

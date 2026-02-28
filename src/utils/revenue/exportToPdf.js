@@ -6,15 +6,17 @@ import logo from "../../assets/images/logo.jpeg";
 export const exportRevenueToPDF = async (detailedRecords, meta = {}) => {
   if (!detailedRecords || detailedRecords.length === 0) return;
 
-  const doc = new jsPDF("l", "pt", "a4"); // landscape
+  const doc = new jsPDF("p", "pt", "a4");
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
   /* =========================
      LOGO
   ========================== */
+
+  const topOffset = 70; //pushing details and logo down
   const logoBase64 = await getBase64Image(logo);
-  doc.addImage(logoBase64, "PNG", pageWidth - 120, 20, 80, 60);
+  doc.addImage(logoBase64, "JPEG", pageWidth - 120, topOffset - 20, 80, 60);
 
   /* =========================
      HEADER TEXT
@@ -26,7 +28,11 @@ export const exportRevenueToPDF = async (detailedRecords, meta = {}) => {
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.text(`Organization: ${meta.organization || ""}`, 40, 60);
-  doc.text( `Reporting Period: Q${meta.quarter || ""} ${meta.year || ""}`, 40, 75);
+  doc.text(
+    `Reporting Period: Q${meta.quarter || ""} ${meta.year || ""}`,
+    40,
+    75,
+  );
   doc.text("Currency: Ghana Cedis (GHS)", 40, 90);
 
   /* =========================
@@ -40,14 +46,14 @@ export const exportRevenueToPDF = async (detailedRecords, meta = {}) => {
     pageWidth / 2 - 250,
     pageHeight / 2 - 150,
     500,
-    300
+    300,
   );
   doc.restoreGraphicsState();
 
   /* =========================
      TABLE
   ========================== */
-  const tableBody = records.map((r, index) => [
+  const tableBody = detailedRecords.map((r, index) => [
     index + 1,
     r.date,
     r.revenue_category,
@@ -60,7 +66,7 @@ export const exportRevenueToPDF = async (detailedRecords, meta = {}) => {
   ]);
 
   autoTable(doc, {
-    startY: 110,
+    startY: topOffset + 70,
     head: [
       [
         "S.N",
@@ -95,10 +101,14 @@ export const exportRevenueToPDF = async (detailedRecords, meta = {}) => {
 
     columnStyles: {
       0: { halign: "center", cellWidth: 30 },
+      1: { cellWidth: 60 },
+      2: { cellWidth: 60 },
       3: { halign: "right" },
       4: { halign: "right" },
-      5: { halign: "right" },
-      7: { halign: "right" },
+      5: { halign: "right", cellWidth: 60 },
+      6: { halign: "center" },
+      7: { halign: "center", cellWidth: 60 },
+      8: { halign: "center", cellWidth: 90 },
     },
 
     margin: { left: 20, right: 20 },
@@ -109,7 +119,7 @@ export const exportRevenueToPDF = async (detailedRecords, meta = {}) => {
       doc.text(
         `Page ${doc.internal.getNumberOfPages()}`,
         pageWidth - 60,
-        pageHeight - 20
+        pageHeight - 20,
       );
     },
   });

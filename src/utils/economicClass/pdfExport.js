@@ -37,7 +37,7 @@ export const exportToPDF = async (detailedRecords, meta = {}) => {
      LOGO
   ========================== */
   const logoBase64 = await getBase64Image(logo);
-  doc.addImage(logoBase64, "PNG", pageWidth - 120, 20, 80, 60);
+  doc.addImage(logoBase64, "JPEG", pageWidth - 120, 20, 80, 60);
 
   /* =========================
    LOGO WATERMARK

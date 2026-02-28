@@ -112,6 +112,8 @@ export const reportTypeOptions = [
   {value: "NA", label: "Natural Account"}
 ]
 
+
+//used for dropdown on report modal
 export const quarterOptions = [
   { value: 1, label: "Q1 (Jan - Mar)" },
   { value: 2, label: "Q2 (Apr - Jun)" },
@@ -119,9 +121,20 @@ export const quarterOptions = [
   { value: 4, label: "Q4 (Oct - Dec)" },
 ];
 
+
+//used For header display in revenue and economic classification
 export const quarterEndMonth = {
   1: "MARCH",
   2: "JUNE",
   3: "SEPTEMBER",
   4: "DECEMBER",
+};
+
+
+//used to connected as_at_date in cash report
+export const quarterEndDate = {
+  1: "03-31",
+  2: "06-30",
+  3: "09-30",
+  4: "12-31",
 };

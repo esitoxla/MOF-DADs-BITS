@@ -17,6 +17,13 @@ import {
   downloadQuarterlyRevenuePDF,
 } from "../store/features/revenueReport";
 import RevenuePerformanceTable from "../components/RevenuePerformanceTable";
+import CashPerformanceTable from "../components/CashPerformanceTable";
+import {
+  downloadCashPositionExcel,
+  downloadCashPositionPDF,
+  fetchCashPositionReport,
+} from "../store/features/cashReportSlice";
+import { quarterEndDate } from "../data/BudgetExpenditureData";
 
 export default function ReportPreview() {
   const navigate = useNavigate();
@@ -25,6 +32,7 @@ export default function ReportPreview() {
 
   const economicClass = useSelector((store) => store.report);
   const revenue = useSelector((store) => store.revenueReport);
+  const cash = useSelector((store) => store.cashReport);
 
   const {
     reportType = "EC",
@@ -34,14 +42,36 @@ export default function ReportPreview() {
     organization,
   } = location.state || {};
 
+  const as_at_date =
+    reportType === "CP" && quarter && year
+      ? `${year}-${quarterEndDate[quarter]}`
+      : null;
+
   useEffect(() => {
     if (!year || !quarter) {
       navigate("/dashboard/reports/summaryReport");
     }
   }, [year, quarter, navigate]);
 
-  const { reportData, totals, loading, error } =
-    reportType === "IRP" ? revenue : economicClass;
+  let reportData = [];
+  let totals = {};
+  let loading = false;
+  let error = null;
+
+  if (reportType === "EC") {
+    ({ reportData, totals, loading, error } = economicClass);
+  }
+
+  if (reportType === "IRP") {
+    ({ reportData, totals, loading, error } = revenue);
+  }
+
+  if (reportType === "CP") {
+    reportData = cash.summary.records;
+    totals = cash.summary.totals;
+    loading = cash.summary.loading;
+    error = cash.summary.error;
+  }
 
   // fetch from backend when page loads or filters change
   useEffect(() => {
@@ -54,7 +84,7 @@ export default function ReportPreview() {
           quarter,
           sourceOfFunding: fundingSource,
           organization,
-        })
+        }),
       );
     }
 
@@ -64,10 +94,28 @@ export default function ReportPreview() {
           year,
           quarter,
           organization,
-        })
+        }),
       );
     }
-  }, [dispatch, reportType, year, quarter, fundingSource, organization]);
+
+    if (reportType === "CP") {
+      dispatch(
+        fetchCashPositionReport({
+          year,
+          quarter,
+          organization,
+        }),
+      );
+    }
+  }, [
+    dispatch,
+    reportType,
+    year,
+    quarter,
+    fundingSource,
+    organization,
+    as_at_date,
+  ]);
 
   // transform backend payload into your table format
   const tableData = useMemo(() => {
@@ -98,14 +146,23 @@ export default function ReportPreview() {
             organization={organization}
           />
         );
-      // Extend for R, NA, CP etc.
+      case "CP":
+        return (
+          <CashPerformanceTable
+            data={tableData}
+            totals={totals}
+            year={year}
+            quarter={quarter}
+            organization={organization}
+          />
+        );
       default:
         return <p>No table available for this report type.</p>;
     }
   };
 
   // export handlers use tableData (not local dummy)
-  const handleExport = (type) => {
+  const handleExport = async (type) => {
     // ===============================
     // ECONOMIC CLASSIFICATION (EC)
     // ===============================
@@ -117,7 +174,7 @@ export default function ReportPreview() {
             quarter,
             sourceOfFunding: fundingSource,
             organization,
-          })
+          }),
         );
       }
 
@@ -128,7 +185,7 @@ export default function ReportPreview() {
             quarter,
             sourceOfFunding: fundingSource,
             organization,
-          })
+          }),
         );
       }
     }
@@ -143,7 +200,7 @@ export default function ReportPreview() {
             year,
             quarter,
             organization,
-          })
+          }),
         );
       }
 
@@ -153,8 +210,29 @@ export default function ReportPreview() {
             year,
             quarter,
             organization,
-          })
+          }),
         );
+      }
+    }
+
+    // ===============================
+    // CASH POSITION
+    // ===============================
+    if (reportType === "CP") {
+      if (type === "pdf") {
+        await downloadCashPositionPDF({
+          year,
+          quarter,
+          organization,
+        });
+      }
+
+      if (type === "excel") {
+        await downloadCashPositionExcel({
+          year,
+          quarter,
+          organization,
+        });
       }
     }
   };

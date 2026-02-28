@@ -71,7 +71,7 @@ export default function DetailedEC() {
     }
 
     if (type === "excel") {
-      exportToExcel(detailedRecords, "Detailed_EC_Report.xlsx");
+      exportToExcel(detailedRecords, year, quarter);
     }
   };
 

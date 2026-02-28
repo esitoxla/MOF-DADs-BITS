@@ -18,7 +18,7 @@ export default function DetailedRevenue() {
    (state) => state.revenueReport
  );
 
- console.log(detailedRecords);
+//  console.log(detailedRecords);
 
   const location = useLocation();
  const { year, quarter, organization } = location.state || {};
@@ -55,7 +55,7 @@ export default function DetailedRevenue() {
 
   const handleExport = async (type) => {
     if (type === "excel") {
-      exportRevenueToExcel(detailedRecords, "Detailed_Revenue_Report.xlsx");
+      exportRevenueToExcel(detailedRecords, year);
     }
 
     if (type === "pdf") {

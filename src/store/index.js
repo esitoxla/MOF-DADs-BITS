@@ -8,6 +8,7 @@ import revenueReportReducer from "../store/features/revenueReport";
 import appropriationReducer from "../store/features/appropriationSlice";
 import budgetDynamicReducer from "../store/features/budgetDynamicSlice";
 import cashReducer from "../store/features/cashSlice";
+import cashReportReducer from "../store/features/cashReportSlice"
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +20,7 @@ export const store = configureStore({
     revenueReport: revenueReportReducer,
     appropriation: appropriationReducer,
     budgetDynamic: budgetDynamicReducer,
-    cash: cashReducer
+    cash: cashReducer,
+    cashReport: cashReportReducer
   },
 });

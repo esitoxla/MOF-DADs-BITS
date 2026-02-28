@@ -1,5 +1,5 @@
 import React from 'react'
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { reportTypeOptions } from '../data/BudgetExpenditureData';
@@ -26,6 +26,17 @@ export default function DetailedReport() {
   const userRole = authUser?.role;
   const isAdmin = userRole === "admin";
 
+
+  //It is automatically setting current quarter and current year, also because of [] It runs only once when the component mounts
+    useEffect(() => {
+      const now = new Date();
+      const currentQuarter = Math.ceil((now.getMonth() + 1) / 3);
+  
+      setQuarter(quarterOptions.find((q) => q.value === currentQuarter));
+      setYear(now.getFullYear());
+    }, []);
+
+
   // Handle generate button click
   //these states are being passed via React Router:
  const handleGenerate = () => {
@@ -47,7 +58,7 @@ export default function DetailedReport() {
    const state = {
      reportType: reportType.value,
      quarter: quarter.value,
-     year,
+     year: Number(year),
      organization: isAdmin ? organization?.value : authUser?.organization,
    };
 
@@ -57,6 +68,10 @@ export default function DetailedReport() {
 
    if (reportType.value === "IRP") {
      navigate("/dashboard/reports/detailedRevenue", { state });
+   }
+
+   if (reportType.value === "CP") {
+     navigate("/dashboard/reports/detailedCash", { state });
    }
  };
 

@@ -18,7 +18,7 @@ const EconomicClassificationTable = ({
   organization,
 }) => {
   const { authUser } = useSelector((store) => store.auth);
-  console.log(authUser);
+  // console.log(authUser);
 
   const navigate = useNavigate();
   //this prevents showing toast more than once
