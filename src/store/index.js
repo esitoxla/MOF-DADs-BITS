@@ -9,6 +9,7 @@ import appropriationReducer from "../store/features/appropriationSlice";
 import budgetDynamicReducer from "../store/features/budgetDynamicSlice";
 import cashReducer from "../store/features/cashSlice";
 import cashReportReducer from "../store/features/cashReportSlice"
+import activityReducer from "../store/features/activitySlice"
 
 export const store = configureStore({
   reducer: {
@@ -21,6 +22,7 @@ export const store = configureStore({
     appropriation: appropriationReducer,
     budgetDynamic: budgetDynamicReducer,
     cash: cashReducer,
-    cashReport: cashReportReducer
+    cashReport: cashReportReducer,
+    activity: activityReducer
   },
 });

@@ -184,10 +184,10 @@ export default function CashForm() {
                     fontSize: "1rem",
                     backgroundColor: "white",
                   }),
-                  placeholder: (base) => ({
-                    ...base,
-                    color: "#000000",
-                  }),
+                  // placeholder: (base) => ({
+                  //   ...base,
+                  //   color: "#000000",
+                  // }),
                 }}
               />
             </div>
@@ -222,10 +222,10 @@ export default function CashForm() {
                     fontSize: "1rem",
                     backgroundColor: "white",
                   }),
-                  placeholder: (base) => ({
-                    ...base,
-                    color: "#000000",
-                  }),
+                  // placeholder: (base) => ({
+                  //   ...base,
+                  //   color: "#000000",
+                  // }),
                 }}
               />
             </div>
@@ -237,7 +237,7 @@ export default function CashForm() {
               <input
                 type="number"
                 min="0"
-                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
+                className="py-[0.7rem] px-2 w-full outline rounded "
                 value={balance}
                 onChange={(e) => setBalance(e.target.value)}
                 // disabled={isReviewing}

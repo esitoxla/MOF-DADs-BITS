@@ -79,7 +79,7 @@ export default function AppropriationUpload() {
         />
 
         <p className="text-gray-600 font-medium">
-          {file ? file.name : "Upload Excel (.xlsx)"}{" "}
+          {file ? file.name : "Upload Appropriation Excel (.xlsx)"}{" "}
           <span className="text-gray-500">or drag and drop</span>
         </p>
 

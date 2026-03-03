@@ -56,7 +56,10 @@ export default function Login() {
 
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-6 bg-green-50">
+    <div className="flex flex-col gap-6 items-center justify-center min-h-screen p-6 bg-green-50">
+      <h2 className="text-2xl md:text-3xl font-bold text-green-800 tracking-wide text-center mb-4">
+        BUDGET IMPLEMENTATION TRACKING SYSTEM
+      </h2>
       <div className="bg-white p-8 rounded-2xl shadow-lg w-96">
         <h2 className="text-3xl font-bold text-green-700 text-center mb-6">
           Welcome !!!

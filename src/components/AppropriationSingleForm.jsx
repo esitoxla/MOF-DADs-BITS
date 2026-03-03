@@ -179,7 +179,7 @@ export default function AppropriationSingleForm() {
         onSubmit={handleSubmit}
         className="flex flex-col gap-4 w-full mx-auto"
       >
-        <div className="flex flex-col border-0 shadow bg-white px-4 py-4 w-full gap-6">
+        <div className="flex flex-col border-0 shadow-lg bg-white px-4 py-4 w-full gap-6">
           {/* Row 1 */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mt-4">
             <div>
@@ -192,7 +192,7 @@ export default function AppropriationSingleForm() {
                 value={form.organization}
                 onChange={handleChange}
                 className="py-[0.7rem] px-2 w-full outline rounded"
-                placeholder="Enter organization"
+                placeholder="Enter organization..."
               />
             </div>
 
@@ -206,7 +206,7 @@ export default function AppropriationSingleForm() {
                 value={form.economicClassification}
                 onChange={handleChange}
                 className="py-[0.7rem] px-2 w-full outline rounded"
-                placeholder="Enter economic classification"
+                placeholder="Enter economic classification..."
               />
             </div>
           </div>
@@ -223,7 +223,7 @@ export default function AppropriationSingleForm() {
                 value={form.sourceOfFunding}
                 onChange={handleChange}
                 className="py-[0.7rem] px-2 w-full outline rounded"
-                placeholder="Enter source of funding"
+                placeholder="Enter source of funding..."
               />
             </div>
 
@@ -237,7 +237,7 @@ export default function AppropriationSingleForm() {
                 value={form.naturalAccount}
                 onChange={handleChange}
                 className="py-[0.7rem] px-2 w-full outline rounded"
-                placeholder="Enter natural account"
+                placeholder="Enter natural account..."
               />
             </div>
           </div>
@@ -254,7 +254,7 @@ export default function AppropriationSingleForm() {
                 value={form.appropriation}
                 onChange={handleChange}
                 className="py-[0.7rem] px-2 w-full outline rounded"
-                placeholder="Enter appropriation"
+                placeholder="Enter appropriation..."
               />
             </div>
 
@@ -268,7 +268,7 @@ export default function AppropriationSingleForm() {
                 value={form.allotment}
                 onChange={handleChange}
                 className="py-[0.7rem] px-2 w-full outline rounded"
-                placeholder="Enter allotment"
+                placeholder="Enter allotment..."
               />
             </div>
           </div>

@@ -3,6 +3,7 @@ import AdminTab from "../components/AdminTab";
 import Users from "./Users";
 import AppropriationLoading from "./AppropriationLoading";
 import Virement from "./Virement";
+import ActivityLoading from "./ActivityLoading";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("users");
@@ -19,6 +20,7 @@ export default function AdminDashboard() {
         <div className="mt-6 h-full">
           {activeTab === "users" && <Users />}
           {activeTab === "loading" && <AppropriationLoading />}
+          {activeTab === "activitiesLoading" && <ActivityLoading />}
           {activeTab === "virement" && <Virement />}
         </div>
       </div>

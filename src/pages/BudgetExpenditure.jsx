@@ -22,6 +22,7 @@ import {
   fetchNaturalAccounts,
   fetchBudgetValues,
 } from "../store/features/budgetDynamicSlice";
+import { getMyActivities } from "../store/features/activitySlice";
 
 export default function BudgetExpenditure() {
   //redux handling the edit functionality
@@ -34,6 +35,10 @@ export default function BudgetExpenditure() {
     budgetValues,
     loading: budgetLoading,
   } = useSelector((state) => state.budgetDynamic);
+
+  const { activities, loading: activitiesLoading } = useSelector(
+    (state) => state.activity,
+  );
 
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
@@ -58,7 +63,6 @@ export default function BudgetExpenditure() {
   const [previousActualExpenditure, setPreviousActualExpenditure] = useState(0);
   const [previousReleases, setPreviousReleases] = useState(0);
 
-
   //BudgetTable
   const [records, setRecords] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -70,12 +74,20 @@ export default function BudgetExpenditure() {
   //for IGF DPF checks for allotment
   const hasAllotment = Number(allotment) > 0;
 
+  // FOR activities
 
-  // Create activities 1–20 as options for react-select
-  const activityOptions = Array.from({ length: 20 }, (_, i) => ({
-    value: i + 1,
-    label: `Activity ${i + 1}`,
-  }));
+  //fetch activites
+  useEffect(() => {
+    dispatch(getMyActivities());
+  }, [dispatch]);
+
+
+  const activityOptions = Array.isArray(activities)
+    ? activities.map((activity) => ({
+        value: activity.id,
+        label: activity.name,
+      }))
+    : [];
 
   // Determine available funding options based on selected economic class
   const filteredFundingOptions =
@@ -97,11 +109,10 @@ export default function BudgetExpenditure() {
       })
     : [];
 
-    const usesAllotmentBalance =
-      economicClass?.label === "Use of Goods and Services" &&
-      fundingSource?.label === "GOG" // &&
-     // hasAllotment;
-
+  const usesAllotmentBalance =
+    economicClass?.label === "Use of Goods and Services" &&
+    fundingSource?.label === "GOG"; // &&
+  // hasAllotment;
 
   ///ALL useEFFECTS LOGIC
 
@@ -117,8 +128,6 @@ export default function BudgetExpenditure() {
     );
   }, [economicClass, fundingSource]);
 
-
-
   // Fetch budget values when natural account is selected
   useEffect(() => {
     if (!economicClass || !fundingSource || !selectedAccount) return;
@@ -133,8 +142,6 @@ export default function BudgetExpenditure() {
 
     dispatch(fetchBudgetValues(payload));
   }, [selectedAccount, economicClass, fundingSource, dispatch]);
-
-
 
   //this handles the logic behind the relationship between economic classification and the natural account
   useEffect(() => {
@@ -159,28 +166,22 @@ export default function BudgetExpenditure() {
     }
   }, [economicClass]);
 
-
-
   // Autofill appropriation, allotment, and balance from backend
-useEffect(() => {
-  if (!budgetValues || !selectedAccount) return;
+  useEffect(() => {
+    if (!budgetValues || !selectedAccount) return;
 
-  setAppropriation(budgetValues.appropriation ?? "");
-  setAllotment(Number(budgetValues.allotment ?? 0));
+    setAppropriation(budgetValues.appropriation ?? "");
+    setAllotment(Number(budgetValues.allotment ?? 0));
 
-  setPreviousActualExpenditure(
-    Number(budgetValues.previousActualExpenditure ?? 0),
-  );
+    setPreviousActualExpenditure(
+      Number(budgetValues.previousActualExpenditure ?? 0),
+    );
 
-   setPreviousReleases(
-     Number(budgetValues.previousReleases ?? 0), 
-   );
+    setPreviousReleases(Number(budgetValues.previousReleases ?? 0));
 
-  setAllotmentBalance(Number(budgetValues.allotmentBalance ?? 0));
-  setAppropriationBalance(Number(budgetValues.appropriationBalance ?? 0));
-}, [budgetValues, selectedAccount]);
-
-
+    setAllotmentBalance(Number(budgetValues.allotmentBalance ?? 0));
+    setAppropriationBalance(Number(budgetValues.appropriationBalance ?? 0));
+  }, [budgetValues, selectedAccount]);
 
   //handles populating fields that are dependent on each other(natural account, allotment, appropriation, allotment balance)
   // Handles populating fields when editing a record
@@ -261,26 +262,25 @@ useEffect(() => {
   //OTHER INPUTS LOGICS
 
   // Handle releases input
- const handleReleasesChange = (e) => {
-   const value = Number(e.target.value || 0);
-   setReleases(value);
+  const handleReleasesChange = (e) => {
+    const value = Number(e.target.value || 0);
+    setReleases(value);
 
-   const appropriationNum = Number(appropriation || 0);
-   const prevReleases = Number(previousReleases || 0);
+    const appropriationNum = Number(appropriation || 0);
+    const prevReleases = Number(previousReleases || 0);
 
-   const remainingAppropriation = appropriationNum - (prevReleases + value);
+    const remainingAppropriation = appropriationNum - (prevReleases + value);
 
-   // releases can NEVER exceed appropriation
-   if (remainingAppropriation < 0) {
-     toast.error("Releases cannot exceed available appropriation.");
-     setShowReleasesAlert(true);
-     return;
-   }
+    // releases can NEVER exceed appropriation
+    if (remainingAppropriation < 0) {
+      toast.error("Releases cannot exceed available appropriation.");
+      setShowReleasesAlert(true);
+      return;
+    }
 
-   setShowReleasesAlert(false);
-   setAppropriationBalance(remainingAppropriation);
- };
-
+    setShowReleasesAlert(false);
+    setAppropriationBalance(remainingAppropriation);
+  };
 
   // Handle expenditure input
   const handleExpenditureChange = (e) => {
@@ -485,6 +485,7 @@ useEffect(() => {
               options={activityOptions}
               value={selectedActivity}
               onChange={setSelectedActivity}
+              isLoading={activitiesLoading}
               placeholder="Search or select an activity..."
               className="text-base"
               styles={{
@@ -553,10 +554,10 @@ useEffect(() => {
 
                     backgroundColor: "white",
                   }),
-                  placeholder: (base) => ({
-                    ...base,
-                    color: "black",
-                  }),
+                  // placeholder: (base) => ({
+                  //   ...base,
+                  //   color: "black",
+                  // }),
                 }}
               />
             </div>
@@ -585,10 +586,10 @@ useEffect(() => {
 
                     backgroundColor: "white",
                   }),
-                  placeholder: (base) => ({
-                    ...base,
-                    color: "black",
-                  }),
+                  // placeholder: (base) => ({
+                  //   ...base,
+                  //   color: "black",
+                  // }),
                 }}
               />
             </div>
@@ -621,10 +622,10 @@ useEffect(() => {
 
                     backgroundColor: "white",
                   }),
-                  placeholder: (base) => ({
-                    ...base,
-                    color: "#000000",
-                  }),
+                  // placeholder: (base) => ({
+                  //   ...base,
+                  //   color: "#000000",
+                  // }),
                 }}
               />
             </div>
@@ -638,7 +639,7 @@ useEffect(() => {
               </label>
               <input
                 type="text"
-                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
+                className="py-[0.7rem] px-2 w-full outline rounded"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={isReviewing}
@@ -658,10 +659,10 @@ useEffect(() => {
               <input
                 type="number"
                 min="0"
-                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
+                className="py-[0.7rem] px-2 w-full outline rounded"
                 value={appropriation || ""}
                 readOnly
-                disabled
+                placeholder="Not applicable"
               />
             </div>
 
@@ -675,10 +676,10 @@ useEffect(() => {
               <input
                 type="number"
                 min="0"
-                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
+                className="py-[0.7rem] px-2 w-full outline rounded"
                 value={allotment ?? 0}
                 readOnly
-                disabled
+                placeholder="Not applicable"
               />
             </div>
 
@@ -693,6 +694,7 @@ useEffect(() => {
                   className="py-[0.7rem] px-2 w-full outline rounded"
                   value={allotmentBalance ?? 0}
                   readOnly
+                  placeholder="Not applicable"
                 />
               </div>
             ) : (
@@ -706,6 +708,7 @@ useEffect(() => {
                   className="py-[0.7rem] px-2 w-full outline rounded"
                   value={appropriationBalance ?? 0}
                   readOnly
+                  placeholder="Not applicable"
                 />
               </div>
             )}
@@ -720,7 +723,7 @@ useEffect(() => {
               <input
                 type="number"
                 min="0"
-                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
+                className="py-[0.7rem] px-2 w-full outline rounded"
                 value={releases || ""}
                 onChange={handleReleasesChange}
                 disabled={isReviewing || hasAllotment}
@@ -740,7 +743,7 @@ useEffect(() => {
               <input
                 type="number"
                 min="0"
-                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
+                className="py-[0.7rem] px-2 w-full outline rounded "
                 value={expenditure || ""}
                 onChange={handleExpenditureChange}
                 disabled={isReviewing}
@@ -756,7 +759,7 @@ useEffect(() => {
               <input
                 type="number"
                 min="0"
-                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black"
+                className="py-[0.7rem] px-2 w-full outline rounded"
                 value={payment || ""}
                 onChange={handlePaymentChange}
                 disabled={isReviewing}

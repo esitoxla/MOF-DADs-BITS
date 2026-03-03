@@ -227,10 +227,10 @@ export default function RevenueForm() {
                     fontSize: "1rem",
                     backgroundColor: "white",
                   }),
-                  placeholder: (base) => ({
-                    ...base,
-                    color: "#000000",
-                  }),
+                  // placeholder: (base) => ({
+                  //   ...base,
+                  //   color: "#000000",
+                  // }),
                 }}
               />
             </div>
@@ -247,10 +247,11 @@ export default function RevenueForm() {
               <input
                 type="number"
                 min="0"
-                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black placeholder:text-sm"
+                className="py-[0.7rem] px-2 w-full outline rounded "
                 value={projectionB || ""}
                 onChange={(e) => setProjectionB(e.target.value)}
                 disabled={isReviewing}
+                placeholder="Not applicable"
               />
             </div>
 
@@ -261,7 +262,7 @@ export default function RevenueForm() {
               <input
                 type="number"
                 min="0"
-                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black placeholder:text-sm"
+                className="py-[0.7rem] px-2 w-full outline rounded "
                 value={collections}
                 disabled={isReviewing}
                 onChange={(e) => handleCollectionsChange(e.target.value)}
@@ -282,7 +283,7 @@ export default function RevenueForm() {
               <input
                 type="number"
                 min="0"
-                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black placeholder:text-sm"
+                className="py-[0.7rem] px-2 w-full outline rounded"
                 value={payment}
                 readOnly
                 placeholder="Auto calculated..."
@@ -299,7 +300,7 @@ export default function RevenueForm() {
               <input
                 type="number"
                 min="0"
-                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black placeholder:text-sm"
+                className="py-[0.7rem] px-2 w-full outline rounded "
                 value={retention}
                 readOnly
                 placeholder="Auto calculated..."
@@ -317,7 +318,7 @@ export default function RevenueForm() {
               </label>
               <input
                 type="text"
-                className="py-[0.7rem] px-2 w-full outline rounded placeholder:text-black placeholder:text-sm"
+                className="py-[0.7rem] px-2 w-full outline rounded "
                 value={remarks}
                 disabled={isReviewing}
                 onChange={(e) => setRemarks(e.target.value)}
