@@ -44,7 +44,9 @@ export default function RevenueForm() {
   useEffect(() => {
     if (user?.organization) {
       const rate = organizationRetentionRates[user.organization];
+      console.log(rate);
       setRetentionRate(rate);
+      
     }
   }, [user]);
 
@@ -251,7 +253,7 @@ export default function RevenueForm() {
                 value={projectionB || ""}
                 onChange={(e) => setProjectionB(e.target.value)}
                 disabled={isReviewing}
-                placeholder="Not applicable"
+                placeholder="Enter budget projections here..."
               />
             </div>
 
