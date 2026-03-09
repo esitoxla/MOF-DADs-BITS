@@ -1,5 +1,3 @@
-
-
 export const revenueCategoriesOptions = [
   { value: "Fees/Charges", label: "Fees/Charges" },
   { value: "Sale Of Goods and Services", label: "Sale Of Goods and Services" },
@@ -9,19 +7,17 @@ export const revenueCategoriesOptions = [
   { value: "Others", label: "Others" },
 ];
 
-
 // Add this dictionary
 export const revenueBudgetProjections = {
-  fees: 1700000.00,
-  sale: 20000000.00,
-  fines: 35000000.00,
-  licenses: 40000000.00,
-  interests: 57698880.00,
-  others: 67900000.00,
+  fees: 1700000.0,
+  sale: 20000000.0,
+  fines: 35000000.0,
+  licenses: 40000000.0,
+  interests: 57698880.0,
+  others: 67900000.0,
 };
-
 
 export const organizationRetentionRates = {
-  MOF: 25,
+  "MOF": 25,
+"Controller and Acct. Generals Dept": 61,
 };
-
