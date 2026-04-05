@@ -81,7 +81,6 @@ export default function BudgetExpenditure() {
     dispatch(getMyActivities());
   }, [dispatch]);
 
-
   const activityOptions = Array.isArray(activities)
     ? activities.map((activity) => ({
         value: activity.id,
@@ -477,39 +476,8 @@ export default function BudgetExpenditure() {
   return (
     <div className="flex flex-col gap-6 justify-center lg:px-4">
       <form className="min-h-screen w-full p-4 sm:p-6 flex flex-col">
-        {/* --- ACTIVITIES FIELD --- */}
-        <div className="flex flex-col sm:flex-row sm:items-center text-2xl  text-green-800 mb-8 border-0 shadow bg-white px-4 py-4 w-full gap-4">
-          <label className="text-center sm:w-1/3 font-bold">ACTIVITIES</label>
-          <div className="w-full sm:w-2/3">
-            <Select
-              options={activityOptions}
-              value={selectedActivity}
-              onChange={setSelectedActivity}
-              isLoading={activitiesLoading}
-              placeholder="Search or select an activity..."
-              className="text-base"
-              styles={{
-                control: (base) => ({
-                  ...base,
-                  borderColor: "black", // Tailwind green-800
-                  boxShadow: "none",
-                }),
-                option: (base, state) => ({
-                  ...base,
-                  backgroundColor: state.isSelected
-                    ? "#16a34a"
-                    : state.isFocused
-                      ? "#dcfce7"
-                      : "white",
-                  color: state.isSelected ? "white" : "black",
-                }),
-              }}
-              // this ensures case-insensitive matching
-              filterOption={(option, inputValue) =>
-                option.label.toLowerCase().includes(inputValue.toLowerCase())
-              }
-            />
-          </div>
+        <div className="text-center text-2xl font-bold text-green-700 mb-8 border-0 shadow bg-white px-4 py-4 w-full">
+          DADs Expenditure
         </div>
 
         <div className="cursor-pointer shadow bg-white h-full py-8 px-4 mb-6">
@@ -528,6 +496,40 @@ export default function BudgetExpenditure() {
                   className="border w-full py-[0.7rem] px-2 rounded"
                 />
               </div>
+            </div>
+
+            {/* --- ACTIVITIES FIELD --- */}
+            <div className="flex flex-col gap-2">
+              <label className="block text-gray-600 mb-1 font-semibold">
+                ACTIVITIES
+              </label>
+
+              <Select
+                options={activityOptions}
+                value={selectedActivity}
+                onChange={setSelectedActivity}
+                isLoading={activitiesLoading}
+                placeholder="Search or select an activity..."
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    padding: ".3rem .2rem",
+                    boxShadow: "none",
+                    borderColor: "black",
+                    fontSize: "1rem",
+
+                    backgroundColor: "white",
+                  }),
+                  // placeholder: (base) => ({
+                  //   ...base,
+                  //   color: "black",
+                  // }),
+                }}
+                // this ensures case-insensitive matching
+                filterOption={(option, inputValue) =>
+                  option.label.toLowerCase().includes(inputValue.toLowerCase())
+                }
+              />
             </div>
 
             <div className="flex flex-col gap-2">
@@ -561,7 +563,9 @@ export default function BudgetExpenditure() {
                 }}
               />
             </div>
+          </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-center justify-between gap-4 bg-white  w-full px-4 mb-8">
             <div className="flex flex-col gap-2">
               <label className="block text-gray-600 mb-1 font-semibold">
                 SOURCE OF FUNDING
@@ -593,9 +597,7 @@ export default function BudgetExpenditure() {
                 }}
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
             <div className="flex flex-col gap-2">
               <label className="block text-gray-600 mb-1 font-semibold">
                 NATURAL ACCOUNT

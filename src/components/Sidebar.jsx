@@ -106,7 +106,7 @@ export default function Sidebar({ toggleSidebar, preview }) {
             )}
           </NavLink>
 
-          <NavLink to="/dashboard/budget">
+          <NavLink to="/dashboard/budget&reallocation">
             {({ isActive }) => (
               <div
                 className={`flex gap-2 items-center px-4 py-2 ${

@@ -18,7 +18,7 @@ export default function RevenueCashPage() {
           <div>
             <img
               src={revenuePic}
-              alt="Summary Report Image"
+              alt="Revenue Image"
               className="w-26 h-26"
             />
           </div>
@@ -29,7 +29,7 @@ export default function RevenueCashPage() {
           <div>
             <img
               src={cashPic}
-              alt="Summary Report Image"
+              alt="Cash Image"
               className="w-26 h-26"
             />
           </div>

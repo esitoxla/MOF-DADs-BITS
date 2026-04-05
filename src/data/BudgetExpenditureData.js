@@ -105,11 +105,18 @@ export const fundingSourceOptions = [
 
 
 export const reportTypeOptions = [
-  {value: "EC", label: "Economic Classification"},
+  {value: "EC", label: "Expenditure by Economic Classification"},
   {value: "IRP", label: "IGF Revenue Performance"},
   {value: "CP", label: "Cash Position"},
   {value: "R", label: "Reallocation"},
-  {value: "NA", label: "Natural Account"}
+  {value: "NA", label: "Expenditure by Natural Account"}
+]
+
+export const detailedReportTypeOptions = [
+  {value: "EC", label: "Expenditure by Economic Classification"},
+  {value: "IRP", label: "IGF Revenue Performance"},
+  {value: "CP", label: "Cash Position"},
+  {value: "R", label: "Reallocation"}
 ]
 
 

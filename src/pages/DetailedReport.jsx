@@ -2,7 +2,7 @@ import React from 'react'
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import { reportTypeOptions } from '../data/BudgetExpenditureData';
+import { detailedReportTypeOptions } from "../data/BudgetExpenditureData";
 import { organizationOptions } from '../data/BudgetExpenditureData';
 import { quarterOptions } from '../data/BudgetExpenditureData';
 import Select from "react-select";
@@ -121,7 +121,7 @@ export default function DetailedReport() {
               Report Type
             </label>
             <Select
-              options={reportTypeOptions}
+              options={detailedReportTypeOptions}
               value={reportType}
               onChange={setReportType}
               placeholder="Search or select a report type"

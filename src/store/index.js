@@ -10,6 +10,7 @@ import budgetDynamicReducer from "../store/features/budgetDynamicSlice";
 import cashReducer from "../store/features/cashSlice";
 import cashReportReducer from "../store/features/cashReportSlice"
 import activityReducer from "../store/features/activitySlice"
+import reallocationReducer from "../store/features/reallocationSlice"
 
 export const store = configureStore({
   reducer: {
@@ -23,6 +24,7 @@ export const store = configureStore({
     budgetDynamic: budgetDynamicReducer,
     cash: cashReducer,
     cashReport: cashReportReducer,
-    activity: activityReducer
+    activity: activityReducer,
+    reallocation: reallocationReducer
   },
 });
