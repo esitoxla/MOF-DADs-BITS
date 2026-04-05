@@ -131,6 +131,7 @@ const resetForm = () => {
 
       toast.success("Reviewed successfully");
       dispatch(cancelEditing());
+       resetForm();
     } catch (error) {
       toast.error(error || "Failed to review");
     }
@@ -365,11 +366,11 @@ const resetForm = () => {
           <button
             type="button"
             onClick={() => {
-              setSelectedActivity(null);
+              setSelectedActivity("");
               setSelectedDate("");
-              setEconomicClass(null);
+              setEconomicClass("");
               setFundingSource(null);
-              setSelectedAccount(null);
+              setSelectedAccount("");
               setDescription("");
               setAppropriation("");
               setAllotment("");
@@ -377,7 +378,7 @@ const resetForm = () => {
               setExpenditure("");
               setPayment("");
               setAllotmentBalance("");
-              //   dispatch(cancelEditing());
+                dispatch(cancelEditing());
               toast.success("Form reset successfully!");
             }}
             className="bg-gray-400 text-white px-4 py-2 font-semibold hover:bg-gray-500 transition duration-300 shadow-md cursor-pointer lg:w-[10%]"
@@ -386,8 +387,25 @@ const resetForm = () => {
           </button>
 
           {/* Submit Button */}
-          <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 font-semibold transition duration-300 shadow-md cursor-pointer lg:w-[10%]">
-            Submit
+          <button
+            type={isReviewing ? "button" : "submit"}
+            onClick={(e) => {
+              if (isReviewing) {
+                setRecordToReview(formValues); // record already in Redux
+                setIsReviewModalOpen(true);
+              } else {
+                handleSubmit(e);
+              }
+            }}
+            className={`${
+              isReviewing
+                ? "bg-blue-600 hover:bg-blue-700"
+                : isEditing
+                  ? "bg-yellow-600 hover:bg-yellow-700"
+                  : "bg-green-600 hover:bg-green-700"
+            } text-white px-4 py-2 font-semibold transition duration-300 shadow-md cursor-pointer lg:w-[10%]`}
+          >
+            {isReviewing ? "Review" : isEditing ? "OK" : "Submit"}
           </button>
         </div>
       </form>
