@@ -27,7 +27,7 @@ import { useDispatch } from "react-redux";
 import { refreshSession } from "./store/features/authSlice";
 import CashPage from "./pages/CashPage";
 import DetailedCash from "./pages/DetailedCash";
-import BudgetReallocationLayout from "./layouts/budgetReallocationLayout";
+import BudgetReallocationLayout from "./layouts/BudgetReallocationLayout";
 import ReallocationPage from "./pages/ReallocationPage";
 import BudgetReallocationPage from "./pages/BudgetReallocationPage";
 
