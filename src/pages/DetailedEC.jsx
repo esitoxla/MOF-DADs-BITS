@@ -156,7 +156,7 @@ export default function DetailedEC() {
                 <th className="border border-gray-400 px-3 py-2">Activity</th>
                 <th className="border border-gray-400 px-3 py-2">Date</th>
                 <th className="border border-gray-400 px-3 py-2">
-                  Economic Class
+                  Economic Classification
                 </th>
                 <th className="border border-gray-400 px-3 py-2">
                   Funding Source

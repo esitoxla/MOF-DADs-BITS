@@ -24,6 +24,16 @@ import {
   fetchCashPositionReport,
 } from "../store/features/cashReportSlice";
 import { quarterEndDate } from "../data/BudgetExpenditureData";
+import NaturalAccountPerformanceTable from "../components/NaturalAccountPerformanceTable";
+import {
+  fetchNaturalAccountQuarterlyReport,
+  downloadNaturalAccountPDF,
+  downloadNaturalAccountExcel,
+} from "../store/features/naturalAccountSlice";
+import ReallocationPerformanceTable from "../components/ReallocationPerformanceTable";
+import { downloadReallocationExcel, downloadReallocationPDF, fetchReallocationReport } from "../store/features/reallocationReportSlice";
+
+
 
 export default function ReportPreview() {
   const navigate = useNavigate();
@@ -33,6 +43,8 @@ export default function ReportPreview() {
   const economicClass = useSelector((store) => store.report);
   const revenue = useSelector((store) => store.revenueReport);
   const cash = useSelector((store) => store.cashReport);
+  const naturalAccount = useSelector((store) => store.naturalAccountReport);
+  const reallocationReport = useSelector((store) => store.reallocationReport);
 
   const {
     reportType = "EC",
@@ -73,6 +85,21 @@ export default function ReportPreview() {
     error = cash.summary.error;
   }
 
+  if (reportType === "NA") {
+    ({ reportData, totals, loading, error } = naturalAccount);
+  }
+
+ if ( reportType === "RE") {
+  ({ reportData, totals, loading, error } = reallocationReport);
+ }
+  
+
+  //for NA source of funding filtering
+  const normalizedFunding =
+    fundingSource && typeof fundingSource === "object"
+      ? fundingSource.value
+      : fundingSource;
+
   // fetch from backend when page loads or filters change
   useEffect(() => {
     if (!reportType || !year || !quarter) return;
@@ -107,6 +134,27 @@ export default function ReportPreview() {
         }),
       );
     }
+
+    if (reportType === "NA") {
+      dispatch(
+        fetchNaturalAccountQuarterlyReport({
+          year,
+          quarter,
+          organization,
+          sourceOfFunding: normalizedFunding,
+        }),
+      );
+    }
+
+    if (reportType === "RE") {
+      dispatch(
+        fetchReallocationReport({
+          year,
+          quarter,
+          organization
+        }),
+      );
+    }
   }, [
     dispatch,
     reportType,
@@ -118,9 +166,7 @@ export default function ReportPreview() {
   ]);
 
   // transform backend payload into your table format
-  const tableData = useMemo(() => {
-    return reportData;
-  }, [reportData]);
+  const tableData = reportData;
 
   // Choose which table to render
   const renderTable = () => {
@@ -156,12 +202,33 @@ export default function ReportPreview() {
             organization={organization}
           />
         );
+      case "NA":
+        return (
+          <NaturalAccountPerformanceTable
+            data={tableData}
+            totals={totals}
+            year={year}
+            quarter={quarter}
+            fundingSource={fundingSource}
+            organization={organization}
+          />
+        );
+      case "RE":
+        return (
+          <ReallocationPerformanceTable
+            data={tableData}
+            totals={totals}
+            year={year}
+            quarter={quarter}
+            organization={organization}
+          />
+        );
       default:
         return <p>No table available for this report type.</p>;
     }
   };
 
-  // export handlers use tableData (not local dummy)
+  // export handlers use tableData
   const handleExport = async (type) => {
     // ===============================
     // ECONOMIC CLASSIFICATION (EC)
@@ -233,6 +300,59 @@ export default function ReportPreview() {
           quarter,
           organization,
         });
+      }
+    }
+
+    // ===============================
+    // NATURAL ACCOUNT
+    // ===============================
+    if (reportType === "NA") {
+      if (type === "pdf") {
+        dispatch(
+          downloadNaturalAccountPDF({
+            year,
+            quarter,
+            organization,
+            sourceOfFunding: normalizedFunding,
+          }),
+        );
+      }
+
+      if (type === "excel") {
+        dispatch(
+          downloadNaturalAccountExcel({
+            year,
+            quarter,
+            organization,
+            sourceOfFunding: normalizedFunding,
+          }),
+        );
+      }
+    }
+    // ===============================
+    // REALLOCATION
+    // ===============================
+    if (reportType === "RE") {
+      if (type === "pdf") {
+        dispatch(
+          downloadReallocationPDF({
+            year,
+            quarter,
+            organization,
+            sourceOfFunding: normalizedFunding,
+          }),
+        );
+      }
+
+      if (type === "excel") {
+        dispatch(
+          downloadReallocationExcel({
+            year,
+            quarter,
+            organization,
+            sourceOfFunding: normalizedFunding,
+          }),
+        );
       }
     }
   };

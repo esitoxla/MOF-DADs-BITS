@@ -26,7 +26,7 @@ export default function SummaryReport() {
   const userRole = authUser?.role;
   const isAdmin = userRole === "admin";
 
-  //It is automatically setting current quarter and current year, also because of [] It runs only once when the component mounts. 
+  //It is automatically setting current quarter and current year, also because of [] It runs only once when the component mounts.
   useEffect(() => {
     const now = new Date();
     // getMonth() gets the index of the month then adds 1 and divide by 3. Math.ceil always rounds up the number after the . does not have to be 5 and above e.g Math.ceil(2.1)   // 3
@@ -44,7 +44,7 @@ export default function SummaryReport() {
       return;
     }
 
-    if (reportType.value === "EC" && !fundingSource) {
+    if ((reportType.value === "EC" || reportType.value === "NA") && !fundingSource) {
       toast.error("Please select source of funding");
       return;
     }
@@ -56,8 +56,8 @@ export default function SummaryReport() {
       organization: isAdmin ? organization?.value : authUser?.organization,
     };
 
-    if (reportType.value === "EC") {
-      state.fundingSource = fundingSource.value;
+    if (reportType.value === "EC" || reportType.value === "NA") {
+     state.fundingSource = fundingSource?.value;
     }
 
     navigate("/dashboard/reports/preview", { state });
@@ -120,7 +120,7 @@ export default function SummaryReport() {
           </div>
 
           {/* Source of Funding (only visible for EC) */}
-          {reportType?.value === "EC" && (
+          {(reportType?.value === "EC" || reportType?.value === "NA") && (
             <div className="transition-all duration-300">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Source of Funding

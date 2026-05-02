@@ -2,17 +2,17 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { api } from "../../config/axios";
 
 export const fetchAllUsers = createAsyncThunk(
-  "users/get",
-  async (__, { rejectWithValue }) => {
+  "user/fetchAllUsers",
+  async ({ page = 1, limit = 10 }, thunkAPI) => {
     try {
-      const { data } = await api.get("/users");
-      return data.users;
+      const response = await api.get("/users", {
+        params: { page, limit },
+      });
+      return response.data;
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch Users"
-      );
+      return thunkAPI.rejectWithValue(error.response?.data);
     }
-  }
+  },
 );
 
 //add User
@@ -24,10 +24,10 @@ export const addUser = createAsyncThunk(
       return data.user; // backend sends { qrCode }
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to add user"
+        error.response?.data?.message || "Failed to add user",
       );
     }
-  }
+  },
 );
 
 export const updateUser = createAsyncThunk(
@@ -38,10 +38,10 @@ export const updateUser = createAsyncThunk(
       return response.data.user;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to update user"
+        error.response?.data?.message || "Failed to update user",
       );
     }
-  }
+  },
 );
 
 export const deleteUser = createAsyncThunk(
@@ -52,26 +52,32 @@ export const deleteUser = createAsyncThunk(
       return id; // just return the deleted record ID
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to delete loaded data"
+        error.response?.data?.message || "Failed to delete loaded data",
       );
     }
-  }
+  },
 );
 
 const userSlice = createSlice({
   name: "users",
   initialState: {
     users: [],
+    totalUsers: 0,
+    totalPages: 0,
     loading: false,
     error: null,
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchAllUsers.pending, (state) => {
-        (state.loading = true), (state.error = null);
+        ((state.loading = true), (state.error = null));
       })
       .addCase(fetchAllUsers.fulfilled, (state, action) => {
-        (state.loading = false), (state.users = action.payload);
+        state.loading = false;
+        state.users = action.payload.users;
+
+        state.totalUsers = action.payload.totalUsers; 
+        state.totalPages = action.payload.totalPages; 
       })
       .addCase(fetchAllUsers.rejected, (state, action) => {
         state.loading = false;
@@ -104,7 +110,7 @@ const userSlice = createSlice({
         const updatedRecord = action.payload;
 
         const index = state.users.findIndex(
-          (user) => user.id === updatedRecord.id
+          (user) => user.id === updatedRecord.id,
         );
 
         if (index !== -1) {
@@ -118,22 +124,20 @@ const userSlice = createSlice({
 
       //DELETE
       .addCase(deleteUser.pending, (state) => {
-              state.loading = true;
-              state.error = null;
-            })
-            .addCase(deleteUser.fulfilled, (state, action) => {
-              state.loading = false;
-      
-              const deletedId = action.payload;
-      
-              state.users = state.users.filter(
-                (user) => user.id !== deletedId
-              );
-            })
-            .addCase(deleteUser.rejected, (state, action) => {
-              state.loading = false;
-              state.error = action.payload;
-            });
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteUser.fulfilled, (state, action) => {
+        state.loading = false;
+
+        const deletedId = action.payload;
+
+        state.users = state.users.filter((user) => user.id !== deletedId);
+      })
+      .addCase(deleteUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 

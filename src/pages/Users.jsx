@@ -22,8 +22,10 @@ export default function Users() {
 
   const [selectedUser, setSelectedUser] = useState(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+
   const dispatch = useDispatch();
-  const { users } = useSelector((state) => state.user);
+  const { users, totalUsers } = useSelector((state) => state.user);
 
   //ADMIN CHECKS
   const { authUser } = useSelector((state) => state.auth);
@@ -31,8 +33,8 @@ export default function Users() {
   const isAdmin = userRole === "admin";
 
   useEffect(() => {
-    dispatch(fetchAllUsers());
-  }, [dispatch]);
+    dispatch(fetchAllUsers({ page: currentPage }));
+  }, [dispatch, currentPage]);
 
  
   //SEARCH LOGIC
@@ -51,6 +53,8 @@ export default function Users() {
       user.designation?.toLowerCase().includes(query)
     );
   });
+
+  
 
  
 
@@ -73,15 +77,7 @@ export default function Users() {
     }
   };
 
-  /* =========================
-       PAGINATION
-    ========================== */
-  const PAGE_SIZE = 10;
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const startIndex = (currentPage - 1) * PAGE_SIZE;
-  const paginatedRecords = filteredUsers.slice(startIndex, startIndex + PAGE_SIZE);
-
+  
   return (
     <div className=" px-6 bg-green-50 min-h-screen">
       {/* Header */}
@@ -127,7 +123,7 @@ export default function Users() {
               </tr>
             </thead>
             <tbody>
-              {paginatedRecords.map((user, index) => (
+              {filteredUsers.map((user, index) => (
                 <tr key={user.id} className="border-b hover:bg-green-50">
                   <td className="px-3 py-3">{user.name}</td>
                   <td className="px-3 py-3">{user.email}</td>
@@ -138,8 +134,8 @@ export default function Users() {
                       user.status === "active"
                         ? "text-green-600"
                         : user.status === "inactive"
-                        ? "text-gray-500"
-                        : "text-red-500"
+                          ? "text-gray-500"
+                          : "text-red-500"
                     }`}
                   >
                     {user.status}
@@ -181,8 +177,8 @@ export default function Users() {
       {/* Pagination (EXTERNAL COMPONENT) */}
       <Pagination
         currentPage={currentPage}
-        totalItems={filteredUsers.length}
-        pageSize={PAGE_SIZE}
+        totalItems={totalUsers}
+        pageSize={10}
         onPageChange={setCurrentPage}
       />
 

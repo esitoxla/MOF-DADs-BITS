@@ -112,11 +112,8 @@ export default function ReallocationTable({
               <th className="border px-2 py-1">Funding Source</th>
               <th className="border px-2 py-1">Natural Account</th>
               <th className="border px-2 py-1">Description</th>
-              <th className="border px-2 py-1">Appropriation</th>
-              <th className="border px-2 py-1">Allotment</th>
-              <th className="border px-2 py-1">Allotment Balance</th>
-              <th className="border px-2 py-1">Appropriation Balance</th>
-              <th className="border px-2 py-1">Releases</th>
+              <th className="border px-2 py-1">Amount reallocated</th>
+              <th className="border px-2 py-1">Amount Released</th>
               <th className="border px-2 py-1">Actual Expenditure</th>
               <th className="border px-2 py-1">Actual Payment</th>
               <th className="border px-2 py-1">Status</th>
@@ -145,15 +142,8 @@ export default function ReallocationTable({
                   <td className="border px-2 py-1">{record.sourceOfFunding}</td>
                   <td className="border px-2 py-1">{record.naturalAccount}</td>
                   <td className="border px-2 py-1">{record.description}</td>
-                  <td className="border px-2 py-1">{record.appropriation}</td>
-                  <td className="border px-2 py-1">{record.allotment}</td>
-                  <td className="border px-2 py-1">
-                    {record.allotmentBalance}
-                  </td>
-                  <td className="border px-2 py-1">
-                    {record.appropriationBalance}
-                  </td>
-                  <td className="border px-2 py-1">{record.releases}</td>
+                  <td className="border px-2 py-1">{record.amountReallocated}</td>
+                  <td className="border px-2 py-1">{record.amountReleased}</td>
                   <td className="border px-2 py-1">
                     {record.actualExpenditure}
                   </td>

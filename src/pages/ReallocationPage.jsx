@@ -1,105 +1,133 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Select from "react-select";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
-toast
-import { addReallocation, reviewReallocation, fetchReallocations } from "../store/features/reallocationSlice";
+import {
+  addReallocation,
+  reviewReallocation,
+  fetchReallocations,
+} from "../store/features/reallocationSlice";
 import ReallocationTable from "../components/ReallocationTable";
 import ReviewModal from "../components/ReviewModal";
+import { economicClassOptions } from "../data/BudgetExpenditureData";
 import {
   updateReallocation,
   cancelEditing,
 } from "../store/features/reallocationSlice";
+import {
+  fetchNaturalAccounts,
+} from "../store/features/budgetDynamicSlice";
 
 export default function ReallocationPage() {
-
   const dispatch = useDispatch();
   const { isEditing, isReviewing, formValues, editingIndex, error } =
-      useSelector((state) => state.reallocation);
+    useSelector((state) => state.reallocation);
 
-  const [selectedActivity, setSelectedActivity] = useState("");
+  const { naturalAccounts } = useSelector((state) => state.budgetDynamic);
+
+  const [activity, setActivity] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
-  const [economicClass, setEconomicClass] = useState("");
-  const [selectedAccount, setSelectedAccount] = useState("");
+  const [economicClass, setEconomicClass] = useState(null);
+  const [selectedAccount, setSelectedAccount] = useState(null);
   const [fundingSource, setFundingSource] = useState(null);
   const [description, setDescription] = useState("");
-  const [appropriation, setAppropriation] = useState("");
-  const [allotment, setAllotment] = useState("");
-  const [releases, setReleases] = useState("");
+  const [amountReallocated, setAmountReallocated] = useState("");
+  // const [allotment, setAllotment] = useState("");
+  const [amountReleased, setAmountReleased] = useState("");
   const [payment, setPayment] = useState("");
   const [expenditure, setExpenditure] = useState("");
-  const [allotmentBalance, setAllotmentBalance] = useState("");
+  // const [allotmentBalance, setAllotmentBalance] = useState("");
 
   //ReallocationTable
-    const [records, setRecords] = useState([]);
-    const [searchQuery, setSearchQuery] = useState("");
+  const [records, setRecords] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
-    //review logic
-      const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-      const [recordToReview, setRecordToReview] = useState(null);
-  
+  //review logic
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [recordToReview, setRecordToReview] = useState(null);
 
-  const sourceOfFundingOptions = [
-    { value: "GOG", label: "GOG" },
-  ];
+  const sourceOfFundingOptions = [{ value: "GOG", label: "GOG" }];
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const formData = {
-    activity: selectedActivity,
-    date: selectedDate,
-    economicClassification: economicClass,
-    sourceOfFunding: fundingSource?.value,
-    naturalAccount: selectedAccount,
-    description,
-    appropriation: Number(appropriation),
-    allotment: Number(allotment),
-    allotmentBalance: Number(allotmentBalance),
-    releases: Number(releases),
-    actualExpenditure: Number(expenditure),
-    actualPayment: Number(payment),
-  };
-
-  try {
-    if (isEditing) {
-      await dispatch(
-        updateReallocation({ id: formValues.id, formData })
-      ).unwrap();
-
-      toast.success("Record updated successfully!");
-    } else {
-      await dispatch(addReallocation(formData)).unwrap();
-
-      toast.success("Reallocation added successfully!");
+    if (!amountReallocated) {
+      return toast.error("Amount reallocated is required");
     }
 
-    dispatch(cancelEditing());
-    resetForm();
-  } catch (error) {
-    toast.error(error || "Failed operation");
-  }
-};
+    const parsedAmountReallocated = Number(amountReallocated);
+    const parsedAmountReleased = Number(amountReleased);
+    const parsedExpenditure = Number(expenditure);
+    const parsedPayment = Number(payment);
 
+    // VALIDATIONS
 
-const resetForm = () => {
-  setSelectedActivity("");
-  setSelectedDate("");
-  setEconomicClass("");
-  setFundingSource(null);
-  setSelectedAccount("");
-  setDescription("");
-  setAppropriation("");
-  setAllotment("");
-  setReleases("");
-  setExpenditure("");
-  setPayment("");
-  setAllotmentBalance("");
-};
+    if (parsedAmountReleased > parsedAmountReallocated) {
+      return toast.error("Amount released cannot exceed amount reallocated.");
+    }
+
+    if (parsedExpenditure > parsedAmountReleased) {
+      return toast.error("Actual expenditure cannot exceed amount released.");
+    }
+
+    if (parsedPayment > parsedAmountReleased) {
+      return toast.error("Actual payment cannot exceed amount released.");
+    }
+
+    // Optional stricter rule
+    if (parsedPayment > parsedExpenditure) {
+      return toast.error("Actual payment cannot exceed actual expenditure.");
+    }
+
+    const formData = {
+      activity,
+      date: selectedDate,
+      economicClassification: economicClass?.value,
+      sourceOfFunding: fundingSource?.value,
+      naturalAccount: selectedAccount?.value,
+      description,
+      amountReallocated: parsedAmountReallocated,
+      amountReleased: parsedAmountReleased,
+      actualExpenditure: parsedExpenditure,
+      actualPayment: parsedPayment,
+    };
+
+    try {
+      if (isEditing) {
+        await dispatch(
+          updateReallocation({ id: formValues.id, formData }),
+        ).unwrap();
+
+        toast.success("Record updated successfully!");
+      } else {
+        await dispatch(addReallocation(formData)).unwrap();
+
+        toast.success("Reallocation added successfully!");
+      }
+
+      dispatch(cancelEditing());
+      resetForm();
+    } catch (error) {
+      toast.error(error || "Failed operation");
+    }
+  };
+
+  const resetForm = () => {
+    setActivity("");
+    setSelectedDate("");
+    setEconomicClass(null);
+    setFundingSource(null);
+    setSelectedAccount(null);
+    setDescription("");
+    setAmountReallocated("");
+    setAmountReleased("");
+    setExpenditure("");
+    setPayment("");
+  };
 
   const handleEditRecord = (record) => {
-    setSelectedActivity(record.activity);
+    setActivity(record.activity);
 
     setSelectedDate(record.date);
 
@@ -114,11 +142,9 @@ const resetForm = () => {
 
     setDescription(record.description);
 
-    setAppropriation(record.appropriation);
-    setAllotment(record.allotment);
-    setAllotmentBalance(record.allotmentBalance);
+    setAmountReallocated(record.amountReallocated);
 
-    setReleases(record.releases);
+    setAmountReleased(record.amountReleased);
     setExpenditure(record.actualExpenditure);
     setPayment(record.actualPayment);
   };
@@ -131,12 +157,35 @@ const resetForm = () => {
 
       toast.success("Reviewed successfully");
       dispatch(cancelEditing());
-       resetForm();
+      resetForm();
     } catch (error) {
       toast.error(error || "Failed to review");
     }
   };
-  
+
+  //Dynamically switch accounts based on selected economic class
+  const naturalAccountOptions = Array.isArray(naturalAccounts)
+    ? naturalAccounts.map((acc) => {
+        const value = typeof acc === "string" ? acc : acc?.naturalAccount;
+
+        return {
+          label: value,
+          value: value,
+        };
+      })
+    : [];
+
+    // Fetch NATURAL ACCOUNTS dynamically when eco + fund are selected
+      useEffect(() => {
+        if (!economicClass || !fundingSource) return;
+    
+        dispatch(
+          fetchNaturalAccounts({
+            eco: economicClass.label, // instead of value
+            fund: fundingSource.label, // instead of value
+          }),
+        );
+      }, [economicClass, fundingSource]);
 
   return (
     <div className="flex flex-col gap-6 justify-center lg:px-4">
@@ -149,7 +198,7 @@ const resetForm = () => {
         </div>
 
         <div className="cursor-pointer shadow bg-white h-full py-8 px-4 mb-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-center justify-between gap-4 bg-white  w-full px-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
             {/* --- DATE FIELD --- */}
             <div className="flex flex-col gap-2">
               <label className="block text-gray-600 mb-1 font-semibold">
@@ -175,28 +224,47 @@ const resetForm = () => {
               <input
                 type="text"
                 className="border w-full py-[0.7rem] px-2 rounded"
-                value={selectedActivity}
-                onChange={(e) => setSelectedActivity(e.target.value)}
+                value={activity}
+                onChange={(e) => setActivity(e.target.value)}
                 // disabled={isReviewing}
                 placeholder="Enter activities..."
               />
             </div>
+          </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
             <div className="flex flex-col gap-2">
               <label className="block text-gray-600 mb-1 font-semibold">
                 ECONOMIC CLASSIFICATION
               </label>
-              <input
-                type="text"
-                value={economicClass}
-                onChange={(e) => setEconomicClass(e.target.value)}
-                className="border w-full py-[0.7rem] px-2 rounded"
-                placeholder="Enter economic classification..."
+              <Select
+                options={economicClassOptions}
+                value={economicClass} // should be an object like {value, label}
+                onChange={setEconomicClass}
+                isDisabled={isReviewing}
+                placeholder="Select economic classification"
+                isSearchable
+                filterOption={(option, inputValue) =>
+                  option.label.toLowerCase().includes(inputValue.toLowerCase())
+                }
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    padding: ".3rem .2rem",
+                    boxShadow: "none",
+                    borderColor: "black",
+                    fontSize: "1rem",
+
+                    backgroundColor: "white",
+                  }),
+                  // placeholder: (base) => ({
+                  //   ...base,
+                  //   color: "black",
+                  // }),
+                }}
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-center justify-between gap-4 w-full px-4 mb-8">
             <div className="flex flex-col gap-2">
               <label className="block text-gray-600 mb-1 font-semibold">
                 SOURCE OF FUNDING
@@ -228,17 +296,40 @@ const resetForm = () => {
                 }}
               />
             </div>
+          </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
             <div className="flex flex-col gap-2">
               <label className="block text-gray-600 mb-1 font-semibold">
                 NATURAL ACCOUNT
               </label>
-              <input
+              <Select
+                options={naturalAccountOptions}
                 value={selectedAccount}
-                onChange={(e) => setSelectedAccount(e.target.value)}
-                // isDisabled={!economicClass || !fundingSource || isReviewing}
-                placeholder="Enter natural account"
-                className="border w-full py-[0.7rem] px-2 rounded"
+                onChange={setSelectedAccount}
+                isDisabled={!economicClass || !fundingSource || isReviewing}
+                placeholder={`Select natural account`}
+                isSearchable
+                filterOption={(option, inputValue) => {
+                  const label = option?.label || "";
+                  const search = inputValue || "";
+                  return label.toLowerCase().includes(search.toLowerCase());
+                }}
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    padding: ".3rem .2rem",
+                    boxShadow: "none",
+                    borderColor: "black",
+                    fontSize: "1rem",
+
+                    backgroundColor: "white",
+                  }),
+                  // placeholder: (base) => ({
+                  //   ...base,
+                  //   color: "#000000",
+                  // }),
+                }}
               />
             </div>
 
@@ -260,73 +351,42 @@ const resetForm = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-center justify-between gap-4 w-full px-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
             <div className="flex flex-col gap-2">
               <label
                 htmlFor=""
                 className="block text-gray-600 mb-1 font-semibold"
               >
-                APPROPRIATION
+                AMOUNT REALLOCATED
               </label>
               <input
                 type="number"
                 min="0"
                 className="py-[0.7rem] px-2 w-full outline rounded"
-                value={appropriation}
-                onChange={(e) => setAppropriation(e.target.value)}
-                placeholder="Enter appropriation"
+                value={amountReallocated || ""}
+                onChange={(e) => setAmountReallocated(e.target.value)}
+                placeholder="Enter amount reallocated"
               />
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor=""
-                className="block text-gray-600 mb-1 font-semibold"
-              >
-                ALLOTMENT
-              </label>
-              <input
-                type="number"
-                min="0"
-                className="py-[0.7rem] px-2 w-full outline rounded"
-                value={allotment}
-                onChange={(e) => setAllotment(e.target.value)}
-                placeholder="Enter allotment"
-              />
-            </div>
-
+            {/* RELEASES */}
             <div className="flex flex-col gap-2">
               <label className="block text-gray-600 mb-1 font-semibold">
-                ALLOTMENT BALANCE
+                AMOUNT RELEASED
               </label>
               <input
                 type="number"
                 min="0"
                 className="py-[0.7rem] px-2 w-full outline rounded"
-                value={allotmentBalance}
-                onChange={(e) => setAllotmentBalance(e.target.value)}
-                placeholder="Enter allotment balance"
+                value={amountReleased || ""}
+                onChange={(e) => setAmountReleased(e.target.value)}
+                // disabled={isReviewing || hasAllotment}
+                placeholder="Enter amount released"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-center justify-between gap-4 bg-white w-full px-4 mb-8">
-            {/* RELEASES */}
-            <div className="flex flex-col gap-2">
-              <label className="block text-gray-600 mb-1 font-semibold">
-                RELEASES
-              </label>
-              <input
-                type="number"
-                min="0"
-                className="py-[0.7rem] px-2 w-full outline rounded"
-                value={releases || ""}
-                onChange={(e) => setReleases(e.target.value)}
-                // disabled={isReviewing || hasAllotment}
-                placeholder="Enter Releases"
-              />
-            </div>
-
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
             {/* ACTUAL EXPENDITURE */}
             <div className="flex flex-col gap-2">
               <label className="block text-gray-600 mb-1 font-semibold">
@@ -366,19 +426,17 @@ const resetForm = () => {
           <button
             type="button"
             onClick={() => {
-              setSelectedActivity("");
+              setActivity("");
               setSelectedDate("");
-              setEconomicClass("");
+              setEconomicClass(null);
               setFundingSource(null);
-              setSelectedAccount("");
+              setSelectedAccount(null);
               setDescription("");
-              setAppropriation("");
-              setAllotment("");
-              setReleases("");
+              setAmountReallocated("");
+              setAmountReleased("");
               setExpenditure("");
               setPayment("");
-              setAllotmentBalance("");
-                dispatch(cancelEditing());
+              dispatch(cancelEditing());
               toast.success("Form reset successfully!");
             }}
             className="bg-gray-400 text-white px-4 py-2 font-semibold hover:bg-gray-500 transition duration-300 shadow-md cursor-pointer lg:w-[10%]"
@@ -388,7 +446,7 @@ const resetForm = () => {
 
           {/* Submit Button */}
           <button
-            type={isReviewing ? "button" : "submit"}
+            type="submit"
             onClick={(e) => {
               if (isReviewing) {
                 setRecordToReview(formValues); // record already in Redux

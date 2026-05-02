@@ -8,9 +8,12 @@ import revenueReportReducer from "../store/features/revenueReport";
 import appropriationReducer from "../store/features/appropriationSlice";
 import budgetDynamicReducer from "../store/features/budgetDynamicSlice";
 import cashReducer from "../store/features/cashSlice";
-import cashReportReducer from "../store/features/cashReportSlice"
-import activityReducer from "../store/features/activitySlice"
-import reallocationReducer from "../store/features/reallocationSlice"
+import cashReportReducer from "../store/features/cashReportSlice";
+import activityReducer from "../store/features/activitySlice";
+import reallocationReducer from "../store/features/reallocationSlice";
+import naturalAccountReducer from "../store/features/naturalAccountSlice";
+import reallocationReportReducer from "../store/features/reallocationReportSlice";
+
 
 export const store = configureStore({
   reducer: {
@@ -25,6 +28,8 @@ export const store = configureStore({
     cash: cashReducer,
     cashReport: cashReportReducer,
     activity: activityReducer,
-    reallocation: reallocationReducer
+    reallocation: reallocationReducer,
+    naturalAccountReport: naturalAccountReducer,
+    reallocationReport: reallocationReportReducer,
   },
 });

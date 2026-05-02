@@ -10,6 +10,8 @@ import { CiLock } from "react-icons/ci";
 import { getUser, loginUser } from "../store/features/authSlice";
 import toast from "react-hot-toast";
 import loginBgImg from "../assets/images/loginBg.png"
+import loginImg from "../assets/images/loginPage.jpeg"
+
 
 
 
@@ -56,27 +58,34 @@ export default function Login() {
   
 return (
   <div
-    className="min-h-screen flex items-center justify-center"
+    className="min-h-screen flex items-center justify-center "
     style={{
-      backgroundImage: `url(${loginBgImg})`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
+      backgroundImage: `url(${loginImg})`,
+      backgroundSize: "100%",
+      backgroundPosition: "60% center",
       backgroundRepeat: "no-repeat",
+      height: "100vh"
     }}
   >
     <div className="relative w-full max-w-5xl h-[500px]">
       {/* RIGHT SIDE - GREEN PANEL */}
-      <div className="absolute right-0 top-0 w-2/3 h-full bg-gradient-to-br from-green-800/80 via-green-700/70 to-green-600/70 backdrop-blur-sm rounded-2xl flex items-center justify-center text-white">
+      <div
+        className="absolute right-0 top-0 w-2/3 h-full rounded-2xl flex items-center justify-center text-white overflow-hidden"
+        style={{
+          backgroundImage: `url(${loginBgImg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
         {/* <div className="absolute inset-0 bg-black/10 rounded-2xl"></div> */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-wide mb-3">Welcome</h1>
+          <h1 className="text-2xl uppercase text-white mb-2">Welcome !!!!</h1>
 
-          <p className="text-sm uppercase tracking-wider text-white/80 mb-2">
+          <p className=" text-2xl text-white font-bold mb-3">
             Budget Implementation Tracking System
           </p>
-          <p className="text-sm text-white/70">
-            Enter your username and password to login!!!
-          </p>
+          <p className="text-2xl text-white">MINISTRY OF FINANCE</p>
         </div>
       </div>
 

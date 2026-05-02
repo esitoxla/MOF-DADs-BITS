@@ -31,6 +31,7 @@ export default function AppropriationSingleForm() {
     naturalAccount: "",
     appropriation: "",
     allotment: "",
+    year: ""
   };
 
   const [form, setForm] = useState(initialFormState);
@@ -134,6 +135,7 @@ export default function AppropriationSingleForm() {
       naturalAccount: row.naturalAccount,
       appropriation: row.appropriation,
       allotment: row.allotment,
+      year: row.year
     });
 
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -269,6 +271,22 @@ export default function AppropriationSingleForm() {
                 onChange={handleChange}
                 className="py-[0.7rem] px-2 w-full outline rounded"
                 placeholder="Enter allotment..."
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-6">
+            <div>
+              <label className="block text-gray-600 mb-1 font-semibold">
+                Year
+              </label>
+              <input
+                type="number"
+                name="year"
+                value={form.year}
+                onChange={handleChange}
+                className="py-[0.7rem] px-2 w-full outline rounded"
+                placeholder="Enter year..."
               />
             </div>
           </div>

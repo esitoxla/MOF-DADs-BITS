@@ -73,6 +73,9 @@ export default function DetailedReport() {
    if (reportType.value === "CP") {
      navigate("/dashboard/reports/detailedCash", { state });
    }
+   if (reportType.value === "RE") {
+     navigate("/dashboard/reports/detailedReallocate", { state });
+   }
  };
 
 

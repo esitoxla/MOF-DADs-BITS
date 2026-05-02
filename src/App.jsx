@@ -30,6 +30,7 @@ import DetailedCash from "./pages/DetailedCash";
 import BudgetReallocationLayout from "./layouts/BudgetReallocationLayout";
 import ReallocationPage from "./pages/ReallocationPage";
 import BudgetReallocationPage from "./pages/BudgetReallocationPage";
+import DetailedReallocation from "./pages/DetailedReallocation";
 
 
 
@@ -123,6 +124,10 @@ function App() {
             {
               path: "detailedCash",
               Component: DetailedCash,
+            },
+            {
+              path: "detailedReallocate",
+              Component: DetailedReallocation,
             },
             {
               path: "preview",
