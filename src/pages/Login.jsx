@@ -10,7 +10,7 @@ import { CiLock } from "react-icons/ci";
 import { getUser, loginUser } from "../store/features/authSlice";
 import toast from "react-hot-toast";
 import loginBgImg from "../assets/images/loginBg.png"
-import loginImg from "../assets/images/loginPage.jpeg"
+import loginImg from "../assets/images/LoginPage.jpeg"
 
 
 
