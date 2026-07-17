@@ -258,6 +258,8 @@ export default function BudgetExpenditure() {
     }
   }, [economicClass, fundingSource]);
 
+
+
   //OTHER INPUTS LOGICS
 
   // Handle releases input
@@ -431,6 +433,7 @@ export default function BudgetExpenditure() {
       setExpenditure("");
       setPayment("");
       setAllotmentBalance("");
+      setAppropriationBalance("");
     } catch (err) {
       // err is either the rejected value or an Error
       const message = err?.message || err || "Something went wrong";
