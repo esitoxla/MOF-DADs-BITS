@@ -1,2 +1,13 @@
+@config "../tailwind.config.js";
 @import "tailwindcss";
 @plugin "daisyui";
+
+@theme {
+  --color-positive: #059669;
+  --color-negative: #dc2626;
+  --color-attention: #f59e0b;
+  --color-surface-page: #f8fafc;
+  --color-surface-card: #ffffff;
+  --color-ink-primary: #1e293b;
+  --color-ink-secondary: #64748b;
+}

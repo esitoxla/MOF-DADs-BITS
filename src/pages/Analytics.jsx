@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import Select from "react-select";
-import { Bell } from "lucide-react";
 import { api } from "../config/axios";
 import {
   organizationOptions,
@@ -197,13 +196,10 @@ export default function Analytics() {
 
   if (error) {
     return (
-      <div className="h-screen max-h-screen overflow-hidden flex flex-col">
-        <div className="shrink-0 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8">
-          <div className="flex justify-end mb-4">
-            <NotificationButton />
-          </div>
-        </div>
-        <p className="px-4 sm:px-6 lg:px-8 text-sm text-red-600">{error}</p>
+      <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-slate-50">
+        <p className="px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 text-sm text-red-600">
+          {error}
+        </p>
       </div>
     );
   }
@@ -220,17 +216,13 @@ export default function Analytics() {
   ];
 
   return (
-    <div className="h-screen max-h-screen overflow-hidden flex flex-col">
-      <div className="shrink-0 sticky top-0 bg-green-50 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-4 z-10">
-        <div className="flex justify-end mb-4">
-          <NotificationButton />
-        </div>
-
+    <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-slate-50">
+      <div className="shrink-0 sticky top-0 bg-slate-50 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-4 z-10">
         {/* Filter bar */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
           {filters.map((f) => (
             <div key={f.key} className="flex flex-col">
-              <label className="text-xs font-semibold text-gray-600 mb-1">
+              <label className="text-xs font-semibold text-slate-500 mb-1">
                 {f.label}
               </label>
               <Select
@@ -243,7 +235,7 @@ export default function Analytics() {
                   f.options.find((o) =>
                     isAllValue(filterValues[f.key])
                       ? isAllValue(o.value)
-                      : o.value === filterValues[f.key]
+                      : o.value === filterValues[f.key],
                   ) || ALL_OPTION
                 }
                 onChange={(option) =>
@@ -315,31 +307,42 @@ export default function Analytics() {
         {/* Top 5 IGF DADs + Reallocation */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <ChartCard title="Top 5 IGF collection DADs">
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart
-                data={[...data.topIgfDads].reverse()}
-                layout="vertical"
-                margin={{ top: 10, right: 30, left: 10, bottom: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  type="number"
-                  domain={[0, 60]}
-                  tickFormatter={(v) => `${v}%`}
-                />
-                <YAxis type="category" dataKey="organization" width={AXIS_WIDTH} />
-                <Tooltip formatter={(v) => `${v}%`} />
-                <Bar
-                  dataKey="percent"
-                  fill={SIDEBAR_GREEN}
-                  radius={[0, 4, 4, 0]}
-                  barSize={18}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="space-y-3">
+              {data.topIgfDads.map((dad) => (
+                <div key={dad.organization} className="flex items-center gap-3">
+                  <span className="w-28 shrink-0 text-sm truncate">
+                    {dad.organization}
+                  </span>
+                  <div className="relative flex-1 h-7 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className="relative h-full rounded-full"
+                      style={{
+                        width: `${dad.percent}%`,
+                        backgroundColor: SIDEBAR_GREEN,
+                      }}
+                    >
+                      <span className="absolute inset-y-0 right-0 flex items-center pr-2 text-xs text-white">
+                        {dad.percent}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </ChartCard>
 
           <ChartCard title="Reallocation">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-3">
+              {reallocationChartData.map((item) => (
+                <div key={item.name} className="flex items-center gap-1.5">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: SIDEBAR_GREEN }}
+                  />
+                  <span className="text-xs">{item.name}</span>
+                </div>
+              ))}
+            </div>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart
                 data={reallocationChartData}
@@ -364,7 +367,7 @@ export default function Analytics() {
                   }}
                   tickFormatter={formatAxisTick}
                 />
-                <Tooltip formatter={(v) => v.toFixed(2)} />
+                <Tooltip cursor={false} content={<ReallocationTooltip />} />
                 <Bar
                   dataKey="value"
                   fill={SIDEBAR_GREEN}
@@ -395,7 +398,7 @@ export default function Analytics() {
                 }}
                 tickFormatter={formatAxisTick}
               />
-              <Tooltip formatter={(v) => v.toFixed(2)} />
+              <Tooltip formatter={(v) => v.toFixed(2)} cursor={false} />
               <Legend />
               <Bar
                 dataKey="GHS"
@@ -422,18 +425,6 @@ export default function Analytics() {
         </ChartCard>
       </div>
     </div>
-  );
-}
-
-function NotificationButton() {
-  return (
-    <button
-      type="button"
-      aria-label="Notifications"
-      className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-green-500 bg-white text-green-700 shadow-sm hover:bg-green-50"
-    >
-      <Bell className="w-5 h-5" />
-    </button>
   );
 }
 
@@ -475,25 +466,62 @@ function TrendAreaChart({ data, color, gradientId }) {
 }
 
 function SummaryCard({ label, value, sub }) {
+  const changePct = sub != null ? parseFloat(sub) : NaN;
+  const hasTrend = Number.isFinite(changePct);
+  const isIncrease = hasTrend && changePct >= 0;
+  const trendClass = hasTrend
+    ? isIncrease
+      ? "text-positive"
+      : "text-negative"
+    : "text-slate-500";
+
   return (
-    <div className="bg-green-100 rounded-lg p-3 flex flex-col">
-      <span className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide">
+    <div className="bg-white rounded-lg p-3 flex flex-col border-l-4 border-l-green-700">
+      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
         {label}
       </span>
-      <span className="text-base sm:text-lg font-bold text-gray-900 mt-1">
+      <span className="text-base sm:text-lg font-bold text-slate-800 mt-1">
         {value}
       </span>
-      {sub && <span className="text-[11px] text-gray-500 mt-0.5">{sub}</span>}
+      {sub && (
+        <span className={`text-[11px] mt-0.5 ${trendClass}`}>
+          {hasTrend && (
+            <span aria-hidden="true">{isIncrease ? "▲ " : "▼ "}</span>
+          )}
+          {sub}
+        </span>
+      )}
     </div>
   );
 }
 
-function ChartCard({ title, children }) {
+function ReallocationTooltip({ active, payload }) {
+  if (!active || !payload?.length) return null;
+  const item = payload[0];
+  const value = Number(item.value);
+  const display = Number.isFinite(value)
+    ? value.toLocaleString(undefined, { minimumFractionDigits: 2 })
+    : item.value;
+
+  return (
+    <div className="bg-gray-900 text-white rounded-md px-3 py-2">
+      <p className="font-bold">{item.payload?.name ?? item.name}</p>
+      <p>GHS {display}</p>
+    </div>
+  );
+}
+
+function ChartCard({ title, subtitle, children }) {
   return (
     <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md w-full border border-gray-100">
-      <h3 className="text-base sm:text-lg font-semibold mb-4 text-gray-800 text-center">
-        {title}
-      </h3>
+      <div className="flex items-baseline justify-between gap-3 mb-4">
+        <h3 className="text-base sm:text-lg font-semibold text-slate-800">
+          {title}
+        </h3>
+        {subtitle ? (
+          <span className="text-xs text-gray-400">{subtitle}</span>
+        ) : null}
+      </div>
       {children}
     </div>
   );
@@ -501,8 +529,8 @@ function ChartCard({ title, children }) {
 
 function AnalyticsSkeleton() {
   return (
-    <div className="h-screen max-h-screen overflow-hidden flex flex-col">
-      <div className="shrink-0 bg-green-50 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-4">
+    <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-slate-50">
+      <div className="shrink-0 bg-slate-50 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-4">
         <div className="flex justify-end mb-4">
           <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
         </div>

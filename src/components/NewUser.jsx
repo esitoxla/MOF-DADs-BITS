@@ -4,6 +4,8 @@ import { useNavigate } from "react-router";
 import toast, { Toaster } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { addUser } from "../store/features/userSlice";
+import { organizationOptions } from "../data/BudgetExpenditureData";
+
 
 
 export default function NewUser({ isOpen, onClose }) {
@@ -228,11 +230,9 @@ export default function NewUser({ isOpen, onClose }) {
                 <label className="block mb-2 text-sm font-medium text-gray-700">
                   Organization
                 </label>
-                <input
-                  type="text"
+                <select
                   name="organization"
-                  placeholder="Enter organization"
-                  className="w-full p-3 border border-gray-300 rounded-lg  outline-none"
+                  className="w-full p-3 border border-gray-300 rounded-lg outline-none"
                   value={userDetails.organization}
                   onChange={(e) =>
                     setUserDetails({
@@ -240,7 +240,20 @@ export default function NewUser({ isOpen, onClose }) {
                       organization: e.target.value,
                     })
                   }
-                />
+                >
+                  <option value="">Select organization</option>
+                  {organizationOptions
+                    .filter(
+                      (org) =>
+                        org.value !== "" &&
+                        String(org.value).toUpperCase() !== "ALL",
+                    )
+                    .map((org) => (
+                      <option key={org.value} value={org.value}>
+                        {org.label}
+                      </option>
+                    ))}
+                </select>
               </div>
 
               <div>
@@ -275,7 +288,6 @@ export default function NewUser({ isOpen, onClose }) {
           </form>
         </div>
       </div>
-     
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { useEffect, useState, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router";
 import { PencilSquare } from "../helpers/edit";
 import { Trash } from "../helpers/trash";
 import { Check } from "../helpers/check";
@@ -19,19 +19,38 @@ import {
 export default function RevenueTableDetails({ searchQuery }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { records, loading, error } = useSelector((store) => store.revenue);
   const { authUser } = useSelector((state) => state.auth);
 
   const userRole = authUser?.role;
+  const highlightId = searchParams.get("highlight");
+  const rowRefs = useRef({});
+  const [highlightedId, setHighlightedId] = useState(null);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
   const [serialToDelete, setSerialToDelete] = useState(null);
 
-
   useEffect(() => {
     dispatch(fetchRevenues());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (loading || !highlightId) return;
+
+    const id = Number(highlightId);
+    if (!Number.isFinite(id)) return;
+
+    const row = rowRefs.current[id];
+    if (!row) return;
+
+    row.scrollIntoView({ behavior: "smooth", block: "center" });
+    setHighlightedId(id);
+
+    const timeoutId = setTimeout(() => setHighlightedId(null), 3500);
+    return () => clearTimeout(timeoutId);
+  }, [loading, records, highlightId]);
 
   //    console.log(records);
 
@@ -134,7 +153,15 @@ export default function RevenueTableDetails({ searchQuery }) {
             </tr>
           ) : (
             filteredRecords.map((record, index) => (
-              <tr key={record.id || index} className="text-center">
+              <tr
+                key={record.id || index}
+                ref={(el) => {
+                  if (record.id != null) rowRefs.current[record.id] = el;
+                }}
+                className={`text-center ${
+                  highlightedId === record.id ? "bg-green-100" : ""
+                }`}
+              >
                 <td className="border px-2 py-1">{index + 1}</td>
                 <td className="border px-2 py-1">{record?.date}</td>
                 <td className="border px-2 py-1">{record.revenue_category}</td>

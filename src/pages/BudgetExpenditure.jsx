@@ -96,8 +96,10 @@ export default function BudgetExpenditure() {
         )
       : sourceOfFundingOptions;
 
-  //Dynamically switch accounts based on selected economic class
-  const naturalAccountOptions = Array.isArray(naturalAccounts)
+  // Dynamically switch accounts based on selected economic class.
+  // Include the populated account immediately so Review/Edit can display it
+  // without waiting for fetchNaturalAccounts to resolve.
+  const fetchedAccountOptions = Array.isArray(naturalAccounts)
     ? naturalAccounts.map((acc) => {
         const value = typeof acc === "string" ? acc : acc?.naturalAccount;
 
@@ -108,10 +110,16 @@ export default function BudgetExpenditure() {
       })
     : [];
 
+  const naturalAccountOptions =
+    selectedAccount?.value &&
+    !fetchedAccountOptions.some((opt) => opt.value === selectedAccount.value)
+      ? [selectedAccount, ...fetchedAccountOptions]
+      : fetchedAccountOptions;
+
   const usesAllotmentBalance =
     economicClass?.label === "Use of Goods and Services" &&
-    fundingSource?.label === "GOG"; // &&
-  // hasAllotment;
+    fundingSource?.label === "GOG" &&
+    hasAllotment;
 
   ///ALL useEFFECTS LOGIC
 
@@ -144,7 +152,7 @@ export default function BudgetExpenditure() {
 
   //this handles the logic behind the relationship between economic classification and the natural account
   useEffect(() => {
-    if (isEditing) {
+    if (isEditing || isReviewing) {
       return;
     } else if (!economicClass) {
       return;
@@ -167,7 +175,10 @@ export default function BudgetExpenditure() {
 
   // Autofill appropriation, allotment, and balance from backend
   useEffect(() => {
-    if (!budgetValues || !selectedAccount) return;
+    if (isEditing || isReviewing) return;
+    if (!selectedAccount || budgetLoading) return;
+    // Initial/reset/404 state is { appropriation: null, ... } — not a successful fetch
+    if (budgetValues?.appropriation == null) return;
 
     setAppropriation(budgetValues.appropriation ?? "");
     setAllotment(Number(budgetValues.allotment ?? 0));
@@ -180,7 +191,7 @@ export default function BudgetExpenditure() {
 
     setAllotmentBalance(Number(budgetValues.allotmentBalance ?? 0));
     setAppropriationBalance(Number(budgetValues.appropriationBalance ?? 0));
-  }, [budgetValues, selectedAccount]);
+  }, [budgetValues, selectedAccount, isEditing, isReviewing, budgetLoading]);
 
   //handles populating fields that are dependent on each other(natural account, allotment, appropriation, allotment balance)
   // Handles populating fields when editing a record
@@ -196,6 +207,7 @@ export default function BudgetExpenditure() {
       setAppropriation("");
       setAllotment("");
       setAllotmentBalance("");
+      setAppropriationBalance("");
       setReleases("");
       setExpenditure("");
       setPayment("");
@@ -216,7 +228,7 @@ export default function BudgetExpenditure() {
     const eco = formValues.economicClassification
       ? {
           label: formValues.economicClassification,
-          value: formValues.economicClassification.toLowerCase(),
+          value: formValues.economicClassification,
         }
       : null;
 
@@ -244,6 +256,7 @@ export default function BudgetExpenditure() {
     setAppropriation(formValues.appropriation || "");
     setAllotment(formValues.allotment || "");
     setAllotmentBalance(formValues.allotmentBalance || "");
+    setAppropriationBalance(formValues.appropriationBalance || "");
     setReleases(formValues.releases || "");
     setExpenditure(formValues.actualExpenditure || "");
     setPayment(formValues.actualPayment || "");
@@ -446,12 +459,12 @@ export default function BudgetExpenditure() {
     setSelectedActivity({ label: record.activity, value: record.activity });
     setSelectedDate(record.date);
     setEconomicClass({
-      label: record.economicClass,
-      value: record.economicClass,
+      label: record.economicClassification,
+      value: record.economicClassification,
     });
     setFundingSource({
-      label: record.fundingSource,
-      value: record.fundingSource,
+      label: record.sourceOfFunding,
+      value: record.sourceOfFunding,
     });
 
     setSelectedAccount({
@@ -463,9 +476,10 @@ export default function BudgetExpenditure() {
     setAppropriation(record.appropriation);
     setAllotment(record.allotment);
     setAllotmentBalance(record.allotmentBalance);
+    setAppropriationBalance(record.appropriationBalance);
     setReleases(record.releases);
-    setExpenditure(record.expenditure);
-    setPayment(record.payment);
+    setExpenditure(record.actualExpenditure);
+    setPayment(record.actualPayment);
   };
 
   //THIS HANDLES REVIEWING AN EXPENDITURE RECORD
