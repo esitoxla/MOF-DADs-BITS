@@ -6,7 +6,7 @@ import { FiMenu } from "react-icons/fi";
 import NotificationBell from "../components/NotificationBell";
 
 export default function DashboardLayout() {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
     <div className="flex h-screen w-full bg-green-50 relative">
@@ -35,12 +35,11 @@ export default function DashboardLayout() {
           isSidebarOpen ? "md:ml-68" : "ml-0"
         }`}
       >
-         <div className="shrink-0 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8">
+        <div className="shrink-0 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8">
           <div className="flex justify-end mb-4">
-            <NotificationBell />
+            <NotificationBell /> 
           </div>
         </div>
-       
 
         <Outlet />
       </div>

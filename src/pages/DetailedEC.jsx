@@ -12,6 +12,7 @@ import Pagination from "../components/Pagination";
 import { exportToExcel } from "../utils/economicClass/excelExport";
 import { exportToPDF } from "../utils/economicClass/pdfExport";
 import { getOrganizationLabel } from "../helpers/organizationLabel";
+import TableSkeleton from "../components/ui/TableSkeleton";
 
 
 
@@ -19,7 +20,7 @@ export default function DetailedEC() {
   const { authUser } = useSelector((store) => store.auth);
   const location = useLocation();
 
-  const { year, quarter, organization } = location.state || {};
+  const { year, quarter, organization, status = "ALL" } = location.state || {};
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -42,9 +43,10 @@ export default function DetailedEC() {
         year,
         quarter,
         organization,
+        status,
       })
     );
-  }, [dispatch, year, quarter, organization]);
+  }, [dispatch, year, quarter, organization, status]);
 
   //Pagination logic
   const PAGE_SIZE = 10;
@@ -75,7 +77,27 @@ export default function DetailedEC() {
     }
   };
 
-  if (loading) return <p className="text-center py-4">Loading records...</p>;
+  if (loading)
+    return (
+      <TableSkeleton
+        variant="report"
+        headers={[
+          "S.N",
+          "Activity",
+          "Date",
+          "Economic Classification",
+          "Funding Source",
+          "Natural Account",
+          "Description",
+          "Appropriation",
+          "Allotment",
+          "Releases",
+          "Actual Expenditure",
+          "Actual Payment",
+          "Allotment Balance",
+        ]}
+      />
+    );
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (

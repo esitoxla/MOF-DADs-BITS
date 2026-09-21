@@ -8,6 +8,7 @@ import { Check } from "../helpers/check";
 import { CheckFill } from "../helpers/checkFill";
 import { Clipboard } from "../helpers/review";
 import toast from "react-hot-toast";
+import TableSkeleton from "./ui/TableSkeleton";
 import {
   fetchRevenues,
   startEditing,
@@ -90,7 +91,24 @@ export default function RevenueTableDetails({ searchQuery }) {
   };
 
 
-  if (loading) return <p className="text-center py-4">Loading records...</p>;
+  if (loading)
+    return (
+      <TableSkeleton
+        headers={[
+          "S.N",
+          "Date",
+          "Revenue Categories",
+          "Budget Projections",
+          "Actual Collections",
+          "Payment into Consolidated Fund",
+          "Retention Rate (%)",
+          "Retention",
+          "Remarks",
+          "Status",
+          "Actions",
+        ]}
+      />
+    );
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   //approve

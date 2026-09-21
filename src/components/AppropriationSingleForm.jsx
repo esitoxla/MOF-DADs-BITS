@@ -11,6 +11,7 @@ import { Trash } from "../helpers/trash";
 import { PencilSquare } from "../helpers/edit";
 import { Search } from "lucide-react";
 import Pagination from "./Pagination";
+import TableSkeleton from "./ui/TableSkeleton";
 import { useEffect } from "react";
 
 export default function AppropriationSingleForm() {
@@ -164,7 +165,21 @@ export default function AppropriationSingleForm() {
      STATES
   ========================== */
   if (loading) {
-    return <p className="text-center py-4">Loading data...</p>;
+    return (
+      <TableSkeleton
+        headers={[
+          "S.N",
+          "Organization",
+          "Economic Classification",
+          "Source of Funding",
+          "Natural Account",
+          "Appropriation (GHS)",
+          "Allotment (GHS)",
+          "Date Created",
+          "Actions",
+        ]}
+      />
+    );
   }
 
   if (error) {

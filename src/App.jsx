@@ -15,6 +15,7 @@ import UserLayout from "./layouts/UserLayout";
 import UpdateUser from "./components/UpdateUser";
 import PrivateRoute from "./helpers/routesProtect";
 import { Toaster } from "react-hot-toast";
+import { LoaderProvider } from "./context/LoaderContext";
 import RevenueCashLayout from "./layouts/RevenueCashLayout";
 import RevenueCashPage from "./pages/RevenueCashPage";
 import RevenueForm from "./components/RevenueForm";
@@ -170,7 +171,7 @@ function App() {
   ]);
 
   return (
-    <>
+    <LoaderProvider>
       <RouterProvider router={router} />
 
       <Toaster
@@ -188,7 +189,7 @@ function App() {
           },
         }}
       />
-    </>
+    </LoaderProvider>
   );
 }
 

@@ -4,10 +4,10 @@ import { api } from "../../config/axios";
 // Async thunk for fetching the quarterly report
 export const fetchNaturalAccountQuarterlyReport = createAsyncThunk(
   "naturalAccount/fetchQuarterlyReport",
-  async ({ year, quarter, sourceOfFunding, organization }, thunkAPI) => {
+  async ({ year, quarter, sourceOfFunding, organization, status = "ALL" }, thunkAPI) => {
     try {
       const response = await api.get("/naturalAccount/quarterly", {
-        params: { year, quarter, sourceOfFunding, organization },
+        params: { year, quarter, sourceOfFunding, organization, status },
       });
       return response.data;
     } catch (error) {
@@ -21,10 +21,10 @@ export const fetchNaturalAccountQuarterlyReport = createAsyncThunk(
 
 export const downloadNaturalAccountExcel = createAsyncThunk(
   "naturalAccount/downloadQuarterlyExcel",
-  async ({ year, quarter, sourceOfFunding, organization }, thunkAPI) => {
+  async ({ year, quarter, sourceOfFunding, organization, status = "ALL" }, thunkAPI) => {
     try {
       const response = await api.get("/naturalAccount/quarterly/excel", {
-        params: { year, quarter, sourceOfFunding, organization },
+        params: { year, quarter, sourceOfFunding, organization, status },
         responseType: "blob", // IMPORTANT for Excel files
       });
 
@@ -52,10 +52,10 @@ export const downloadNaturalAccountExcel = createAsyncThunk(
 
 export const downloadNaturalAccountPDF = createAsyncThunk(
   "naturalAccount/downloadQuarterlyPDF",
-  async ({ year, quarter, sourceOfFunding, organization }, thunkAPI) => {
+  async ({ year, quarter, sourceOfFunding, organization, status = "ALL" }, thunkAPI) => {
     try {
       const response = await api.get("/naturalAccount/quarterly/pdf", {
-        params: { year, quarter, sourceOfFunding, organization },
+        params: { year, quarter, sourceOfFunding, organization, status },
         responseType: "blob", // IMPORTANT for PDF files
       });
 

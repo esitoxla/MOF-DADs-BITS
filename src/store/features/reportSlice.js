@@ -4,10 +4,10 @@ import { api } from "../../config/axios";
 // Async thunk for fetching the quarterly report
 export const fetchQuarterlyReport = createAsyncThunk(
   "report/fetchQuarterlyReport",
-  async ({ year, quarter, sourceOfFunding, organization }, thunkAPI) => {
+  async ({ year, quarter, sourceOfFunding, organization, status = "ALL" }, thunkAPI) => {
     try {
       const response = await api.get("/reports/quarterly", {
-        params: { year, quarter, sourceOfFunding, organization },
+        params: { year, quarter, sourceOfFunding, organization, status },
       });
       return response.data;
     } catch (error) {
@@ -23,10 +23,10 @@ export const fetchQuarterlyReport = createAsyncThunk(
 
 export const downloadQuarterlyExcel = createAsyncThunk(
   "report/downloadQuarterlyExcel",
-  async ({ year, quarter, sourceOfFunding, organization }, thunkAPI) => {
+  async ({ year, quarter, sourceOfFunding, organization, status = "ALL" }, thunkAPI) => {
     try {
       const response = await api.get("/reports/quarterly/excel", {
-        params: { year, quarter, sourceOfFunding, organization },
+        params: { year, quarter, sourceOfFunding, organization, status },
         responseType: "blob", // IMPORTANT for Excel files
       });
 
@@ -57,10 +57,10 @@ export const downloadQuarterlyExcel = createAsyncThunk(
 
 export const downloadQuarterlyPDF = createAsyncThunk(
   "report/downloadQuarterlyPDF",
-  async ({ year, quarter, sourceOfFunding, organization }, thunkAPI) => {
+  async ({ year, quarter, sourceOfFunding, organization, status = "ALL" }, thunkAPI) => {
     try {
       const response = await api.get("/reports/quarterly/pdf", {
-        params: { year, quarter, sourceOfFunding, organization },
+        params: { year, quarter, sourceOfFunding, organization, status },
         responseType: "blob", // IMPORTANT for PDF files
       });
 
@@ -92,10 +92,10 @@ export const downloadQuarterlyPDF = createAsyncThunk(
 //fetching detailed data record
 export const fetchDetailedECReport = createAsyncThunk(
   "report/fetchDetailedECReport",
-  async ({ year, quarter, organization }, thunkAPI) => {
+  async ({ year, quarter, organization, status = "ALL" }, thunkAPI) => {
     try {
       const response = await api.get("/reports/detailed", {
-        params: { year, quarter, organization },
+        params: { year, quarter, organization, status },
       });
       return response.data.records;
     } catch (error) {

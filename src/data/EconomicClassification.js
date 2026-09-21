@@ -34,7 +34,7 @@ export const economicClassificationData = [
     ],
   },
   {
-    title: "Use of Goods and Services",
+    title: "Goods and Services",
     totalBudget: 25611114,
     amountReleased: 0,
     actualExpenditure: 0,

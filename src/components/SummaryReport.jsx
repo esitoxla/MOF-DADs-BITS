@@ -9,6 +9,7 @@ import { organizationOptions } from "../data/BudgetExpenditureData";
 import { fundingSourceOptions } from "../data/BudgetExpenditureData";
 import { reportTypeOptions } from "../data/BudgetExpenditureData";
 import { quarterOptions } from "../data/BudgetExpenditureData";
+import { statusOptions } from "../data/BudgetExpenditureData";
 
 export default function SummaryReport() {
   const navigate = useNavigate();
@@ -20,6 +21,9 @@ export default function SummaryReport() {
 
   const [quarter, setQuarter] = useState(null);
   const [year, setYear] = useState("");
+  const [status, setStatus] = useState(
+    statusOptions.find((option) => option.value === "ALL"),
+  );
 
   //ADMIN CHECKS
   const { authUser } = useSelector((state) => state.auth);
@@ -54,6 +58,7 @@ export default function SummaryReport() {
       quarter: quarter.value, // 1–4
       year: Number(year),
       organization: isAdmin ? organization?.value : authUser?.organization,
+      status: status?.value || "ALL",
     };
 
     if (reportType.value === "EC" || reportType.value === "NA") {
@@ -157,6 +162,18 @@ export default function SummaryReport() {
               onChange={(e) => setYear(e.target.value)}
               placeholder="Year (e.g. 2025)"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Status
+            </label>
+            <Select
+              options={statusOptions}
+              value={status}
+              onChange={setStatus}
+              placeholder="Select status"
             />
           </div>
 

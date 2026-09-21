@@ -4,7 +4,7 @@ export const reportData = {
   EC: [
     { item: "Compensation of Employees", gog: 0, igf: 0, dpf: 0, total: 0 },
     {
-      item: "Use of Goods and Services",
+      item: "Goods and Services",
       gog: 2387227,
       igf: 173887,
       dpf: 0,

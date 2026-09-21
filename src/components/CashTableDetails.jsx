@@ -9,6 +9,7 @@ import { CheckFill } from "../helpers/checkFill";
 import { Clipboard } from "../helpers/review";
 import toast from "react-hot-toast";
 import { fetchCashRecords, deleteCashRecord, startEditing, startReviewing, approveCashRecord } from "../store/features/cashSlice";
+import TableSkeleton from "./ui/TableSkeleton";
 
 export default function CashTableDetails({ searchQuery }) {
   const dispatch = useDispatch();
@@ -111,7 +112,20 @@ export default function CashTableDetails({ searchQuery }) {
       }
     };
 
-  if (loading) return <p className="text-center py-4">Loading records...</p>;
+  if (loading)
+    return (
+      <TableSkeleton
+        headers={[
+          "S.N",
+          "Date",
+          "Account Name",
+          "Currency",
+          "Balance",
+          "Status",
+          "Actions",
+        ]}
+      />
+    );
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (

@@ -176,8 +176,8 @@ export default function Analytics() {
     fetchDashboard(next);
   };
 
-  const formatMoney = (num) =>
-    `GHS ${num.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+  const formatAmount = (num) =>
+    Number(num).toLocaleString(undefined, { minimumFractionDigits: 2 });
 
   // Matches the app's actual sidebar green — adjust this one value if the
   // sidebar shade changes and every chart below will follow.
@@ -256,29 +256,34 @@ export default function Analytics() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <SummaryCard
             label="TOTAL BUDGET"
-            value={formatMoney(data.summary.totalBudget)}
+            currency="GHS"
+            value={formatAmount(data.summary.totalBudget)}
           />
           <SummaryCard
             label="EXPENDITURE to date"
-            value={formatMoney(data.summary.expenditureToDate)}
+            currency="GHS"
+            value={formatAmount(data.summary.expenditureToDate)}
             sub={`${data.summary.expenditureChangePct}% vs last Month`}
           />
           <SummaryCard
             label="BUDGET UTILISATION"
-            value={`${data.summary.budgetUtilisationPct}%`}
+            value={`${Number(data.summary.budgetUtilisationPct).toFixed(3)}%`}
           />
           <SummaryCard
             label="VARIANCE"
-            value={formatMoney(data.summary.variance)}
+            currency="GHS"
+            value={formatAmount(data.summary.variance)}
           />
           <SummaryCard
             label="IGF COLLECTION to date"
-            value={formatMoney(data.summary.igfCollectionToDate)}
+            currency="GHS"
+            value={formatAmount(data.summary.igfCollectionToDate)}
             sub={`${data.summary.igfChangePct}% vs last Month`}
           />
           <SummaryCard
             label="CASH POSITION to date"
-            value={formatMoney(data.summary.cashPositionToDate)}
+            currency="GHS"
+            value={formatAmount(data.summary.cashPositionToDate)}
             sub={`${data.summary.cashPositionChangePct}% vs last Quarter`}
           />
         </div>
@@ -465,7 +470,7 @@ function TrendAreaChart({ data, color, gradientId }) {
   );
 }
 
-function SummaryCard({ label, value, sub }) {
+function SummaryCard({ label, value, currency, sub }) {
   const changePct = sub != null ? parseFloat(sub) : NaN;
   const hasTrend = Number.isFinite(changePct);
   const isIncrease = hasTrend && changePct >= 0;
@@ -476,21 +481,34 @@ function SummaryCard({ label, value, sub }) {
     : "text-slate-500";
 
   return (
-    <div className="bg-white rounded-lg p-3 flex flex-col border-l-4 border-l-green-700">
+    <div className="bg-white rounded-lg p-3 flex flex-col border-l-4 border-l-green-700 transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-green-900/10 hover:z-10">
       <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
         {label}
       </span>
-      <span className="text-base sm:text-lg font-bold text-slate-800 mt-1">
-        {value}
-      </span>
-      {sub && (
-        <span className={`text-[11px] mt-0.5 ${trendClass}`}>
-          {hasTrend && (
-            <span aria-hidden="true">{isIncrease ? "▲ " : "▼ "}</span>
-          )}
-          {sub}
+      <div
+        className={`mt-1 min-w-0 ${
+          currency
+            ? "grid grid-cols-[2rem_minmax(0,1fr)] gap-x-1.5 items-baseline"
+            : "flex flex-col"
+        }`}
+      >
+        {currency ? (
+          <span className="text-xs font-semibold text-slate-500 leading-tight">
+            {currency}
+          </span>
+        ) : null}
+        <span className="text-sm sm:text-base font-bold text-slate-800 tabular-nums leading-tight">
+          {value}
         </span>
-      )}
+        {sub ? (
+          <span className={`col-start-2 text-[11px] mt-0.5 ${trendClass}`}>
+            {hasTrend && (
+              <span aria-hidden="true">{isIncrease ? "▲ " : "▼ "}</span>
+            )}
+            {sub}
+          </span>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -531,9 +549,6 @@ function AnalyticsSkeleton() {
   return (
     <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-slate-50">
       <div className="shrink-0 bg-slate-50 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-4">
-        <div className="flex justify-end mb-4">
-          <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
-        </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={`filter-skel-${i}`} className="flex flex-col gap-1">

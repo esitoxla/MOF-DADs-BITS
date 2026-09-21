@@ -12,12 +12,13 @@ import { fetchDetailedReallocationReport } from "../store/features/reallocationR
 import Pagination from "../components/Pagination";
 import { exportReallocationToExcel } from "../utils/reallocation/excelExport";
 import { exportReallocationToPDF } from "../utils/reallocation/pdfExport";
+import TableSkeleton from "../components/ui/TableSkeleton";
 
 export default function DetailedReallocation() {
   const { authUser } = useSelector((store) => store.auth);
   const location = useLocation();
 
-  const { year, quarter, organization } = location.state || {};
+  const { year, quarter, organization, status = "ALL" } = location.state || {};
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -38,9 +39,10 @@ export default function DetailedReallocation() {
                 year,
                 quarter,
                 organization,
+                status,
               })
             );
-          }, [dispatch, year, quarter, organization]); 
+          }, [dispatch, year, quarter, organization, status]); 
 
 
           //Pagination logic
@@ -75,7 +77,24 @@ export default function DetailedReallocation() {
 
 
           if (loading)
-            return <p className="text-center py-4">Loading records...</p>;
+            return (
+              <TableSkeleton
+                variant="report"
+                headers={[
+                  "S.N",
+                  "Activity",
+                  "Date",
+                  "Economic Class",
+                  "Funding Source",
+                  "Natural Account",
+                  "Description",
+                  "Amount reallocated",
+                  "Amount Released",
+                  "Actual Expenditure",
+                  "Actual Payment",
+                ]}
+              />
+            );
           if (error) return <p className="text-center text-red-500">{error}</p>;
 
 

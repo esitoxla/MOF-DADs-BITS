@@ -3,10 +3,10 @@ import { api } from "../../config/axios";
 
 export const fetchReallocationReport = createAsyncThunk(
   "report/fetchReallocationReport",
-  async ({ year, quarter, organization }, thunkAPI) => {
+  async ({ year, quarter, organization, status = "ALL" }, thunkAPI) => {
     try {
       const response = await api.get("/reallocationReport/quarterly", {
-        params: { year, quarter, organization },
+        params: { year, quarter, organization, status },
       });
 
       return response.data;
@@ -23,10 +23,10 @@ export const fetchReallocationReport = createAsyncThunk(
 //summary excel download
 export const downloadReallocationExcel = createAsyncThunk(
   "report/downloadReallocationExcel",
-  async ({ year, quarter, sourceOfFunding, organization }, thunkAPI) => {
+  async ({ year, quarter, sourceOfFunding, organization, status = "ALL" }, thunkAPI) => {
     try {
       const response = await api.get("/reallocationReport/quarterly/excel", {
-        params: { year, quarter, sourceOfFunding, organization },
+        params: { year, quarter, sourceOfFunding, organization, status },
         responseType: "blob", // IMPORTANT for Excel files
       });
 
@@ -55,10 +55,10 @@ export const downloadReallocationExcel = createAsyncThunk(
 //summary pdf report
 export const downloadReallocationPDF = createAsyncThunk(
   "report/downloadReallocationPDF",
-  async ({ year, quarter, sourceOfFunding, organization }, thunkAPI) => {
+  async ({ year, quarter, sourceOfFunding, organization, status = "ALL" }, thunkAPI) => {
     try {
       const response = await api.get("/reallocationReport/quarterly/pdf", {
-        params: { year, quarter, sourceOfFunding, organization },
+        params: { year, quarter, sourceOfFunding, organization, status },
         responseType: "blob", // IMPORTANT for PDF files
       });
 
@@ -90,10 +90,10 @@ export const downloadReallocationPDF = createAsyncThunk(
 //detailed
 export const fetchDetailedReallocationReport = createAsyncThunk(
   "report/fetchDetailedReallocationReport",
-  async ({ year, quarter, organization }, thunkAPI) => {
+  async ({ year, quarter, organization, status = "ALL" }, thunkAPI) => {
     try {
       const response = await api.get("/reallocationReport/detailed", {
-        params: { year, quarter, organization },
+        params: { year, quarter, organization, status },
       });
 
       return response.data;

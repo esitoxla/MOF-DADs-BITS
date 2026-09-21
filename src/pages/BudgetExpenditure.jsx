@@ -117,7 +117,7 @@ export default function BudgetExpenditure() {
       : fetchedAccountOptions;
 
   const usesAllotmentBalance =
-    economicClass?.label === "Use of Goods and Services" &&
+    economicClass?.label === "Goods and Services" &&
     fundingSource?.label === "GOG" &&
     hasAllotment;
 
@@ -304,7 +304,7 @@ export default function BudgetExpenditure() {
     const currentActual = Number(value || 0);
 
     // CASE 1: Goods & Services WITH allotment
-    if (economicClass?.value === "Use of Goods and Services" && hasAllotment) {
+    if (economicClass?.value === "Goods and Services" && hasAllotment) {
       const previewBalance =
         Number(allotment) - (Number(previousActualExpenditure) + currentActual);
 

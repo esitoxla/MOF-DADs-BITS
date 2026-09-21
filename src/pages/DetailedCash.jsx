@@ -11,6 +11,7 @@ import Pagination from "../components/Pagination";
 import { fetchDetailedCashReport } from "../store/features/cashReportSlice";
 import { exportCashToExcel } from "../utils/cashPosition/excelExport";
 import { exportCashToPDF } from "../utils/cashPosition/pdfExport";
+import TableSkeleton from "../components/ui/TableSkeleton";
 
 export default function DetailedCash() {
   const { authUser } = useSelector((store) => store.auth);
@@ -23,7 +24,7 @@ export default function DetailedCash() {
   console.log(detailedRecords);
 
   const location = useLocation();
-  const { year, quarter, organization } = location.state || {};
+  const { year, quarter, organization, status = "ALL" } = location.state || {};
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -36,9 +37,10 @@ export default function DetailedCash() {
         year,
         quarter,
         organization,
+        status,
       }),
     );
-  }, [dispatch, year, quarter, organization]);
+  }, [dispatch, year, quarter, organization, status]);
 
   //Pagination logic
   const PAGE_SIZE = 10;
@@ -71,7 +73,13 @@ export default function DetailedCash() {
     }
   };
 
-  if (loading) return <p className="text-center py-4">Loading records...</p>;
+  if (loading)
+    return (
+      <TableSkeleton
+        variant="report"
+        headers={["S.N", "Date", "Account Name", "Currency", "Balance"]}
+      />
+    );
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (

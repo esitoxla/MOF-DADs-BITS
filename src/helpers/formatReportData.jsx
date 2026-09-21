@@ -6,7 +6,7 @@ const EXPENDITURE_STRUCTURE = [
     sources: ["GOG", "IGF"], // these always appear under this heading
   },
   {
-    title: "Use of Goods and Services",
+    title: "Goods and Services",
     sources: ["GOG", "IGF", "DPF"],
   },
   {

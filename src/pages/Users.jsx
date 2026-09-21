@@ -9,6 +9,7 @@ import UpdateUser from "../components/UpdateUser";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllUsers, deleteUser } from "../store/features/userSlice";
 import Pagination from "../components/Pagination";
+import TableSkeleton from "../components/ui/TableSkeleton";
 
 export default function Users() {
   const [showModal, setShowModal] = useState(false);
@@ -25,7 +26,7 @@ export default function Users() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const dispatch = useDispatch();
-  const { users, totalUsers } = useSelector((state) => state.user);
+  const { users, totalUsers, loading } = useSelector((state) => state.user);
 
   //ADMIN CHECKS
   const { authUser } = useSelector((state) => state.auth);
@@ -107,6 +108,21 @@ export default function Users() {
 
       {/* Table */}
       <div className="overflow-x-auto bg-white  shadow-lg w-full">
+        {loading ? (
+          <TableSkeleton
+            headers={[
+              "Name",
+              "Email",
+              "Username",
+              "Role",
+              "Status",
+              "Organization",
+              "Designation",
+              "Last Login",
+              "Actions",
+            ]}
+          />
+        ) : (
         <div className="">
           <table className="min-w-full text-sm text-left">
             <thead className="bg-green-100 text-gray-700">
@@ -172,6 +188,7 @@ export default function Users() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       {/* Pagination (EXTERNAL COMPONENT) */}

@@ -11,6 +11,7 @@ import { getUser, loginUser } from "../store/features/authSlice";
 import toast from "react-hot-toast";
 import loginBgImg from "../assets/images/loginBg.png";
 import loginImg from "../assets/images/LoginPage.jpeg";
+import { useLoader } from "../context/LoaderContext";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -20,6 +21,7 @@ export default function Login() {
   const dispatch = useDispatch();
 
   const { error, loading } = useSelector((store) => store.auth);
+  const { showLoader, hideLoader } = useLoader();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -34,6 +36,7 @@ export default function Login() {
       return;
     }
 
+    showLoader("Loading...");
     try {
       const resultAction = await dispatch(loginUser({ username, password }));
 
@@ -42,13 +45,14 @@ export default function Login() {
         navigate("/dashboard", { replace: true });
         toast.success("Login successful");
       } else {
-        // Show the error in a toast
         const errorMsg = resultAction.payload || "Login failed";
         toast.error(errorMsg);
       }
     } catch (err) {
       console.error(err);
       toast.error("Something went wrong");
+    } finally {
+      hideLoader();
     }
   };
 
@@ -187,7 +191,8 @@ export default function Login() {
             {/* Button */}
             <button
               type="submit"
-              className="bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-all duration-300 text-white py-2 rounded-lg font-semibold"
+              disabled={loading}
+              className="bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-all duration-300 text-white py-2 rounded-lg font-semibold disabled:opacity-70 disabled:cursor-not-allowed"
             >
               LOG IN
             </button>

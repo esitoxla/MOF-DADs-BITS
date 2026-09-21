@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { detailedReportTypeOptions } from "../data/BudgetExpenditureData";
 import { organizationOptions } from '../data/BudgetExpenditureData';
 import { quarterOptions } from '../data/BudgetExpenditureData';
+import { statusOptions } from "../data/BudgetExpenditureData";
 import Select from "react-select";
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
@@ -19,6 +20,9 @@ export default function DetailedReport() {
   const [organization, setOrganization] = useState(null);
   const [quarter, setQuarter] = useState(null);
   const [year, setYear] = useState("");
+  const [status, setStatus] = useState(
+    statusOptions.find((option) => option.value === "ALL"),
+  );
 
   
   //ADMIN CHECKS
@@ -60,6 +64,7 @@ export default function DetailedReport() {
      quarter: quarter.value,
      year: Number(year),
      organization: isAdmin ? organization?.value : authUser?.organization,
+     status: status?.value || "ALL",
    };
 
    if (reportType.value === "EC") {
@@ -154,6 +159,18 @@ export default function DetailedReport() {
               onChange={(e) => setYear(e.target.value)}
               placeholder="Year (e.g. 2025)"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Status
+            </label>
+            <Select
+              options={statusOptions}
+              value={status}
+              onChange={setStatus}
+              placeholder="Select status"
             />
           </div>
           {/* Action Button */}

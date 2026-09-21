@@ -4,10 +4,10 @@ import { api } from "../../config/axios";
 // Async thunk for fetching the quarterly report
 export const fetchQuarterlyRevenueReport = createAsyncThunk(
   "revenueReport/fetchQuarterlyReport",
-  async ({ year, quarter, organization }, thunkAPI) => {
+  async ({ year, quarter, organization, status = "ALL" }, thunkAPI) => {
     try {
       const response = await api.get("/revenueReport/quarterly", {
-        params: { year, quarter, organization },
+        params: { year, quarter, organization, status },
       });
       return response.data;
     } catch (error) {
@@ -22,10 +22,10 @@ export const fetchQuarterlyRevenueReport = createAsyncThunk(
 
 export const downloadQuarterlyRevenueExcel = createAsyncThunk(
   "revenueReport/downloadQuarterlyRevenueExcel",
-  async ({ year, quarter, organization }, thunkAPI) => {
+  async ({ year, quarter, organization, status = "ALL" }, thunkAPI) => {
     try {
       const response = await api.get("/revenueReport/quarterly/excel", {
-        params: { year, quarter, organization },
+        params: { year, quarter, organization, status },
         responseType: "blob",
       });
 
@@ -52,10 +52,10 @@ export const downloadQuarterlyRevenueExcel = createAsyncThunk(
 
 export const downloadQuarterlyRevenuePDF = createAsyncThunk(
   "revenueReport/downloadQuarterlyRevenuePDF",
-  async ({ year, quarter, organization }, thunkAPI) => {
+  async ({ year, quarter, organization, status = "ALL" }, thunkAPI) => {
     try {
       const response = await api.get("/revenueReport/quarterly/pdf", {
-        params: { year, quarter, organization },
+        params: { year, quarter, organization, status },
         responseType: "blob",
       });
 
@@ -81,10 +81,10 @@ export const downloadQuarterlyRevenuePDF = createAsyncThunk(
 /* THIS IS FOR DETAILED REPORT */
 export const fetchDetailedRevenueReport = createAsyncThunk(
   "revenueReport/fetchDetailedRevenueReport",
-  async ({ year, quarter, organization }, thunkAPI) => {
+  async ({ year, quarter, organization, status = "ALL" }, thunkAPI) => {
     try {
       const response = await api.get("/revenueReport/detailed", {
-        params: { year, quarter, organization },
+        params: { year, quarter, organization, status },
       });
 
       return response.data;

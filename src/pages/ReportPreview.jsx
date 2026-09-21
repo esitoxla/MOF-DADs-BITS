@@ -32,6 +32,7 @@ import {
 } from "../store/features/naturalAccountSlice";
 import ReallocationPerformanceTable from "../components/ReallocationPerformanceTable";
 import { downloadReallocationExcel, downloadReallocationPDF, fetchReallocationReport } from "../store/features/reallocationReportSlice";
+import TableSkeleton from "../components/ui/TableSkeleton";
 
 
 
@@ -52,6 +53,7 @@ export default function ReportPreview() {
     year,
     quarter,
     organization,
+    status = "ALL",
   } = location.state || {};
 
   const as_at_date =
@@ -111,6 +113,7 @@ export default function ReportPreview() {
           quarter,
           sourceOfFunding: fundingSource,
           organization,
+          status,
         }),
       );
     }
@@ -121,6 +124,7 @@ export default function ReportPreview() {
           year,
           quarter,
           organization,
+          status,
         }),
       );
     }
@@ -131,6 +135,7 @@ export default function ReportPreview() {
           year,
           quarter,
           organization,
+          status,
         }),
       );
     }
@@ -142,6 +147,7 @@ export default function ReportPreview() {
           quarter,
           organization,
           sourceOfFunding: normalizedFunding,
+          status,
         }),
       );
     }
@@ -151,7 +157,8 @@ export default function ReportPreview() {
         fetchReallocationReport({
           year,
           quarter,
-          organization
+          organization,
+          status,
         }),
       );
     }
@@ -162,6 +169,7 @@ export default function ReportPreview() {
     quarter,
     fundingSource,
     organization,
+    status,
     as_at_date,
   ]);
 
@@ -241,6 +249,7 @@ export default function ReportPreview() {
             quarter,
             sourceOfFunding: fundingSource,
             organization,
+            status,
           }),
         );
       }
@@ -252,6 +261,7 @@ export default function ReportPreview() {
             quarter,
             sourceOfFunding: fundingSource,
             organization,
+            status,
           }),
         );
       }
@@ -267,6 +277,7 @@ export default function ReportPreview() {
             year,
             quarter,
             organization,
+            status,
           }),
         );
       }
@@ -277,6 +288,7 @@ export default function ReportPreview() {
             year,
             quarter,
             organization,
+            status,
           }),
         );
       }
@@ -291,6 +303,7 @@ export default function ReportPreview() {
           year,
           quarter,
           organization,
+          status,
         });
       }
 
@@ -299,6 +312,7 @@ export default function ReportPreview() {
           year,
           quarter,
           organization,
+          status,
         });
       }
     }
@@ -314,6 +328,7 @@ export default function ReportPreview() {
             quarter,
             organization,
             sourceOfFunding: normalizedFunding,
+            status,
           }),
         );
       }
@@ -325,6 +340,7 @@ export default function ReportPreview() {
             quarter,
             organization,
             sourceOfFunding: normalizedFunding,
+            status,
           }),
         );
       }
@@ -340,6 +356,7 @@ export default function ReportPreview() {
             quarter,
             organization,
             sourceOfFunding: normalizedFunding,
+            status,
           }),
         );
       }
@@ -351,6 +368,7 @@ export default function ReportPreview() {
             quarter,
             organization,
             sourceOfFunding: normalizedFunding,
+            status,
           }),
         );
       }
@@ -394,7 +412,40 @@ export default function ReportPreview() {
 
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <p>Loading report...</p>
+          <TableSkeleton
+            variant="report"
+            rows={8}
+            headers={
+              reportType === "IRP"
+                ? [
+                    "Revenue Categories",
+                    "Projections / Budget",
+                    "Actual Collection",
+                    "Payment into Consolidated Fund",
+                    "Retention",
+                    "Remarks",
+                  ]
+                : reportType === "CP"
+                  ? ["Account Name", "GHS", "EUR", "GBP", "USD"]
+                  : reportType === "NA"
+                    ? ["Natural Account", "GOG", "IGF", "DPF"]
+                    : reportType === "RE"
+                      ? [
+                          "Expenditure Item",
+                          "Amount Reallocated",
+                          "Amount Released",
+                          "Actual Expenditure",
+                          "Actual Payment",
+                        ]
+                      : [
+                          "Expenditure Item",
+                          "Approved Budget / Appropriation",
+                          "Amount Released",
+                          "Actual Expenditure",
+                          "Actual Payments",
+                        ]
+            }
+          />
         ) : error ? (
           <p className="text-red-500">{error}</p>
         ) : (

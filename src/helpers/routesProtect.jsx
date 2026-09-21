@@ -3,14 +3,12 @@ import { useSelector } from "react-redux";
 import { Navigate } from "react-router";
 
 export default function PrivateRoute({ children, allowedRoles }) {
-  const { authUser, authChecked, loading } = useSelector((store) => store.auth);
+  const { authUser, authChecked } = useSelector((store) => store.auth);
 
-  // Wait ONLY until auth is checked
   if (!authChecked) {
-    return <div>Loading...</div>;
+    return children;
   }
 
-  //After check, block dashboard if logged out
   if (!authUser) {
     return <Navigate to="/" replace />;
   }

@@ -92,7 +92,7 @@ export default function ReallocationPerformanceTable(
         <tbody>
           {[
             "Compensation of Employees",
-            "Use of Goods and Services",
+            "Goods and Services",
             "Capital Expenditure",
           ].map((item, index) => {
             // find matching backend data

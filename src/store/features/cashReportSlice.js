@@ -6,10 +6,10 @@ import { api } from "../../config/axios";
 ================================= */
 export const fetchCashPositionReport = createAsyncThunk(
   "cashReport/fetchSummary",
-  async ({ year, quarter, organization }, thunkAPI) => {
+  async ({ year, quarter, organization, status = "ALL" }, thunkAPI) => {
     try {
       const response = await api.get("/cashReport/quarterly", {
-        params: { year, quarter, organization },
+        params: { year, quarter, organization, status },
       });
       return response.data;
     } catch (error) {
@@ -29,9 +29,10 @@ export const downloadCashPositionExcel = async ({
   year,
   quarter,
   organization,
+  status = "ALL",
 }) => {
   const response = await api.get("/cashReport/quarterly/excel", {
-    params: { year, quarter, organization },
+    params: { year, quarter, organization, status },
     responseType: "blob",
   });
 
@@ -61,10 +62,11 @@ export const downloadCashPositionPDF = async ({
   year,
   quarter,
   organization,
+  status = "ALL",
 }) => {
   try {
     const response = await api.get("/cashReport/quarterly/pdf", {
-      params: { year, quarter, organization },
+      params: { year, quarter, organization, status },
       responseType: "blob",
     });
 
@@ -96,10 +98,10 @@ export const downloadCashPositionPDF = async ({
 ================================= */
 export const fetchDetailedCashReport = createAsyncThunk(
   "cashReport/fetchDetailed",
-  async ({ year, quarter, organization }, thunkAPI) => {
+  async ({ year, quarter, organization, status = "ALL" }, thunkAPI) => {
     try {
       const response = await api.get("/cashReport/detailed", {
-        params: { year, quarter, organization },
+        params: { year, quarter, organization, status },
       });
 
       return response.data;

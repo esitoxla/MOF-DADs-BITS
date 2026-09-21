@@ -45,7 +45,7 @@ export const dataMap = {
 //
 export const economicClassOptions = [
   { value: "Compensation of Employees", label: "Compensation of Employees" },
-  { value: "Use of Goods and Services", label: "Use of Goods and Services" },
+  { value: "Goods and Services", label: "Goods and Services" },
   { value: "Capital Expenditure", label: "Capital Expenditure" },
 ];
 
@@ -101,6 +101,13 @@ export const fundingSourceOptions = [
   { value: "DPF", label: "DPF" },
   { value: "IGF", label: "IGF" },
   { value: "ALL", label: "ALL" },
+];
+
+export const statusOptions = [
+  { value: "ALL", label: "All" },
+  { value: "Pending", label: "Pending" },
+  { value: "Reviewed", label: "Reviewed" },
+  { value: "Approved", label: "Approved" },
 ];
 
 

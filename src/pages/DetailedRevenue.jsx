@@ -11,6 +11,7 @@ import Pagination from "../components/Pagination";
 import { fetchDetailedRevenueReport } from "../store/features/revenueReport";
 import { exportRevenueToExcel } from "../utils/revenue/exportToExcel";
 import { exportRevenueToPDF } from "../utils/revenue/exportToPdf";
+import TableSkeleton from "../components/ui/TableSkeleton";
 
 export default function DetailedRevenue() {
   const { authUser } = useSelector((store) => store.auth);
@@ -21,7 +22,7 @@ export default function DetailedRevenue() {
 //  console.log(detailedRecords);
 
   const location = useLocation();
- const { year, quarter, organization } = location.state || {};
+ const { year, quarter, organization, status = "ALL" } = location.state || {};
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -34,9 +35,10 @@ export default function DetailedRevenue() {
        year,
        quarter,
        organization,
+       status,
      })
    );
- }, [dispatch, year, quarter, organization]);
+ }, [dispatch, year, quarter, organization, status]);
 
   //Pagination logic
   const PAGE_SIZE = 10;
@@ -68,7 +70,23 @@ export default function DetailedRevenue() {
   };
 
 
-  if (loading) return <p className="text-center py-4">Loading records...</p>;
+  if (loading)
+    return (
+      <TableSkeleton
+        variant="report"
+        headers={[
+          "S.N",
+          "Date",
+          "Revenue Categories",
+          "Budget Projections",
+          "Actual Collections",
+          "Payment into Consolidated Fund",
+          "Retention Rate (%)",
+          "Retention",
+          "Remarks",
+        ]}
+      />
+    );
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (

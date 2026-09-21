@@ -7,6 +7,7 @@ import { CheckFill } from "../helpers/checkFill";
 import { Clipboard } from "../helpers/review";
 import toast from "react-hot-toast";
 import Pagination from "./Pagination";
+import TableSkeleton from "./ui/TableSkeleton";
 import { useDispatch, useSelector } from "react-redux";
 import {
   startEditing,
@@ -82,7 +83,29 @@ export default function BudgetTable({
     return () => clearTimeout(timeoutId);
   }, [loading, records, highlightId, currentPage, searchQuery]);
 
-  if (loading) return <p className="text-center py-4">Loading records...</p>;
+  if (loading)
+    return (
+      <TableSkeleton
+        headers={[
+          "S.N",
+          "Activity",
+          "Date",
+          "Economic Class",
+          "Funding Source",
+          "Natural Account",
+          "Description",
+          "Appropriation",
+          "Allotment",
+          "Allotment Balance",
+          "Appropriation Balance",
+          "Releases",
+          "Actual Expenditure",
+          "Actual Payment",
+          "Status",
+          "Actions",
+        ]}
+      />
+    );
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   //delete
