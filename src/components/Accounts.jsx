@@ -1,46 +1,83 @@
-import React from "react";
-import { User, Mail, Phone } from "lucide-react";
-import { useState, useRef } from "react";
-import { useEffect } from "react";
-import profile from "../assets/images/profile.1.png";
-import { useSelector, useDispatch } from "react-redux";
-import {
-  uploadAvatar,
-  removeProfilePic,
-} from "../store/features/authSlice";
+import { useEffect, useRef, useState } from "react";
+import { AtSign, Calendar, Camera, Mail, Phone, ShieldCheck, User } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
-import Sidebar from "./Sidebar";
+import {
+  removeProfilePic,
+  updateProfile,
+  uploadAvatar,
+} from "../store/features/authSlice";
+
+const roleLabels = {
+  admin: "Admin",
+  data_entry: "Data entry",
+  approver: "Approver",
+  reviewer: "Reviewer",
+};
+
+function formatMemberSince(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+}
+
+function Field({ icon, label, ...inputProps }) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 flex items-center gap-1.5 text-sm font-medium text-gray-800">
+        {icon}
+        {label}
+      </span>
+      <input
+        {...inputProps}
+        className={`w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-gray-400 disabled:bg-gray-50 disabled:text-gray-500 ${
+          inputProps.className || ""
+        }`}
+      />
+    </label>
+  );
+}
 
 export default function Accounts() {
   const dispatch = useDispatch();
   const fileInputRef = useRef(null);
-
   const { authUser, loading } = useSelector((store) => store.auth);
 
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [preview, setPreview] = useState(null);
   const [showMenu, setShowMenu] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const hasAvatar = !!authUser?.avatarUrl;
+  useEffect(() => {
+    setName(authUser?.name || "");
+    setPhone(authUser?.phone || "");
+  }, [authUser]);
 
-  //Decide which image to show
-  const avatarSrc = preview || authUser?.avatarUrl || profile; // fallback default image
+  if (!authUser) return null;
 
-  const removeAvatar = () => {
-    setShowMenu(false);
-    dispatch(removeProfilePic()).unwrap(); // backend PATCH
-    toast.success("Profile picture removed!");
-  };
+  const hasAvatar = !!authUser.avatarUrl;
+  const avatarSrc = preview || authUser.avatarUrl;
+  const nameParts = (authUser.name || "").trim().split(/\s+/).filter(Boolean);
+  const initials =
+    nameParts.length >= 2
+      ? `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`.toUpperCase()
+      : (nameParts[0]?.[0] || "?").toUpperCase();
+  const memberSince = formatMemberSince(
+    authUser.createdAt || authUser.created_at
+  );
 
-  //Handles file selection
   const handleFileChange = async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      return toast.error("Please select an image file");
+      toast.error("Please select an image file");
+      return;
     }
 
-    // show preview immediately
     setPreview(URL.createObjectURL(file));
 
     const formData = new FormData();
@@ -48,136 +85,168 @@ export default function Accounts() {
 
     try {
       await dispatch(uploadAvatar(formData)).unwrap();
-      toast.success("Profile picture updated!");
+      toast.success("Profile picture updated");
     } catch (err) {
-      toast.error(err);
+      toast.error(err || "Avatar upload failed");
       setPreview(null);
     }
   };
 
+  const removeAvatar = async () => {
+    setShowMenu(false);
+    try {
+      await dispatch(removeProfilePic()).unwrap();
+      setPreview(null);
+      toast.success("Profile picture removed");
+    } catch (err) {
+      toast.error(err || "Failed to remove profile picture");
+    }
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await dispatch(updateProfile({ name, phone })).unwrap();
+      toast.success("Profile updated");
+    } catch (err) {
+      toast.error(err || "Profile update failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
-    <div>
-      <div className="flex flex-col md:flex-row gap-4 w-full bg-white">
-        <div className="md:w-1/3 p-8 ">
-          <div className="relative inline-block">
-            <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full overflow-hidden border border-gray-300">
+    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="flex items-center gap-4">
+        <div className="relative">
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => {
+              if (hasAvatar || preview) {
+                setShowMenu((open) => !open);
+                return;
+              }
+              fileInputRef.current?.click();
+            }}
+            aria-label="Upload profile photo"
+            className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-gray-600 text-2xl font-semibold text-white"
+          >
+            {avatarSrc ? (
               <img
                 src={avatarSrc}
                 alt="Profile"
-                className="w-full h-full object-cover"
+                className="h-full w-full object-cover"
               />
-            </div>
-
-            {/* Hidden input */}
-            <input
-              ref={fileInputRef}
-              id="avatarInput"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-
-            {/* Upload / Change button */}
-
-            <button
-              onClick={() => setShowMenu((prev) => !prev)}
-              disabled={loading}
-              className="cursor-pointer px-4 py-2 mt-4 ml-4 bg-green-600 text-white font-medium rounded-md hover:opacity-90"
-            >
-              Edit Profile
-            </button>
-
-            {/* Dropdown – only if user already has avatar */}
-            {showMenu && (
-              <div className="relative mt-2 w-44 bg-white border-2 border-green-50 rounded-lg shadow-lg z-50">
-                {/* Always show upload/change */}
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    fileInputRef.current.click();
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-green-100"
-                >
-                  {hasAvatar ? "Change profile" : "Upload profile"}
-                </button>
-
-                {/* Show remove ONLY if user already has avatar */}
-                {hasAvatar && (
-                  <button
-                    onClick={removeAvatar}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100"
-                  >
-                    Remove profile
-                  </button>
-                )}
-              </div>
+            ) : (
+              initials
             )}
-          </div>
+          </button>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+
+          <span className="pointer-events-none absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-700 shadow ring-1 ring-gray-200">
+            <Camera size={16} />
+          </span>
+
+          {showMenu && (
+            <div className="absolute left-0 top-full z-20 mt-2 w-40 rounded-lg border border-gray-100 bg-white py-1 shadow-lg">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMenu(false);
+                  fileInputRef.current?.click();
+                }}
+                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50"
+              >
+                {hasAvatar ? "Change photo" : "Upload photo"}
+              </button>
+              {hasAvatar && (
+                <button
+                  type="button"
+                  onClick={removeAvatar}
+                  className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                >
+                  Remove photo
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
-        <div className="bg-white border border-gray-300 p-6 shadow rounded-md md:w-2/3 ">
-          <div className="flex flex-col gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-3">
-                Full Name
-              </label>
-              <div className="relative">
-                <User
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  size={20}
-                />
-                <input
-                  type="text"
-                  defaultValue={authUser?.name || ""}
-                  //   onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg"
-                  placeholder="Full name"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-3">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  size={20}
-                />
-                <input
-                  type="email"
-                  defaultValue={authUser?.email || ""}
-                  //   onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg "
-                  placeholder="Email address"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-3">
-                Designation
-              </label>
-              <div className="relative">
-                <User
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  size={20}
-                />
-                <input
-                  type="text"
-                  defaultValue={authUser?.designation || ""}
-                  //   onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg"
-                  placeholder="Designation"
-                />
-              </div>
-            </div>
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-lg font-semibold text-gray-900">
+              {authUser.name}
+            </p>
+            <span className="inline-flex items-center gap-1 rounded-md border border-transparent bg-slate-100 px-2.5 py-0.5 text-xs font-semibold capitalize text-slate-900 transition-colors hover:bg-slate-100/80">
+              <ShieldCheck className="mr-1 h-3 w-3" />
+              {roleLabels[authUser.role] || "User"}
+            </span>
           </div>
+          <p className="text-sm text-gray-500">{authUser.email}</p>
+          {memberSince && (
+            <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-400">
+              <Calendar size={14} />
+              Member since {memberSince}
+            </p>
+          )}
         </div>
       </div>
-      <Sidebar preview={preview} />
+
+      <p className="mt-8 text-xs font-semibold tracking-wider text-gray-500">
+        PROFILE INFORMATION
+      </p>
+
+      <form onSubmit={handleSave} className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Field
+          icon={<User size={14} />}
+          label="Full Name"
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. John Doe"
+        />
+        <Field
+          icon={<AtSign size={14} />}
+          label="Username"
+          type="text"
+          value={authUser.username || ""}
+          disabled
+        />
+        <Field
+          icon={<Mail size={14} />}
+          label="Email"
+          type="email"
+          value={authUser.email || ""}
+          disabled
+        />
+        <Field
+          icon={<Phone size={14} />}
+          label="Phone"
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="Enter your phone number"
+        />
+
+        <div className="flex justify-end md:col-span-2">
+          <button
+            type="submit"
+            disabled={saving}
+            className="rounded-lg bg-[#0f9b80] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#0c846c] disabled:opacity-60"
+          >
+            {saving ? "Saving..." : "Save Changes"}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

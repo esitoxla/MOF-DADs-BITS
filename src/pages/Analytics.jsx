@@ -216,8 +216,8 @@ export default function Analytics() {
   ];
 
   return (
-    <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-slate-50">
-      <div className="shrink-0 sticky top-0 bg-slate-50 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-4 z-10">
+    <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-green-50">
+      <div className="@container shrink-0 sticky top-0 bg-green-50 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-4 z-10 max-h-[70vh] overflow-y-auto @3xl:max-h-none @3xl:overflow-visible">
         {/* Filter bar */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
           {filters.map((f) => (
@@ -253,7 +253,7 @@ export default function Analytics() {
         </div>
 
         {/* Summary cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 @md:grid-cols-2 @3xl:grid-cols-3 @6xl:grid-cols-6 gap-3">
           <SummaryCard
             label="TOTAL BUDGET"
             currency="GHS"
@@ -481,8 +481,8 @@ function SummaryCard({ label, value, currency, sub }) {
     : "text-slate-500";
 
   return (
-    <div className="bg-white rounded-lg p-3 flex flex-col border-l-4 border-l-green-700 transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-green-900/10 hover:z-10">
-      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+    <div className="min-w-0 bg-white rounded-lg p-3 flex flex-col border-l-4 border-l-green-700 transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-green-900/10 hover:z-10">
+      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide break-words">
         {label}
       </span>
       <div
@@ -497,7 +497,7 @@ function SummaryCard({ label, value, currency, sub }) {
             {currency}
           </span>
         ) : null}
-        <span className="text-sm sm:text-base font-bold text-slate-800 tabular-nums leading-tight">
+        <span className="min-w-0 text-sm font-bold text-slate-800 tabular-nums leading-tight @6xl:text-base">
           {value}
         </span>
         {sub ? (
@@ -547,8 +547,8 @@ function ChartCard({ title, subtitle, children }) {
 
 function AnalyticsSkeleton() {
   return (
-    <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-slate-50">
-      <div className="shrink-0 bg-slate-50 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-4">
+    <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-green-50">
+      <div className="@container shrink-0 bg-slate-50 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-4 max-h-[70vh] overflow-y-auto @3xl:max-h-none @3xl:overflow-visible">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={`filter-skel-${i}`} className="flex flex-col gap-1">
@@ -557,7 +557,7 @@ function AnalyticsSkeleton() {
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 @md:grid-cols-2 @3xl:grid-cols-3 @6xl:grid-cols-6 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={`card-skel-${i}`}

@@ -1,188 +1,121 @@
-import React from "react";
-import { CiLock } from "react-icons/ci";
+import { useState } from "react";
+import { Eye, EyeOff, KeyRound } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { changePassword, logoutUser, resetPasswordState } from "../store/features/authSlice";
-import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
-import { useState, useEffect } from "react";
-import {
-  AiOutlineEye,
-  AiOutlineEyeInvisible,
-} from "react-icons/ai";
+import toast from "react-hot-toast";
+import { changePassword, logoutUser } from "../store/features/authSlice";
 
-
+function PasswordField({ label, value, onChange, visible, onToggle, placeholder }) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-sm font-medium text-gray-800">
+        {label}
+      </span>
+      <div className="relative">
+        <input
+          type={visible ? "text" : "password"}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          className="w-full rounded-lg border border-gray-200 px-3 py-2.5 pr-10 text-sm text-gray-900 outline-none focus:border-gray-400"
+        />
+        <button
+          type="button"
+          onClick={onToggle}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+          aria-label={visible ? "Hide password" : "Show password"}
+        >
+          {visible ? <EyeOff size={18} /> : <Eye size={18} />}
+        </button>
+      </div>
+    </label>
+  );
+}
 
 export default function SettingsChangePass() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { authUser } = useSelector((state) => state.auth);
 
-   const dispatch = useDispatch();
-   const navigate = useNavigate();
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-   const { loading, error, passwordChanged, authUser } = useSelector(
-     (state) => state.auth
-   );
+  if (!authUser) return null;
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-   const [oldPassword, setOldPassword] = useState("");
-   const [newPassword, setNewPassword] = useState("");
-   const [confirmNewPassword, setConfirmNewPassword] = useState("");
+    if (!oldPassword || !newPassword || !confirmNewPassword) {
+      toast.error("All fields are required");
+      return;
+    }
 
-   const [showOldPassword, setShowOldPassword] = useState(false);
-   const [showNewPassword, setShowNewPassword] = useState(false);
-   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    if (newPassword !== confirmNewPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
 
-
-    const handleSubmit = (e) => {
-      e.preventDefault();
-
-      if (!oldPassword || !newPassword || !confirmNewPassword) {
-        return toast.error("All fields are required");
-      }
-
-      if (newPassword !== confirmNewPassword) {
-        return toast.error("Passwords do not match");
-      }
-
-      // if (newPassword.length < 8) {
-      //   return toast.error("Password must be at least 8 characters");
-      // }
-
-      dispatch(changePassword({ oldPassword, newPassword }));
-    };
-
-    useEffect(() => {
-      dispatch(resetPasswordState());
-    }, [dispatch]);
-
-
-    useEffect(() => {
-      if (error) {
-        toast.error(error);
-      }
-
-      if (passwordChanged) {
-        toast.success("Password changed successfully. Please log in again.");
-        dispatch(logoutUser());
-        navigate("/", { replace: true });
-      }
-    }, [error, passwordChanged, dispatch, navigate]);
-
-    if (!authUser) return null;
+    setSaving(true);
+    try {
+      await dispatch(changePassword({ oldPassword, newPassword })).unwrap();
+      toast.success("Password changed successfully. Please log in again.");
+      dispatch(logoutUser());
+      navigate("/", { replace: true });
+    } catch (err) {
+      toast.error(err || "Password change failed");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 w-full bg-white">
-      <div className="md:w-1/3 p-6">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-          Change Password
-        </h2>
-
-        <p className="text-gray-600">Enter a new password to reset old one</p>
+    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="mb-6 flex items-center gap-2">
+        <KeyRound size={18} className="text-gray-700" />
+        <h2 className="text-lg font-semibold text-gray-900">Change Password</h2>
       </div>
 
-      <div className="bg-white border border-gray-300 p-6 shadow rounded-md md:w-2/3 ">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-900 mb-3">
-              Old Password
-            </label>
-            <div className="relative">
-              <CiLock
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={20}
-              />
-              <input
-                type={showOldPassword ? "text" : "password"}
-                placeholder="Old Password"
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg"
-              />
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <PasswordField
+          label="Current Password"
+          value={oldPassword}
+          onChange={(e) => setOldPassword(e.target.value)}
+          visible={showOldPassword}
+          onToggle={() => setShowOldPassword((prev) => !prev)}
+          placeholder="Enter your current password"
+        />
+        <PasswordField
+          label="New Password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          visible={showNewPassword}
+          onToggle={() => setShowNewPassword((prev) => !prev)}
+          placeholder="Enter a new password"
+        />
+        <PasswordField
+          label="Confirm New Password"
+          value={confirmNewPassword}
+          onChange={(e) => setConfirmNewPassword(e.target.value)}
+          visible={showConfirmPassword}
+          onToggle={() => setShowConfirmPassword((prev) => !prev)}
+          placeholder="Confirm your new password"
+        />
 
-              <button
-                type="button"
-                onClick={() => setShowOldPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-              >
-                {showOldPassword ? (
-                  <AiOutlineEyeInvisible size={20} />
-                ) : (
-                  <AiOutlineEye size={20} />
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-900 mb-3">
-              New Password
-            </label>
-            <div className="relative">
-              <CiLock
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={20}
-              />
-              <input
-                type={showNewPassword ? "text" : "password"}
-                placeholder="New Password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg"
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowNewPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-              >
-                {showNewPassword ? (
-                  <AiOutlineEyeInvisible size={20} />
-                ) : (
-                  <AiOutlineEye size={20} />
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-900 mb-3">
-              Confirm New Password
-            </label>
-            <div className="relative">
-              <CiLock
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={20}
-              />
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm New Password"
-                value={confirmNewPassword}
-                onChange={(e) => setConfirmNewPassword(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg"
-                
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-              >
-                {showConfirmPassword ? (
-                  <AiOutlineEyeInvisible size={20} />
-                ) : (
-                  <AiOutlineEye size={20} />
-                )}
-              </button>
-            </div>
-          </div>
-
+        <div className="flex justify-end">
           <button
             type="submit"
-            disabled={loading}
-            className="bg-green-600 text-white px-2 py-2 rounded-lg hover:opacity-90 transition md:w-[30%]"
+            disabled={saving}
+            className="rounded-lg bg-[#0f9b80] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#0c846c] disabled:opacity-60"
           >
-            {loading ? "Updating..." : "Change Password"}
+            {saving ? "Updating..." : "Update Password"}
           </button>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 }

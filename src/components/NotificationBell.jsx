@@ -1,7 +1,61 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { Bell } from "lucide-react";
 import { api } from "../config/axios";
+
+function RealisticBell({ className = "w-6 h-6" }) {
+  const rawId = useId().replace(/:/g, "");
+  const bodyId = `bell-body-${rawId}`;
+  const shineId = `bell-shine-${rawId}`;
+  const rimId = `bell-rim-${rawId}`;
+
+  return (
+    <svg
+      viewBox="8 4 48 56"
+      className={className}
+      aria-hidden="true"
+      fill="none"
+    >
+      <defs>
+        <linearGradient id={bodyId} x1="18" y1="8" x2="50" y2="52" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#fff8dc" />
+          <stop offset="18%" stopColor="#ffe082" />
+          <stop offset="48%" stopColor="#f5c518" />
+          <stop offset="78%" stopColor="#e09a12" />
+          <stop offset="100%" stopColor="#b8750a" />
+        </linearGradient>
+        <radialGradient id={shineId} cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(24 24) rotate(20) scale(14 18)">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+          <stop offset="55%" stopColor="#ffffff" stopOpacity="0.15" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id={rimId} x1="12" y1="44" x2="52" y2="52" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#ffe9a8" />
+          <stop offset="40%" stopColor="#f5c518" />
+          <stop offset="100%" stopColor="#a16207" />
+        </linearGradient>
+      </defs>
+
+      <path
+        d="M32 5.5c-1.7 0-3 1.2-3 2.8v1.1C20.2 11 14 17.6 14 26.2V36l-4.2 6.2A3 3 0 0 0 12.3 47h39.4a3 3 0 0 0 2.5-4.8L50 36V26.2c0-8.6-6.2-15.2-15-16.8V8.3c0-1.6-1.3-2.8-3-2.8z"
+        fill={`url(#${bodyId})`}
+      />
+      <path
+        d="M24.5 18c-3.2 3.4-5 7.2-5.2 11.6"
+        stroke="#fff8e7"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        opacity="0.7"
+      />
+      <ellipse cx="27" cy="24" rx="7" ry="9" fill={`url(#${shineId})`} />
+      <path
+        d="M12 44.5h40c1.4 0 2.2 1.5 1.4 2.7l-1.2 1.8c-.7 1-1.8 1.6-3 1.6H14.8c-1.2 0-2.3-.6-3-1.6l-1.2-1.8c-.8-1.2 0-2.7 1.4-2.7z"
+        fill={`url(#${rimId})`}
+      />
+      <circle cx="32" cy="54.5" r="3.4" fill="#a16207" />
+      <circle cx="31" cy="53.4" r="1.1" fill="#ffe9a8" />
+    </svg>
+  );
+}
 
 
 const routeMap = {
@@ -95,22 +149,24 @@ export default function NotificationBell() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setOpen((prev) => !prev)}
-        className="relative inline-flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 bg-white hover:bg-green-50 transition-colors"
+        className="relative inline-flex items-center justify-center w-10 h-10 rounded-full hover:bg-green-50 transition-colors"
         aria-label="Notifications"
       >
-        <Bell className="w-5 h-5 text-green-800" />
-        {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 bg-green-600 text-white text-[10px] font-semibold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
-            {unreadCount > 99 ? "99+" : unreadCount}
-          </span>
-        )}
+        <span className="relative inline-flex h-7 w-7">
+          <RealisticBell className="h-7 w-7" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full bg-yellow-600 px-0.5 text-[10px] font-semibold leading-none text-white ring-2 ring-white">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
+        </span>
       </button>
 
       {open && (
         <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 z-50">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <div className="flex items-center gap-2">
-              <Bell className="w-4 h-4 text-green-800" />
+              <RealisticBell className="w-5 h-5" />
               <span className="font-semibold text-gray-800">Notifications</span>
               {unreadCount > 0 && (
                 <span className="bg-green-600 text-white text-xs rounded-full px-2 py-0.5">

@@ -51,6 +51,20 @@ export const getUser = createAsyncThunk("auth/getUser", async (_, thunkAPI) => {
   }
 });
 
+export const updateProfile = createAsyncThunk(
+  "auth/updateProfile",
+  async (data, thunkAPI) => {
+    try {
+      const res = await api.patch("/auth/profile", data);
+      return res.data.user;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Profile update failed"
+      );
+    }
+  }
+);
+
 export const changePassword = createAsyncThunk(
   "auth/changePassword",
   async (data, thunkAPI) => {
@@ -193,6 +207,22 @@ export const authSlice = createSlice({
       .addCase(getUser.rejected, (state, action) => {
         state.loading = false;
         state.authUser = null;
+        state.error = action.payload;
+      })
+
+      .addCase(updateProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.authUser = {
+          ...state.authUser,
+          ...action.payload,
+        };
+      })
+      .addCase(updateProfile.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       })
 

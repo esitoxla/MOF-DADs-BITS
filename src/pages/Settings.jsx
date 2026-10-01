@@ -1,21 +1,17 @@
-import React from "react";
-import { Link } from "react-router";
-import SettingsTab from "../components/SettingsTab";
 import Accounts from "../components/Accounts";
 import SettingsChangePass from "../components/SettingsChangePass";
-import { useState } from "react";
 
 export default function Settings() {
-  const [activeTab, setActiveTab] = useState("account");
-
   return (
-    <div className=" min-h-screen lg:p-8 p-4 sm:p-6 w-full">
-      <h2 className="text-2xl font-bold text-green-800 mb-6">Settings</h2>
+    <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+      <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
+      <p className="mt-1 text-gray-500">
+        Manage your personal information and security
+      </p>
 
-      <SettingsTab activeTab={activeTab} changeTab={setActiveTab} />
-
-      <div className="mt-6 h-full">
-        {activeTab === "account" ? <Accounts/> : <SettingsChangePass/>}
+      <div className="mt-8 flex flex-col gap-6">
+        <Accounts />
+        <SettingsChangePass />
       </div>
     </div>
   );

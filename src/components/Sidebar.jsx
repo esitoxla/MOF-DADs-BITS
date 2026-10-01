@@ -2,85 +2,52 @@ import React from "react";
 import { useEffect } from "react";
 import { TbFileAnalytics } from "react-icons/tb";
 import { IoSettingsOutline } from "react-icons/io5";
-import { FaSackDollar } from "react-icons/fa6";
-import { Banknote, Receipt } from "lucide-react";
+import { ArrowLeftRight, Banknote, Receipt, Wallet } from "lucide-react";
 import { TbReport } from "react-icons/tb";
 import { TbUsersPlus } from "react-icons/tb";
-import { MdClose } from "react-icons/md";
 import { NavLink } from "react-router";
-import { LogOut } from "lucide-react";
-import profile from "../assets/images/profile.1.png";
-import { useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
-import { logoutUser, getUser } from "../store/features/authSlice";
-import toast from "react-hot-toast";
+import { getUser } from "../store/features/authSlice";
 
-export default function Sidebar({ toggleSidebar, preview }) {
-  const navigate = useNavigate();
+export default function Sidebar() {
   const dispatch = useDispatch();
 
   const { authUser } = useSelector((store) => store.auth);
-
-  //Decide which image to show
-    const avatarSrc = preview || authUser?.avatarUrl || profile; // fallback default image
-  // console.log(authUser);
 
   useEffect(() => {
     dispatch(getUser()); // automatically fetch user from cookie if valid
   }, [dispatch]);
 
-  async function handleLogout(e) {
-    e.preventDefault();
-    dispatch(logoutUser());
-    navigate("/", { replace: true });
-    toast.success("Logout successful");
-
-    //  setTimeout(() => {
-
-    //  }, 1000);
-  }
-
   return (
     <>
       <div
         className="
-         fixed top-0 left-0
-         bg-gradient-to-r from-green-700 to-green-500 text-white
-          border-r border-gray-200
-          w-68 p-4 h-screen flex flex-col gap-4 py-6
-           z-50 overflow-y-auto
+         h-full w-full
+         bg-[#0c1e2e] text-white
+          border-r border-[#0c1e2e]
+          p-4 flex flex-col py-6
+          overflow-y-auto
       "
       >
-        {/* Close button (mobile only) */}
-        <div className=" flex justify-end">
-          <button onClick={toggleSidebar} className="text-3xl text-white">
-            <MdClose />
-          </button>
+        <div className="px-1">
+          <p className="font-bold text-xl leading-snug">
+            BITS
+          </p>
+          <p className="text-sm font-semibold mt-1 tracking-wide">
+            Budget Implementation System
+          </p>
         </div>
 
-        <div className="flex gap-2 sm:gap-4 items-center">
-          <div>
-            <img
-              src={avatarSrc}
-              alt="Profile"
-              className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full"
-            />
-          </div>
+        <div className="border-b border-white/40 my-4"></div>
 
-          <div className="sm:block">
-            <p className="font-semibold">{authUser?.name}</p>
-            <p className="text-sm">{authUser?.designation}</p>
-          </div>
-        </div>
-
-        <div className="border-b p-0 border-gray-200 py-2"></div>
-
-        <div className="flex flex-col gap-2 text-white cursor-pointer pt-2 py-2">
+        <div className="flex min-h-0 flex-1 flex-col justify-evenly text-md font-semibold text-white cursor-pointer">
           <NavLink to="/dashboard" end>
             {({ isActive }) => (
               <div
                 className={`flex gap-2 items-center px-4 py-2 ${
-                  isActive ? "bg-green-50 text-gray-700 rounded" : "text-white"
+                  isActive
+                    ? "bg-[#0f9b80] text-white rounded-lg"
+                    : "text-white rounded-lg hover:bg-white/10"
                 }`}
               >
                 <span className="text-3xl">
@@ -91,32 +58,70 @@ export default function Sidebar({ toggleSidebar, preview }) {
             )}
           </NavLink>
 
-          <NavLink to="/dashboard/revenue&cash">
+          <NavLink to="/dashboard/revenue&cash/revenue">
             {({ isActive }) => (
               <div
                 className={`flex gap-2 items-center px-4 py-2 ${
-                  isActive ? "bg-green-50 text-gray-700 rounded" : "text-white"
+                  isActive
+                    ? "bg-[#0f9b80] text-white rounded-lg"
+                    : "text-white rounded-lg hover:bg-white/10"
                 }`}
               >
                 <span className="text-3xl">
                   <Banknote />
                 </span>
-                <p>Revenue & Cash</p>
+                <p>IGF Revenue Collection</p>
               </div>
             )}
           </NavLink>
 
-          <NavLink to="/dashboard/budget&reallocation">
+          <NavLink to="/dashboard/revenue&cash/cash">
             {({ isActive }) => (
               <div
                 className={`flex gap-2 items-center px-4 py-2 ${
-                  isActive ? "bg-green-50 text-gray-700 rounded" : "text-white"
+                  isActive
+                    ? "bg-[#0f9b80] text-white rounded-lg"
+                    : "text-white rounded-lg hover:bg-white/10"
+                }`}
+              >
+                <span className="text-3xl">
+                  <Wallet />
+                </span>
+                <p>Cash Position</p>
+              </div>
+            )}
+          </NavLink>
+
+          <NavLink to="/dashboard/budget&reallocation/budget">
+            {({ isActive }) => (
+              <div
+                className={`flex gap-2 items-center px-4 py-2 ${
+                  isActive
+                    ? "bg-[#0f9b80] text-white rounded-lg"
+                    : "text-white rounded-lg hover:bg-white/10"
                 }`}
               >
                 <span className="text-3xl">
                   <Receipt />
                 </span>
-                <p>Budget Expenditure</p>
+                <p>DADs Expenditure</p>
+              </div>
+            )}
+          </NavLink>
+
+          <NavLink to="/dashboard/budget&reallocation/reallocation">
+            {({ isActive }) => (
+              <div
+                className={`flex gap-2 items-center px-4 py-2 ${
+                  isActive
+                    ? "bg-[#0f9b80] text-white rounded-lg"
+                    : "text-white rounded-lg hover:bg-white/10"
+                }`}
+              >
+                <span className="text-3xl">
+                  <ArrowLeftRight />
+                </span>
+                <p>Reallocation</p>
               </div>
             )}
           </NavLink>
@@ -125,7 +130,9 @@ export default function Sidebar({ toggleSidebar, preview }) {
             {({ isActive }) => (
               <div
                 className={`flex gap-2 items-center px-4 py-2 ${
-                  isActive ? "bg-green-50 text-gray-700 rounded" : "text-white"
+                  isActive
+                    ? "bg-[#0f9b80] text-white rounded-lg"
+                    : "text-white rounded-lg hover:bg-white/10"
                 }`}
               >
                 <span className="text-3xl">
@@ -142,8 +149,8 @@ export default function Sidebar({ toggleSidebar, preview }) {
                 <div
                   className={`flex gap-2 items-center px-4 py-2 ${
                     isActive
-                      ? "bg-green-50 text-gray-700 rounded"
-                      : "text-white"
+                      ? "bg-[#0f9b80] text-white rounded-lg"
+                      : "text-white rounded-lg hover:bg-white/10"
                   }`}
                 >
                   <span className="text-3xl">
@@ -159,7 +166,9 @@ export default function Sidebar({ toggleSidebar, preview }) {
             {({ isActive }) => (
               <div
                 className={`flex gap-2 items-center px-4 py-2 ${
-                  isActive ? "bg-green-50 text-gray-700 rounded" : "text-white"
+                  isActive
+                    ? "bg-[#0f9b80] text-white rounded-lg"
+                    : "text-white rounded-lg hover:bg-white/10"
                 }`}
               >
                 <span className="text-3xl">
@@ -170,23 +179,6 @@ export default function Sidebar({ toggleSidebar, preview }) {
             )}
           </NavLink>
         </div>
-
-        <ul>
-          <li>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 w-full px-4 py-2 rounded-lg 
-                 font-semibold text-white 
-                 bg-gradient-to-r from-green-700 to-green-500
-                 hover:from-green-600 hover:to-green-400
-                 transition-all duration-200 shadow-md hover:shadow-lg
-                 focus:outline-none focus:ring-2 focus:ring-green-300"
-            >
-              <LogOut size={18} className="text-white" />
-              <span>Log Out</span>
-            </button>
-          </li>
-        </ul>
       </div>
 
       {/* <Toaster
