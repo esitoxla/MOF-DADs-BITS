@@ -1,17 +1,48 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet } from "react-router";
 import { PanelLeft } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import NotificationBell from "../components/NotificationBell";
 import ProfileMenu from "../components/ProfileMenu";
 
+const DESKTOP_QUERY = "(min-width: 768px)";
+
 export default function DashboardLayout() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isDesktop, setIsDesktop] = useState(() =>
+    window.matchMedia(DESKTOP_QUERY).matches,
+  );
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() =>
+    window.matchMedia(DESKTOP_QUERY).matches,
+  );
+
+  useEffect(() => {
+    const media = window.matchMedia(DESKTOP_QUERY);
+    const onChange = () => {
+      setIsDesktop(media.matches);
+      setIsSidebarOpen(media.matches);
+    };
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
 
   return (
     <div className="flex h-screen w-full bg-green-50">
+      {isSidebarOpen && !isDesktop && (
+        <button
+          type="button"
+          aria-label="Close sidebar"
+          className="fixed inset-0 z-30 bg-black/40"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
       {isSidebarOpen && (
-        <div className="h-full w-48 shrink-0 sm:w-56 md:w-68">
+        <div
+          className={
+            isDesktop
+              ? "h-full w-48 shrink-0 sm:w-56 md:w-68"
+              : "fixed inset-y-0 left-0 z-40 h-full w-64 max-w-[85vw] shadow-xl"
+          }
+        >
           <Sidebar />
         </div>
       )}

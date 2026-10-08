@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Select from "react-select";
+import { useSelector } from "react-redux";
 import { api } from "../config/axios";
 import {
   organizationOptions,
@@ -8,6 +9,7 @@ import {
   fundingSourceOptions,
 } from "../data/BudgetExpenditureData";
 import { revenueCategoriesOptions } from "../data/RevenueFormsData";
+import { getOrganizationLabel } from "../helpers/organizationLabel";
 import {
   AreaChart,
   Area,
@@ -22,6 +24,29 @@ import {
 } from "recharts";
 
 const ALL_OPTION = { value: "", label: "All" };
+const CURRENT_YEAR = new Date().getFullYear();
+const YEAR_FLOOR = 2000;
+
+const yearOptions = Array.from(
+  { length: CURRENT_YEAR - YEAR_FLOOR + 1 },
+  (_, index) => {
+    const year = String(CURRENT_YEAR - index);
+    return { value: year, label: year };
+  },
+);
+
+const periodQuarterOptions = [
+  ALL_OPTION,
+  ...quarterOptions.map((quarter) => ({
+    value: String(quarter.value),
+    label: quarter.label,
+  })),
+];
+
+const defaultPeriodFilters = {
+  year: String(CURRENT_YEAR),
+  quarter: "",
+};
 
 const currencyTypeOptions = [
   { value: "GHS", label: "GHS" },
@@ -104,16 +129,47 @@ const selectStyles = {
 };
 
 export default function Analytics() {
+  const { authUser, authChecked } = useSelector((state) => state.auth);
+  const isAdmin = authUser?.role === "admin";
+  const userOrganization = authUser?.organization || "";
+
+  const organizationFilterOptions = isAdmin
+    ? optionsWithAll(organizationOptions)
+    : userOrganization
+      ? [
+          {
+            value: userOrganization,
+            label: getOrganizationLabel(userOrganization),
+          },
+        ]
+      : [];
+
+  const [filterValues, setFilterValues] = useState(() => ({
+    ...defaultPeriodFilters,
+    ...(authUser && authUser.role !== "admin" && authUser.organization
+      ? { organization: authUser.organization }
+      : {}),
+  }));
+
   const filters = [
     {
       label: "DADs",
       key: "organization",
-      options: optionsWithAll(organizationOptions),
+      options: organizationFilterOptions,
+      locked: !isAdmin,
     },
     {
-      label: "Period",
-      key: "period",
-      options: optionsWithAll(quarterOptions),
+      label: "Year",
+      key: "year",
+      options: yearOptions,
+      allowAll: false,
+      placeholder: "Year",
+    },
+    {
+      label: "Quarter",
+      key: "quarter",
+      options: periodQuarterOptions,
+      placeholder: "Quarter",
     },
     {
       label: "Economic Classification",
@@ -137,7 +193,6 @@ export default function Analytics() {
     },
   ];
 
-  const [filterValues, setFilterValues] = useState({});
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -165,13 +220,23 @@ export default function Analytics() {
   };
 
   useEffect(() => {
-    fetchDashboard(filterValues);
-    // Initial load on mount; subsequent fetches are triggered by handleFilterChange.
+    if (!authChecked || !authUser) return;
+
+    const initial = {
+      ...defaultPeriodFilters,
+      ...(isAdmin ? {} : { organization: userOrganization }),
+    };
+    setFilterValues(initial);
+    fetchDashboard(initial);
+    // Wait until the signed-in user is known so non-admins load on their own DAD.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [authChecked, authUser?.id, isAdmin, userOrganization]);
 
   const handleFilterChange = (key, value) => {
+    if (key === "organization" && !isAdmin) return;
+
     const next = { ...filterValues, [key]: value };
+    if (!isAdmin) next.organization = userOrganization;
     setFilterValues(next);
     fetchDashboard(next);
   };
@@ -196,7 +261,7 @@ export default function Analytics() {
 
   if (error) {
     return (
-      <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-slate-50">
+      <div className="h-full min-h-0 overflow-hidden flex flex-col bg-slate-50">
         <p className="px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 text-sm text-red-600">
           {error}
         </p>
@@ -216,27 +281,29 @@ export default function Analytics() {
   ];
 
   return (
-    <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-green-50">
-      <div className="@container shrink-0 sticky top-0 bg-green-50 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-4 z-10 max-h-[70vh] overflow-y-auto @3xl:max-h-none @3xl:overflow-visible">
+    <div className="@container h-full min-h-0 min-w-0 overflow-hidden flex flex-col bg-green-50">
+      <div className="shrink-0 sticky top-0 bg-green-50 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-4 z-10 max-h-[70vh] overflow-y-auto @3xl:max-h-none @3xl:overflow-visible">
         {/* Filter bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+        <div className="grid grid-cols-1 @sm:grid-cols-2 @2xl:grid-cols-3 @4xl:grid-cols-4 @6xl:grid-cols-7 gap-3 mb-6">
           {filters.map((f) => (
-            <div key={f.key} className="flex flex-col">
-              <label className="text-xs font-semibold text-slate-500 mb-1">
+            <div key={f.key} className="flex min-w-0 flex-col">
+              <label className="text-xs font-semibold leading-snug text-slate-500 mb-1 break-words">
                 {f.label}
               </label>
               <Select
                 options={f.options}
-                placeholder="All"
-                defaultValue={
-                  f.options.find((o) => isAllValue(o.value)) || ALL_OPTION
+                placeholder={
+                  f.placeholder || (f.locked ? "Your organization" : "All")
                 }
+                isSearchable={!f.locked}
                 value={
-                  f.options.find((o) =>
-                    isAllValue(filterValues[f.key])
-                      ? isAllValue(o.value)
-                      : o.value === filterValues[f.key],
-                  ) || ALL_OPTION
+                  f.locked
+                    ? f.options[0] || null
+                    : f.options.find((o) =>
+                        isAllValue(filterValues[f.key])
+                          ? isAllValue(o.value)
+                          : String(o.value) === String(filterValues[f.key]),
+                      ) || (f.allowAll === false ? f.options[0] || null : ALL_OPTION)
                 }
                 onChange={(option) =>
                   handleFilterChange(f.key, option?.value ?? "")
@@ -289,9 +356,9 @@ export default function Analytics() {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8">
+      <div className="flex-1 min-h-0 min-w-0 overflow-y-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8">
         {/* IGF Collection Trend + Expenditure Trend */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid min-w-0 grid-cols-1 @4xl:grid-cols-2 gap-6 mb-8">
           <ChartCard title="IGF Collection Trend">
             <TrendAreaChart
               data={data.igfCollectionTrend}
@@ -310,12 +377,12 @@ export default function Analytics() {
         </div>
 
         {/* Top 5 IGF DADs + Reallocation */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid min-w-0 grid-cols-1 @4xl:grid-cols-2 gap-6 mb-8">
           <ChartCard title="Top 5 IGF collection DADs">
             <div className="space-y-3">
               {data.topIgfDads.map((dad) => (
-                <div key={dad.organization} className="flex items-center gap-3">
-                  <span className="w-28 shrink-0 text-sm truncate">
+                <div key={dad.organization} className="flex min-w-0 items-center gap-2 @sm:gap-3">
+                  <span className="w-20 @sm:w-28 shrink-0 text-sm truncate">
                     {dad.organization}
                   </span>
                   <div className="relative flex-1 h-7 bg-gray-100 rounded-full overflow-hidden">
@@ -356,11 +423,18 @@ export default function Analytics() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="name"
-                  angle={-20}
+                  angle={-32}
                   textAnchor="end"
                   interval={0}
-                  height={50}
-                  tick={{ fontSize: 11 }}
+                  height={64}
+                  tick={{ fontSize: 10 }}
+                  tickFormatter={(name) =>
+                    ({
+                      "Reallocated Amount": "Reallocated",
+                      "Actual Expenditure": "Expenditure",
+                      "Actual Payment": "Payment",
+                    })[name] || name
+                  }
                 />
                 <YAxis
                   width={AXIS_WIDTH}
@@ -392,7 +466,18 @@ export default function Analytics() {
               margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="category" />
+              <XAxis
+                dataKey="category"
+                interval={0}
+                angle={-28}
+                textAnchor="end"
+                height={64}
+                tick={{ fontSize: 10 }}
+                tickFormatter={(value) => {
+                  const text = String(value);
+                  return text.length > 14 ? `${text.slice(0, 12)}…` : text;
+                }}
+              />
               <YAxis
                 width={AXIS_WIDTH}
                 label={{
@@ -531,7 +616,7 @@ function ReallocationTooltip({ active, payload }) {
 
 function ChartCard({ title, subtitle, children }) {
   return (
-    <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md w-full border border-gray-100">
+    <div className="min-w-0 bg-white p-4 sm:p-6 rounded-2xl shadow-md w-full border border-gray-100">
       <div className="flex items-baseline justify-between gap-3 mb-4">
         <h3 className="text-base sm:text-lg font-semibold text-slate-800">
           {title}
@@ -547,10 +632,10 @@ function ChartCard({ title, subtitle, children }) {
 
 function AnalyticsSkeleton() {
   return (
-    <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-green-50">
-      <div className="@container shrink-0 bg-slate-50 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-4 max-h-[70vh] overflow-y-auto @3xl:max-h-none @3xl:overflow-visible">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-          {Array.from({ length: 6 }).map((_, i) => (
+    <div className="@container h-full min-h-0 min-w-0 overflow-hidden flex flex-col bg-green-50">
+      <div className="shrink-0 bg-slate-50 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-4 max-h-[70vh] overflow-y-auto @3xl:max-h-none @3xl:overflow-visible">
+        <div className="grid grid-cols-1 @sm:grid-cols-2 @2xl:grid-cols-3 @4xl:grid-cols-4 @6xl:grid-cols-7 gap-3 mb-6">
+          {Array.from({ length: 7 }).map((_, i) => (
             <div key={`filter-skel-${i}`} className="flex flex-col gap-1">
               <div className="h-3 w-16 bg-gray-200 rounded animate-pulse" />
               <div className="h-[38px] bg-gray-200 rounded-md animate-pulse" />
@@ -566,12 +651,12 @@ function AnalyticsSkeleton() {
           ))}
         </div>
       </div>
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="flex-1 min-h-0 min-w-0 overflow-y-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8">
+        <div className="grid grid-cols-1 @4xl:grid-cols-2 gap-6 mb-8">
           <div className="h-[360px] bg-gray-200 rounded-2xl animate-pulse" />
           <div className="h-[360px] bg-gray-200 rounded-2xl animate-pulse" />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 @4xl:grid-cols-2 gap-6 mb-8">
           <div className="h-[340px] bg-gray-200 rounded-2xl animate-pulse" />
           <div className="h-[340px] bg-gray-200 rounded-2xl animate-pulse" />
         </div>
