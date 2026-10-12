@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { quarterEndMonth } from "../data/BudgetExpenditureData";
 import { getOrganizationLabel } from "../helpers/organizationLabel";
 import { useRef, useEffect } from 'react';
+import TableSkeleton from "./ui/TableSkeleton";
 
 
 export default function ReallocationPerformanceTable(
@@ -14,6 +15,7 @@ export default function ReallocationPerformanceTable(
   year,
   quarter,
   organization,
+  loading = false,
   }
 ) {
 
@@ -70,6 +72,19 @@ export default function ReallocationPerformanceTable(
         </div>
       </div>
 
+      {loading ? (
+        <TableSkeleton
+          variant="report"
+          rows={8}
+          headers={[
+            "Expenditure Item",
+            "Amount Reallocated",
+            "Amount Released",
+            "Actual Expenditure",
+            "Actual Payment",
+          ]}
+        />
+      ) : (
       <table className="min-w-[750px] table-auto border border-gray-400 text-sm text-gray-800">
         <thead className="bg-gray-100">
           <tr className="border border-gray-400 bg-blue-50">
@@ -163,6 +178,7 @@ export default function ReallocationPerformanceTable(
           </tr>
         </tbody>
       </table>
+      )}
     </div>
   );
 }

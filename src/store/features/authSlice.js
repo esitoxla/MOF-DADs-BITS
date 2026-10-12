@@ -25,13 +25,14 @@ export const loginUser = createAsyncThunk(
   async (loginData, thunkAPI) => {
     try {
       const res = await api.post("/auth/login", loginData);
-      console.log(res.data.user);
+      if (!res.data?.user) {
+        return thunkAPI.rejectWithValue("Login failed");
+      }
       return res.data.user;
     } catch (error) {
-      console.log(error);
-      if (error.response && error.response.data.message) {
-        return thunkAPI.rejectWithValue(error.response.data.message);
-      }
+      const message =
+        error.response?.data?.message || "Login failed. Please try again.";
+      return thunkAPI.rejectWithValue(message);
     }
   }
 );
@@ -189,6 +190,9 @@ export const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.authUser = action.payload;
+        state.isAuthenticated = true;
+        state.authChecked = true;
+        state.error = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -203,10 +207,14 @@ export const authSlice = createSlice({
       .addCase(getUser.fulfilled, (state, action) => {
         state.loading = false;
         state.authUser = action.payload;
+        state.isAuthenticated = Boolean(action.payload);
+        state.authChecked = true;
+        state.error = null;
       })
       .addCase(getUser.rejected, (state, action) => {
         state.loading = false;
         state.authUser = null;
+        state.isAuthenticated = false;
         state.error = action.payload;
       })
 
@@ -269,9 +277,13 @@ export const authSlice = createSlice({
       })
       .addCase(refreshSession.rejected, (state) => {
         state.loading = false;
-        state.authUser = null;
-        state.isAuthenticated = false;
-        state.authChecked = true; //
+        state.authChecked = true;
+        // A refresh started before login can fail after login succeeds.
+        // Keep the session that login just established.
+        if (!state.isAuthenticated) {
+          state.authUser = null;
+          state.isAuthenticated = false;
+        }
       })
 
       //this is for profile pic upload

@@ -32,7 +32,6 @@ import {
 } from "../store/features/naturalAccountSlice";
 import ReallocationPerformanceTable from "../components/ReallocationPerformanceTable";
 import { downloadReallocationExcel, downloadReallocationPDF, fetchReallocationReport } from "../store/features/reallocationReportSlice";
-import TableSkeleton from "../components/ui/TableSkeleton";
 
 
 
@@ -188,6 +187,7 @@ export default function ReportPreview() {
             quarter={quarter}
             fundingSource={fundingSource}
             organization={organization}
+            loading={loading}
           />
         );
       case "IRP":
@@ -198,6 +198,7 @@ export default function ReportPreview() {
             year={year}
             quarter={quarter}
             organization={organization}
+            loading={loading}
           />
         );
       case "CP":
@@ -208,6 +209,7 @@ export default function ReportPreview() {
             year={year}
             quarter={quarter}
             organization={organization}
+            loading={loading}
           />
         );
       case "NA":
@@ -219,6 +221,7 @@ export default function ReportPreview() {
             quarter={quarter}
             fundingSource={fundingSource}
             organization={organization}
+            loading={loading}
           />
         );
       case "RE":
@@ -229,6 +232,7 @@ export default function ReportPreview() {
             year={year}
             quarter={quarter}
             organization={organization}
+            loading={loading}
           />
         );
       default:
@@ -411,42 +415,7 @@ export default function ReportPreview() {
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {loading ? (
-          <TableSkeleton
-            variant="report"
-            rows={8}
-            headers={
-              reportType === "IRP"
-                ? [
-                    "Revenue Categories",
-                    "Projections / Budget",
-                    "Actual Collection",
-                    "Payment into Consolidated Fund",
-                    "Retention",
-                    "Remarks",
-                  ]
-                : reportType === "CP"
-                  ? ["Account Name", "GHS", "EUR", "GBP", "USD"]
-                  : reportType === "NA"
-                    ? ["Natural Account", "GOG", "IGF", "DPF"]
-                    : reportType === "RE"
-                      ? [
-                          "Expenditure Item",
-                          "Amount Reallocated",
-                          "Amount Released",
-                          "Actual Expenditure",
-                          "Actual Payment",
-                        ]
-                      : [
-                          "Expenditure Item",
-                          "Approved Budget / Appropriation",
-                          "Amount Released",
-                          "Actual Expenditure",
-                          "Actual Payments",
-                        ]
-            }
-          />
-        ) : error ? (
+        {error && !loading ? (
           <p className="text-red-500">{error}</p>
         ) : (
           renderTable()

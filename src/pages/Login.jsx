@@ -40,12 +40,20 @@ export default function Login() {
     try {
       const resultAction = await dispatch(loginUser({ username, password }));
 
-      if (loginUser.fulfilled.match(resultAction)) {
-        await dispatch(getUser());
-        navigate("/dashboard", { replace: true });
-        toast.success("Login successful");
+      if (loginUser.fulfilled.match(resultAction) && resultAction.payload) {
+        const userResult = await dispatch(getUser());
+
+        if (getUser.fulfilled.match(userResult) && userResult.payload) {
+          navigate("/dashboard", { replace: true });
+          toast.success("Login successful");
+        } else {
+          toast.error("Login failed. Please try again.");
+        }
       } else {
-        const errorMsg = resultAction.payload || "Login failed";
+        const errorMsg =
+          typeof resultAction.payload === "string"
+            ? resultAction.payload
+            : "Login failed";
         toast.error(errorMsg);
       }
     } catch (err) {

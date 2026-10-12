@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import Pagination from './Pagination';
 import { quarterEndMonth } from '../data/BudgetExpenditureData';
 import { getOrganizationLabel } from '../helpers/organizationLabel';
+import TableSkeleton from './ui/TableSkeleton';
 
 const REVENUE_CATEGORIES = [
   "Fees/Charges",
@@ -25,6 +26,7 @@ export default function RevenuePerformanceTable({
   year,
   quarter,
   organization,
+  loading = false,
 }) {
   const { authUser } = useSelector((store) => store.auth);
 
@@ -107,6 +109,21 @@ export default function RevenuePerformanceTable({
           </div>
         </div>
 
+        {loading ? (
+          <TableSkeleton
+            variant="report"
+            rows={8}
+            headers={[
+              "Revenue Categories",
+              "Projections / Budget",
+              "Actual Collection",
+              "Payment into Consolidated Fund",
+              "Retention",
+              "Projection",
+              "Remarks",
+            ]}
+          />
+        ) : (
         <table className="min-w-[750px] table-auto border border-gray-400 text-sm text-gray-800">
           <thead>
             {/* Top header row */}
@@ -247,15 +264,17 @@ export default function RevenuePerformanceTable({
             </tr>
           </tbody>
         </table>
+        )}
       </div>
 
-      {/* Pagination (EXTERNAL COMPONENT) */}
-      <Pagination
-        currentPage={currentPage}
-        totalItems={totalPages}
-        pageSize={PAGE_SIZE}
-        onPageChange={setCurrentPage}
-      />
+      {!loading && (
+        <Pagination
+          currentPage={currentPage}
+          totalItems={totalPages}
+          pageSize={PAGE_SIZE}
+          onPageChange={setCurrentPage}
+        />
+      )}
     </>
   );
 }

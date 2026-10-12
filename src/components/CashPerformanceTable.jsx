@@ -6,6 +6,7 @@ import logo from "../assets/images/logo.jpeg";
 import { getOrganizationLabel } from "../helpers/organizationLabel";
 import { quarterEndMonth } from "../data/BudgetExpenditureData";
 import toast from "react-hot-toast";
+import TableSkeleton from "./ui/TableSkeleton";
 
 const CASH_ACCOUNTS = [
   "GOG Sub CF",
@@ -21,6 +22,7 @@ export default function CashPerformanceTable({
   year,
   quarter,
   organization,
+  loading = false,
 }) {
   const { authUser } = useSelector((store) => store.auth);
 
@@ -92,6 +94,13 @@ export default function CashPerformanceTable({
 
       {/* table */}
 
+      {loading ? (
+        <TableSkeleton
+          variant="report"
+          rows={5}
+          headers={["Account Name", "GHS", "EUR", "GBP", "USD"]}
+        />
+      ) : (
       <table className="w-full table-auto border border-gray-400 text-sm text-gray-800">
         <thead>
           <tr className="text-center font-semibold bg-blue-50">
@@ -163,6 +172,7 @@ export default function CashPerformanceTable({
           </tr>
         </tbody>
       </table>
+      )}
     </div>
   );
 }

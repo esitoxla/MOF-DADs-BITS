@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import toast from "react-hot-toast";
 import { quarterEndMonth } from "../data/BudgetExpenditureData";
 import { getOrganizationLabel } from "../helpers/organizationLabel";
+import TableSkeleton from "./ui/TableSkeleton";
 
 export default function NaturalAccountPerformanceTable({
   data = [],
@@ -13,6 +14,7 @@ export default function NaturalAccountPerformanceTable({
   quarter,
   fundingSource,
   organization,
+  loading = false,
 }) {
   const { authUser } = useSelector((store) => store.auth);
   const navigate = useNavigate();
@@ -85,6 +87,13 @@ export default function NaturalAccountPerformanceTable({
       </div>
 
       {/* ================= TABLE ================= */}
+      {loading ? (
+        <TableSkeleton
+          variant="report"
+          rows={8}
+          headers={["Natural Account", "GOG", "IGF", "DPF"]}
+        />
+      ) : (
       <table className="w-full table-auto border border-gray-400 text-sm text-gray-800">
         <thead>
           {/* TOP HEADER */}
@@ -236,6 +245,7 @@ export default function NaturalAccountPerformanceTable({
           </tr>
         </tbody>
       </table>
+      )}
     </div>
   );
 }

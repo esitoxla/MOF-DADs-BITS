@@ -76,28 +76,6 @@ export default function DetailedReallocation() {
             };
 
 
-          if (loading)
-            return (
-              <TableSkeleton
-                variant="report"
-                headers={[
-                  "S.N",
-                  "Activity",
-                  "Date",
-                  "Economic Class",
-                  "Funding Source",
-                  "Natural Account",
-                  "Description",
-                  "Amount reallocated",
-                  "Amount Released",
-                  "Actual Expenditure",
-                  "Actual Payment",
-                ]}
-              />
-            );
-          if (error) return <p className="text-center text-red-500">{error}</p>;
-
-
   return (
     <div className="min-h-screen bg-green-50 p-6 flex flex-col">
       <div className="flex justify-end items-center space-x-6 mb-4">
@@ -166,6 +144,27 @@ export default function DetailedReallocation() {
           </div>
         </div>
 
+        {loading ? (
+          <TableSkeleton
+            variant="report"
+            rows={8}
+            headers={[
+              "S.N",
+              "Activity",
+              "Date",
+              "Economic Class",
+              "Funding Source",
+              "Natural Account",
+              "Description",
+              "Amount reallocated",
+              "Amount Released",
+              "Actual Expenditure",
+              "Actual Payment",
+            ]}
+          />
+        ) : error ? (
+          <p className="text-center text-red-500 py-6">{error}</p>
+        ) : (
         <div>
           <table className="min-w-[750px] table-auto border border-gray-400 text-sm text-gray-800">
             <thead className="bg-gray-100">
@@ -262,14 +261,17 @@ export default function DetailedReallocation() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
-      <Pagination
-        currentPage={currentPage}
-        totalItems={totalItems}
-        pageSize={PAGE_SIZE}
-        onPageChange={setCurrentPage}
-      />
+      {!loading && !error && (
+        <Pagination
+          currentPage={currentPage}
+          totalItems={totalItems}
+          pageSize={PAGE_SIZE}
+          onPageChange={setCurrentPage}
+        />
+      )}
     </div>
   );
 }

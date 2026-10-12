@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { quarterEndMonth } from "../data/BudgetExpenditureData";
 import { getOrganizationLabel } from "../helpers/organizationLabel";
+import TableSkeleton from "./ui/TableSkeleton";
 
 const EconomicClassificationTable = ({
   data,
@@ -16,6 +17,7 @@ const EconomicClassificationTable = ({
   quarter,
   fundingSource,
   organization,
+  loading = false,
 }) => {
   const { authUser } = useSelector((store) => store.auth);
   // console.log(authUser);
@@ -80,6 +82,19 @@ const EconomicClassificationTable = ({
           </div>
         </div>
 
+        {loading ? (
+          <TableSkeleton
+            variant="report"
+            rows={8}
+            headers={[
+              "Expenditure Item",
+              "Approved Budget / Appropriation",
+              "Amount Released",
+              "Actual Expenditure",
+              "Actual Payments",
+            ]}
+          />
+        ) : (
         <table className="min-w-[750px] table-auto border border-gray-400 text-sm text-gray-800">
           <thead className="bg-gray-100">
             <tr className="text-center font-semibold">
@@ -196,6 +211,7 @@ const EconomicClassificationTable = ({
             </tr>
           </tbody>
         </table>
+        )}
       </div>
     </>
   );
