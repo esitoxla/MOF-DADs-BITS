@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { quarterEndMonth } from "../data/BudgetExpenditureData";
 import { getOrganizationLabel } from "../helpers/organizationLabel";
 import TableSkeleton from "./ui/TableSkeleton";
+import { formatAmount } from "../utils/numberFormat";
 
 export default function NaturalAccountPerformanceTable({
   data = [],
@@ -49,14 +50,6 @@ export default function NaturalAccountPerformanceTable({
   const showGOG = selectedFunding === "ALL" || selectedFunding === "GOG";
   const showIGF = selectedFunding === "ALL" || selectedFunding === "IGF";
   const showDPF = selectedFunding === "ALL" || selectedFunding === "DPF";
-
-  // ===============================
-  // NUMBER FORMATTER
-  // ===============================
-  const format = (num) =>
-    Number(num || 0).toLocaleString("en-GH", {
-      minimumFractionDigits: 2,
-    });
 
   return (
     <div className="overflow-x-auto bg-white shadow-xl rounded-2xl p-4 sm:p-6 border border-gray-200 w-full">
@@ -170,33 +163,33 @@ export default function NaturalAccountPerformanceTable({
 
                 {showGOG && (
                   <>
-                    <td className="border border-gray-400 px-4 py-2 text-right">
-                      {row.GOG?.appro ? format(row.GOG.appro) : "-"}
+                    <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                      {formatAmount(row.GOG?.appro)}
                     </td>
-                    <td className="border border-gray-400 px-4 py-2 text-right">
-                      {row.GOG?.actual ? format(row.GOG.actual) : "-"}
+                    <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                      {formatAmount(row.GOG?.actual)}
                     </td>
                   </>
                 )}
 
                 {showIGF && (
                   <>
-                    <td className="border border-gray-400 px-4 py-2 text-right">
-                      {row.IGF?.appro ? format(row.IGF.appro) : "-"}
+                    <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                      {formatAmount(row.IGF?.appro)}
                     </td>
-                    <td className="border  border-gray-400 px-4 py-2 text-right">
-                      {row.IGF?.actual ? format(row.IGF.actual) : "-"}
+                    <td className="border  border-gray-400 px-4 py-2 text-right tabular-nums">
+                      {formatAmount(row.IGF?.actual)}
                     </td>
                   </>
                 )}
 
                 {showDPF && (
                   <>
-                    <td className="border border-gray-400 px-4 py-2 text-right">
-                      {row.DPF?.appro ? format(row.DPF.appro) : "-"}
+                    <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                      {formatAmount(row.DPF?.appro)}
                     </td>
-                    <td className="border border-gray-400 px-4 py-2 text-right">
-                      {row.DPF?.actual ? format(row.DPF.actual) : "-"}
+                    <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                      {formatAmount(row.DPF?.actual)}
                     </td>
                   </>
                 )}
@@ -212,33 +205,33 @@ export default function NaturalAccountPerformanceTable({
 
             {showGOG && (
               <>
-                <td className="border border-gray-400 px-4 py-2 text-right">
-                  {format(totals.GOG?.appro)}
+                <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                  {formatAmount(totals.GOG?.appro)}
                 </td>
-                <td className="border border-gray-400 px-4 py-2 text-right">
-                  {format(totals.GOG?.actual)}
+                <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                  {formatAmount(totals.GOG?.actual)}
                 </td>
               </>
             )}
 
             {showIGF && (
               <>
-                <td className="border border-gray-400 px-4 py-2 text-right">
-                  {format(totals.IGF?.appro)}
+                <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                  {formatAmount(totals.IGF?.appro)}
                 </td>
-                <td className="border border-gray-400 px-4 py-2 text-right">
-                  {format(totals.IGF?.actual)}
+                <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                  {formatAmount(totals.IGF?.actual)}
                 </td>
               </>
             )}
 
             {showDPF && (
               <>
-                <td className="border border-gray-400 px-4 py-2 text-right">
-                  {format(totals.DPF?.appro)}
+                <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                  {formatAmount(totals.DPF?.appro)}
                 </td>
-                <td className="border border-gray-400 px-4 py-2 text-right">
-                  {format(totals.DPF?.actual)}
+                <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                  {formatAmount(totals.DPF?.actual)}
                 </td>
               </>
             )}

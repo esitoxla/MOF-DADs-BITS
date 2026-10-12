@@ -7,6 +7,7 @@ import { getOrganizationLabel } from "../helpers/organizationLabel";
 import { quarterEndMonth } from "../data/BudgetExpenditureData";
 import toast from "react-hot-toast";
 import TableSkeleton from "./ui/TableSkeleton";
+import { formatAmount } from "../utils/numberFormat";
 
 const CASH_ACCOUNTS = [
   "GOG Sub CF",
@@ -137,17 +138,17 @@ export default function CashPerformanceTable({
                 <td className="border border-gray-400 px-4 py-2 text-left">
                   {account}
                 </td>
-                <td className="border border-gray-400 px-4 py-2 text-left">
-                  {(row.GHS ?? 0).toLocaleString()}
+                <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                  {formatAmount(row.GHS)}
                 </td>
-                <td className="border border-gray-400 px-4 py-2 text-left">
-                  {(row.EUR?? 0).toLocaleString()}
+                <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                  {formatAmount(row.EUR)}
                 </td>
-                <td className="border border-gray-400 px-4 py-2 text-left">
-                  {(row.GBP?? 0).toLocaleString() }
+                <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                  {formatAmount(row.GBP)}
                 </td>
-                <td className="border border-gray-400 px-4 py-2 text-left">
-                  {(row.USD?? 0).toLocaleString()}
+                <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                  {formatAmount(row.USD)}
                 </td>
               </tr>
             );
@@ -157,17 +158,17 @@ export default function CashPerformanceTable({
             <td className="border border-gray-400 px-4 py-2 text-left">
               Total Cash Position
             </td>
-            <td className="border border-gray-400 px-4 py-2 text-left">
-              {totals.GHS?.toLocaleString() || ""}
+            <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+              {formatAmount(totals.GHS)}
             </td>
-            <td className="border border-gray-400 px-4 py-2 text-left">
-              {totals.EUR?.toLocaleString() || ""}
+            <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+              {formatAmount(totals.EUR)}
             </td>
-            <td className="border border-gray-400 px-4 py-2 text-left">
-              {totals.GBP?.toLocaleString() || ""}
+            <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+              {formatAmount(totals.GBP)}
             </td>
-            <td className="border border-gray-400 px-4 py-2 text-left">
-              {totals.USD?.toLocaleString() || ""}
+            <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+              {formatAmount(totals.USD)}
             </td>
           </tr>
         </tbody>

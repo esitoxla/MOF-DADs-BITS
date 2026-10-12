@@ -8,6 +8,7 @@ import Pagination from './Pagination';
 import { quarterEndMonth } from '../data/BudgetExpenditureData';
 import { getOrganizationLabel } from '../helpers/organizationLabel';
 import TableSkeleton from './ui/TableSkeleton';
+import { formatAmount } from '../utils/numberFormat';
 
 const REVENUE_CATEGORIES = [
   "Fees/Charges",
@@ -207,24 +208,24 @@ export default function RevenuePerformanceTable({
                     {category}
                   </td>
 
-                  <td className="border border-gray-400 px-4 py-2 text-right">
-                    {(row.projection ?? 0).toLocaleString()}
+                  <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                    {formatAmount(row.projection)}
                   </td>
 
-                  <td className="border border-gray-400 px-4 py-2 text-right">
-                    {(row.actual ?? 0).toLocaleString()}
+                  <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                    {formatAmount(row.actual)}
                   </td>
 
-                  <td className="border border-gray-400 px-4 py-2 text-right">
-                    {(row.payment ?? 0).toLocaleString()}
+                  <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                    {formatAmount(row.payment)}
                   </td>
 
-                  <td className="border border-gray-400 px-4 py-2 text-right">
-                    {(row.retention ?? 0).toLocaleString()}
+                  <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                    {formatAmount(row.retention)}
                   </td>
 
-                  <td className="border border-gray-400 px-4 py-2 text-right">
-                    {(row.projectionDec ?? 0).toLocaleString()}
+                  <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                    {formatAmount(row.projectionDec)}
                   </td>
 
                   <td className="border border-gray-400 px-4 py-2">
@@ -240,24 +241,24 @@ export default function RevenuePerformanceTable({
                 TOTAL
               </td>
 
-              <td className="border border-gray-400 px-4 py-2 text-right">
-                {(totals?.projection ?? 0).toLocaleString()}
+              <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                {formatAmount(totals?.projection)}
               </td>
 
-              <td className="border border-gray-400 px-4 py-2 text-right">
-                {(totals?.actual ?? 0).toLocaleString()}
+              <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                {formatAmount(totals?.actual)}
               </td>
 
-              <td className="border border-gray-400 px-4 py-2 text-right">
-                {(totals?.payment ?? 0).toLocaleString()}
+              <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                {formatAmount(totals?.payment)}
               </td>
 
-              <td className="border border-gray-400 px-4 py-2 text-right">
-                {(totals?.retention ?? 0).toLocaleString()}
+              <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                {formatAmount(totals?.retention)}
               </td>
 
-              <td className="border border-gray-400 px-4 py-2 text-right">
-                {(totals?.projectionDec ?? 0).toLocaleString()}
+              <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                {formatAmount(totals?.projectionDec)}
               </td>
 
               <td className="border border-gray-400 px-4 py-2"></td>

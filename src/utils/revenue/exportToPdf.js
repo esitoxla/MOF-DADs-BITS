@@ -2,53 +2,34 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getBase64Image } from "../imageToBase64";
 import logo from "../../assets/images/logo.jpeg";
+import {
+  fmtAmount,
+  drawReportHeader,
+  drawFooters,
+  tableOptions,
+} from "../detailedPdfTheme";
 
 export const exportRevenueToPDF = async (detailedRecords, meta = {}) => {
   if (!detailedRecords || detailedRecords.length === 0) return;
 
-  const doc = new jsPDF("p", "pt", "a4");
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-
-  /* =========================
-     LOGO
-  ========================== */
-
-  const topOffset = 70; //pushing details and logo down
+  const doc = new jsPDF("p", "pt", "a4"); // Portrait
   const logoBase64 = await getBase64Image(logo);
-  doc.addImage(logoBase64, "JPEG", pageWidth - 120, topOffset - 20, 80, 60);
+
+  const orgLabel =
+    meta.organization === "ALL" ? "ALL ORGANIZATIONS" : meta.organization || "";
 
   /* =========================
-     HEADER TEXT
+     HEADER BAND
   ========================== */
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.text("Detailed Report of IGF Performance by Revenue Categories", 40, 40);
-
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text(`Organization: ${meta.organization || ""}`, 40, 60);
-  doc.text(
-    `Reporting Period: Q${meta.quarter || ""} ${meta.year || ""}`,
-    40,
-    75,
-  );
-  doc.text("Currency: Ghana Cedis (GHS)", 40, 90);
-
-  /* =========================
-     LOGO WATERMARK
-  ========================== */
-  doc.saveGraphicsState();
-  doc.setGState(new doc.GState({ opacity: 0.08 }));
-  doc.addImage(
-    logoBase64,
-    "PNG",
-    pageWidth / 2 - 250,
-    pageHeight / 2 - 150,
-    500,
-    300,
-  );
-  doc.restoreGraphicsState();
+  const startY = drawReportHeader(doc, {
+    title: "Detailed Report of IGF Performance by Revenue Categories",
+    lines: [
+      `DADs: ${orgLabel}`,
+      `Reporting Period: Q${meta.quarter || ""} ${meta.year || ""}`,
+      "Currency: Ghana Cedis (GHS)",
+    ],
+    logo: logoBase64,
+  });
 
   /* =========================
      TABLE
@@ -57,16 +38,35 @@ export const exportRevenueToPDF = async (detailedRecords, meta = {}) => {
     index + 1,
     r.date,
     r.revenue_category,
-    r.budgetProjections,
-    r.actual_collection,
-    r.payment_amount,
-    r.retention_rate,
-    r.retention_amount,
-    r.remarks,
+    fmtAmount(r.budgetProjections),
+    fmtAmount(r.actual_collection),
+    fmtAmount(r.payment_amount),
+    r.retention_rate ?? "",
+    fmtAmount(r.retention_amount),
+    r.remarks ?? "",
   ]);
 
+  // Usable width = 595.28 - 2 * 28 = 539pt. Widths below sum to exactly 539.
+  const numericCols = [3, 4, 5, 7];
+  const columnStyles = {
+    0: { halign: "center", cellWidth: 22 }, // S.N
+    1: { cellWidth: 54 }, // Date
+    2: { cellWidth: 80 }, // Revenue Category
+    3: { cellWidth: 66, fontSize: 7.5 }, // Budget Projections
+    4: { cellWidth: 66, fontSize: 7.5 }, // Actual Collections
+    5: { cellWidth: 70, fontSize: 7.5 }, // Payment into Consolidated Fund
+    6: { halign: "center", cellWidth: 52 }, // Retention Rate (%)
+    7: { cellWidth: 62, fontSize: 7.5 }, // Retention
+    8: { cellWidth: 67 }, // Remarks
+  };
+
   autoTable(doc, {
-    startY: topOffset + 70,
+    ...tableOptions(doc, {
+      logo: logoBase64,
+      startY,
+      numericCols,
+      columnStyles,
+    }),
     head: [
       [
         "S.N",
@@ -81,48 +81,12 @@ export const exportRevenueToPDF = async (detailedRecords, meta = {}) => {
       ],
     ],
     body: tableBody,
-
-    styles: {
-      fontSize: 8,
-      cellPadding: 4,
-      valign: "middle",
-    },
-
-    headStyles: {
-      fillColor: [3, 56, 30], // dark green
-      textColor: 255,
-      fontStyle: "bold",
-      halign: "center",
-    },
-
-    alternateRowStyles: {
-      fillColor: [245, 247, 250],
-    },
-
-    columnStyles: {
-      0: { halign: "center", cellWidth: 30 },
-      1: { cellWidth: 60 },
-      2: { cellWidth: 60 },
-      3: { halign: "right" },
-      4: { halign: "right" },
-      5: { halign: "right", cellWidth: 60 },
-      6: { halign: "center" },
-      7: { halign: "center", cellWidth: 60 },
-      8: { halign: "center", cellWidth: 90 },
-    },
-
-    margin: { left: 20, right: 20 },
-
-    didDrawPage: () => {
-      doc.setFontSize(9);
-      doc.setTextColor(120);
-      doc.text(
-        `Page ${doc.internal.getNumberOfPages()}`,
-        pageWidth - 60,
-        pageHeight - 20,
-      );
-    },
   });
+
+  /* =========================
+     FOOTER ON EVERY PAGE
+  ========================== */
+  drawFooters(doc, "BITS | Ministry of Finance");
 
   doc.save("Detailed_Revenue_Report.pdf");
 };

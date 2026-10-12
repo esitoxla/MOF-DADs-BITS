@@ -7,6 +7,7 @@ import { quarterEndMonth } from "../data/BudgetExpenditureData";
 import { getOrganizationLabel } from "../helpers/organizationLabel";
 import { useRef, useEffect } from 'react';
 import TableSkeleton from "./ui/TableSkeleton";
+import { formatAmount } from "../utils/numberFormat";
 
 
 export default function ReallocationPerformanceTable(
@@ -122,16 +123,16 @@ export default function ReallocationPerformanceTable(
                   <td className="border border-gray-400 px-4 py-2 font-medium">
                     {item}
                   </td>
-                  <td className="border border-gray-400 px-4 py-2 text-right">
+                  <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
                     -
                   </td>
-                  <td className="border border-gray-400 px-4 py-2 text-right">
+                  <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
                     -
                   </td>
-                  <td className="border border-gray-400 px-4 py-2 text-right">
+                  <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
                     -
                   </td>
-                  <td className="border border-gray-400 px-4 py-2 text-right">
+                  <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
                     -
                   </td>
                 </tr>
@@ -141,17 +142,17 @@ export default function ReallocationPerformanceTable(
                   <td className="border border-gray-400 px-4 py-2 pl-8 italic text-gray-600">
                     GOG
                   </td>
-                  <td className="border border-gray-400 px-4 py-2 text-right">
-                    {row.GOG?.reallocated?.toLocaleString() || "0"}
+                  <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                    {formatAmount(row.GOG?.reallocated)}
                   </td>
-                  <td className="border border-gray-400 px-4 py-2 text-right">
-                    {row.GOG?.released?.toLocaleString() || "0"}
+                  <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                    {formatAmount(row.GOG?.released)}
                   </td>
-                  <td className="border border-gray-400 px-4 py-2 text-right">
-                    {row.GOG?.expenditure?.toLocaleString() || "0"}
+                  <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                    {formatAmount(row.GOG?.expenditure)}
                   </td>
-                  <td className="border border-gray-400 px-4 py-2 text-right">
-                    {row.GOG?.payment?.toLocaleString() || "0"}
+                  <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                    {formatAmount(row.GOG?.payment)}
                   </td>
                 </tr>
               </React.Fragment>
@@ -163,17 +164,17 @@ export default function ReallocationPerformanceTable(
             <td className="border border-gray-400 px-4 py-2 text-left">
               TOTAL
             </td>
-            <td className="border border-gray-400 px-4 py-2 text-right">
-              {totals.reallocated?.toLocaleString() || "0"}
+            <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+              {formatAmount(totals.reallocated)}
             </td>
-            <td className="border border-gray-400 px-4 py-2 text-right">
-              {totals.released?.toLocaleString() || "0"}
+            <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+              {formatAmount(totals.released)}
             </td>
-            <td className="border border-gray-400 px-4 py-2 text-right">
-              {totals.expenditure?.toLocaleString() || "0"}
+            <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+              {formatAmount(totals.expenditure)}
             </td>
-            <td className="border border-gray-400 px-4 py-2 text-right">
-              {totals.payment?.toLocaleString() || "0"}
+            <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+              {formatAmount(totals.payment)}
             </td>
           </tr>
         </tbody>

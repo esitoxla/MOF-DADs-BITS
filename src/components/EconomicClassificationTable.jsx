@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { quarterEndMonth } from "../data/BudgetExpenditureData";
 import { getOrganizationLabel } from "../helpers/organizationLabel";
 import TableSkeleton from "./ui/TableSkeleton";
+import { formatAmount } from "../utils/numberFormat";
 
 const EconomicClassificationTable = ({
   data,
@@ -138,21 +139,21 @@ const EconomicClassificationTable = ({
                     <td className="border border-gray-400 px-4 py-2 text-left">
                       {item.title}
                     </td>
-                    <td className="border border-gray-400 px-4 py-2 text-right">
-                      {(item.totalBudget ?? 0).toLocaleString()}
+                    <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                      {formatAmount(item.totalBudget)}
                     </td>
 
-                    <td className="border border-gray-400 px-4 py-2 text-right">
-                      {(item.amountReleased ?? 0).toLocaleString()}
+                    <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                      {formatAmount(item.amountReleased)}
                     </td>
-                    <td className="border border-gray-400 px-4 py-2 text-right">
-                      {(item.actualExpenditure ?? 0).toLocaleString()}
+                    <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                      {formatAmount(item.actualExpenditure)}
                     </td>
-                    <td className="border border-gray-400 px-4 py-2 text-right">
-                      {(item.actualPayments ?? 0).toLocaleString()}
+                    <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                      {formatAmount(item.actualPayments)}
                     </td>
-                    <td className="border border-gray-400 px-4 py-2 text-right">
-                      {(item.projection ?? 0).toLocaleString()}
+                    <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                      {formatAmount(item.projection)}
                     </td>
                   </tr>
 
@@ -162,20 +163,20 @@ const EconomicClassificationTable = ({
                       <td className="border border-gray-400 px-8 py-2 text-left italic">
                         {b.source}
                       </td>
-                      <td className="border border-gray-400 px-4 py-2 text-right">
-                        {(b.totalBudget ?? 0).toLocaleString()}
+                      <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                        {formatAmount(b.totalBudget)}
                       </td>
-                      <td className="border border-gray-400 px-4 py-2 text-right">
-                        {(b.amountReleased ?? 0).toLocaleString()}
+                      <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                        {formatAmount(b.amountReleased)}
                       </td>
-                      <td className="border border-gray-400 px-4 py-2 text-right">
-                        {(b.actualExpenditure ?? 0).toLocaleString()}
+                      <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                        {formatAmount(b.actualExpenditure)}
                       </td>
-                      <td className="border border-gray-400 px-4 py-2 text-right">
-                        {(b.actualPayments ?? 0).toLocaleString()}
+                      <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                        {formatAmount(b.actualPayments)}
                       </td>
-                      <td className="border border-gray-400 px-4 py-2 text-right">
-                        {(b.projection ?? 0).toLocaleString()}
+                      <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                        {formatAmount(b.projection)}
                       </td>
                     </tr>
                   ))}
@@ -189,24 +190,24 @@ const EconomicClassificationTable = ({
                 TOTAL
               </td>
 
-              <td className="border border-gray-400 px-4 py-2 text-right">
-                {(totals?.totalAppropriation ?? 0).toLocaleString()}
+              <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                {formatAmount(totals?.totalAppropriation)}
               </td>
 
-              <td className="border border-gray-400 px-4 py-2 text-right">
-                {(totals?.totalReleases ?? 0).toLocaleString()}
+              <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                {formatAmount(totals?.totalReleases)}
               </td>
 
-              <td className="border border-gray-400 px-4 py-2 text-right">
-                {(totals?.totalExpenditure ?? 0).toLocaleString()}
+              <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                {formatAmount(totals?.totalExpenditure)}
               </td>
 
-              <td className="border border-gray-400 px-4 py-2 text-right">
-                {(totals?.totalPayment ?? 0).toLocaleString()}
+              <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                {formatAmount(totals?.totalPayment)}
               </td>
 
-              <td className="border border-gray-400 px-4 py-2 text-right">
-                {(totals?.projection ?? 0).toLocaleString()}
+              <td className="border border-gray-400 px-4 py-2 text-right tabular-nums">
+                {formatAmount(totals?.projection)}
               </td>
             </tr>
           </tbody>
