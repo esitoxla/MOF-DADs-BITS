@@ -5,6 +5,7 @@ import { Trash } from "../helpers/trash";
 import { Check } from "../helpers/check";
 import { CheckFill } from "../helpers/checkFill";
 import { Clipboard } from "../helpers/review";
+import { refreshNotifications } from "./NotificationBell";
 import toast from "react-hot-toast";
 import Pagination from "./Pagination";
 import TableSkeleton from "./ui/TableSkeleton";
@@ -140,6 +141,7 @@ export default function ReallocationTable({
       await dispatch(approveReallocation(record.id)).unwrap();
        toast.success("Record approved successfully!");
       dispatch(fetchReallocations());
+      refreshNotifications();
     } catch (err) {
       toast.error(err || "Failed to approve record.");
     }

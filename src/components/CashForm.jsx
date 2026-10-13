@@ -126,7 +126,6 @@ export default function CashForm() {
   const handleCashReview = async ({ id, comment }) => {
     await dispatch(reviewCashRecord({ id, reviewComment: comment })).unwrap();
 
-    toast.success("Cash Record reviewed successfully!");
     clearForm();
     dispatch(cancelEditing());
   };

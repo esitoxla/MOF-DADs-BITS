@@ -131,14 +131,20 @@ export default function ReallocationPage() {
 
     setSelectedDate(record.date);
 
-    setEconomicClass(record.economicClassification);
+    setEconomicClass({
+      label: record.economicClassification,
+      value: record.economicClassification,
+    });
 
     setFundingSource({
       label: record.sourceOfFunding,
       value: record.sourceOfFunding,
     });
 
-    setSelectedAccount(record.naturalAccount);
+    setSelectedAccount({
+      label: record.naturalAccount,
+      value: record.naturalAccount,
+    });
 
     setDescription(record.description);
 
@@ -150,17 +156,12 @@ export default function ReallocationPage() {
   };
 
   const handleReallocationReview = async ({ id, comment }) => {
-    try {
-      await dispatch(
-        reviewReallocation({ id, reviewComment: comment }),
-      ).unwrap();
+    await dispatch(
+      reviewReallocation({ id, reviewComment: comment }),
+    ).unwrap();
 
-      toast.success("Reviewed successfully");
-      dispatch(cancelEditing());
-      resetForm();
-    } catch (error) {
-      toast.error(error || "Failed to review");
-    }
+    dispatch(cancelEditing());
+    resetForm();
   };
 
   //Dynamically switch accounts based on selected economic class

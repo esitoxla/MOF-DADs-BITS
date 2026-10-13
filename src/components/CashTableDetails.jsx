@@ -7,6 +7,7 @@ import { Trash } from "../helpers/trash";
 import { Check } from "../helpers/check";
 import { CheckFill } from "../helpers/checkFill";
 import { Clipboard } from "../helpers/review";
+import { refreshNotifications } from "./NotificationBell";
 import toast from "react-hot-toast";
 import { fetchCashRecords, deleteCashRecord, startEditing, startReviewing, approveCashRecord } from "../store/features/cashSlice";
 import TableSkeleton from "./ui/TableSkeleton";
@@ -107,6 +108,7 @@ export default function CashTableDetails({ searchQuery }) {
         await dispatch(approveCashRecord(record.id)).unwrap();
         toast.success("Record approved successfully!");
         dispatch(fetchCashRecords());
+        refreshNotifications();
       } catch (err) {
         toast.error(err || "Failed to approve record.");
       }

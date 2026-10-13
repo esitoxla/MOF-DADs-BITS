@@ -58,6 +58,10 @@ function RealisticBell({ className = "w-6 h-6" }) {
 }
 
 
+export function refreshNotifications() {
+  window.dispatchEvent(new Event("notifications:refresh"));
+}
+
 const routeMap = {
   revenue: "/dashboard/revenue&cash/revenue",
   cash: "/dashboard/revenue&cash/cash",
@@ -100,6 +104,9 @@ export default function NotificationBell() {
 
   useEffect(() => {
     fetchNotifications();
+    window.addEventListener("notifications:refresh", fetchNotifications);
+    return () =>
+      window.removeEventListener("notifications:refresh", fetchNotifications);
   }, []);
 
   useEffect(() => {
@@ -148,7 +155,12 @@ export default function NotificationBell() {
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={() =>
+          setOpen((prev) => {
+            if (!prev) fetchNotifications();
+            return !prev;
+          })
+        }
         className="relative inline-flex items-center justify-center w-10 h-10 rounded-full hover:bg-green-50 transition-colors"
         aria-label="Notifications"
       >

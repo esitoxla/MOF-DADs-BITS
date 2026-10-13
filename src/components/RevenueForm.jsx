@@ -168,7 +168,6 @@ export default function RevenueForm() {
   const handleRevenueReview = async ({ id, comment }) => {
     await dispatch(reviewRevenue({ id, reviewComment: comment })).unwrap();
 
-    toast.success("Revenue reviewed successfully!");
     clearForm();
     dispatch(cancelEditing());
   };

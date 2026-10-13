@@ -7,6 +7,7 @@ import { Trash } from "../helpers/trash";
 import { Check } from "../helpers/check";
 import { CheckFill } from "../helpers/checkFill";
 import { Clipboard } from "../helpers/review";
+import { refreshNotifications } from "./NotificationBell";
 import toast from "react-hot-toast";
 import TableSkeleton from "./ui/TableSkeleton";
 import {
@@ -117,6 +118,7 @@ export default function RevenueTableDetails({ searchQuery }) {
       await dispatch(approveRevenue(record.id)).unwrap();
       toast.success("Record approved successfully!");
       dispatch(fetchRevenues());
+      refreshNotifications();
     } catch (err) {
       toast.error(err || "Failed to approve record.");
     }

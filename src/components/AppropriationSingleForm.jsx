@@ -161,27 +161,6 @@ export default function AppropriationSingleForm() {
     }
   };
 
-  /* =========================
-     STATES
-  ========================== */
-  if (loading) {
-    return (
-      <TableSkeleton
-        headers={[
-          "S.N",
-          "Organization",
-          "Economic Classification",
-          "Source of Funding",
-          "Natural Account",
-          "Appropriation (GHS)",
-          "Allotment (GHS)",
-          "Date Created",
-          "Actions",
-        ]}
-      />
-    );
-  }
-
   if (error) {
     return (
       <p className="text-center text-red-500">
@@ -336,6 +315,21 @@ export default function AppropriationSingleForm() {
           />
         </div>
 
+        {loading ? (
+          <TableSkeleton
+            headers={[
+              "S.N",
+              "Organization",
+              "Economic Classification",
+              "Source of Funding",
+              "Natural Account",
+              "Appropriation (GHS)",
+              "Allotment (GHS)",
+              "Date Created",
+              "Actions",
+            ]}
+          />
+        ) : (
         <table className="min-w-full text-sm text-left">
           <thead className="bg-green-100 text-gray-700">
             <tr>
@@ -411,14 +405,16 @@ export default function AppropriationSingleForm() {
             )}
           </tbody>
         </table>
+        )}
 
-        {/* Pagination (EXTERNAL COMPONENT) */}
-        <Pagination
-          currentPage={currentPage}
-          totalItems={filteredRecords.length}
-          pageSize={PAGE_SIZE}
-          onPageChange={setCurrentPage}
-        />
+        {!loading && (
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredRecords.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={setCurrentPage}
+          />
+        )}
       </div>
 
       {/*      DELETE MODAL    */}
