@@ -110,7 +110,7 @@ export default function SettingsChangePass() {
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-[#0f9b80] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#0c846c] disabled:opacity-60"
+            className="cursor-pointer rounded-lg bg-[#0f4231] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#2f5c4c] disabled:opacity-60 dark:bg-[#39FF88] dark:text-[#0B132B] dark:hover:bg-[#2eeb78]"
           >
             {saving ? "Updating..." : "Update Password"}
           </button>

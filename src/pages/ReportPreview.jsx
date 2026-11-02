@@ -384,7 +384,7 @@ export default function ReportPreview() {
       <div className="flex justify-end items-center space-x-6 mb-4">
         <button
           onClick={() => navigate("/dashboard/reports")}
-          className="flex gap-1 bg-[#0f9b80] text-white hover:bg-[#0c846c] px-4 py-2 rounded font-medium"
+          className="flex gap-1 bg-[#2d8f66] text-white hover:bg-[#246f50] px-4 py-2 rounded font-medium cursor-pointer dark:bg-[#39FF88] dark:text-[#0B132B] dark:hover:bg-[#2eeb78]"
         >
           <BsArrowLeftShort className="text-3xl" />
           Back
@@ -392,7 +392,7 @@ export default function ReportPreview() {
 
         <div className="relative">
           <details className="group">
-            <summary className="list-none bg-[#0f9b80] text-white hover:bg-[#0c846c] px-4 py-2 rounded font-medium cursor-pointer flex gap-1 items-center">
+            <summary className="list-none bg-[#2d8f66] text-white hover:bg-[#246f50] px-4 py-2 rounded font-medium cursor-pointer flex gap-1 items-center dark:bg-[#39FF88] dark:text-[#0B132B] dark:hover:bg-[#2eeb78]">
               Export
               <RiArrowDownSFill className="text-3xl" />
             </summary>
@@ -421,6 +421,6 @@ export default function ReportPreview() {
           renderTable()
         )}
       </div>
-    </div>
+    </div>  
   );
 }

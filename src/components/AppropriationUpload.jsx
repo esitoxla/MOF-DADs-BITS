@@ -1,15 +1,16 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { FileSpreadsheet, Upload } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast";
 import {
   downloadTemplate,
   uploadAppropriationExcel,
 } from "../store/features/appropriationSlice";
-import toast from "react-hot-toast";
 
 export default function AppropriationUpload() {
   const dispatch = useDispatch();
   const { loading, uploadResponse, error } = useSelector(
-    (state) => state.appropriation
+    (state) => state.appropriation,
   );
 
   const [file, setFile] = useState(null);
@@ -43,78 +44,78 @@ export default function AppropriationUpload() {
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto p-6">
-      <h2 className="text-lg font-semibold mb-2">
-        Upload Excel File{" "}
+    <div className="mx-auto w-full max-w-xl rounded-2xl border border-gray-200 bg-white p-6 shadow-[0_8px_22px_rgba(15,23,42,0.05)]">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h4 className="text-base font-bold text-gray-900">
+            Upload spreadsheet
+          </h4>
+          <p className="mt-1 text-sm text-gray-500">
+            Use the template so each column lands in the right field.
+          </p>
+        </div>
         <button
+          type="button"
           onClick={() => dispatch(downloadTemplate())}
-          className="text-blue-500 underline"
+          className="shrink-0 cursor-pointer text-sm font-semibold text-green-800 hover:underline"
         >
-          (click here to download template)
+          Download template
         </button>
-      </h2>
+      </div>
 
-      {/* Upload Box */}
       <div
-        className={`mt-3 border-2 border-dashed bg-white h-56 flex flex-col justify-center items-center cursor-pointer transition ${
-          dragActive ? "border-blue-500 bg-blue-50" : "border-gray-300"
+        className={`mt-5 flex h-52 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 text-center transition ${
+          dragActive
+            ? "border-[#166534] bg-[#f3faf6]"
+            : "border-gray-200 bg-[#f8faf8] hover:border-[#166534]/50"
         }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onClick={() => document.getElementById("excelInput").click()}
+        onClick={() => document.getElementById("appropriationExcelInput").click()}
       >
         <input
-          id="excelInput"
+          id="appropriationExcelInput"
           type="file"
           accept=".xlsx"
           onChange={handleFileChange}
           className="hidden"
         />
-
-        <img
-          src="https://cdn-icons-png.flaticon.com/512/1829/1829586.png"
-          alt="Upload icon"
-          className="w-12 opacity-60 mb-3"
-        />
-
-        <p className="text-gray-600 font-medium">
-          {file ? file.name : "Upload Appropriation Excel (.xlsx)"}{" "}
-          <span className="text-gray-500">or drag and drop</span>
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#e8f6ee] text-[#166534]">
+          {file ? <FileSpreadsheet className="h-5 w-5" /> : <Upload className="h-5 w-5" />}
+        </span>
+        <p className="mt-3 text-sm font-medium text-gray-700">
+          {file ? file.name : "Drop an .xlsx file here"}
         </p>
-
-        <p className="text-gray-400 text-sm mt-1">Max file size: 5MB</p>
+        <p className="mt-1 text-sm text-gray-400">or click to browse · max 5MB</p>
       </div>
 
-      {/* Submit Button */}
       <button
+        type="button"
         onClick={handleSubmit}
-        className="w-full mt-8 bg-green-500 text-white py-4 text-lg font-semibold hover:bg-green-600 transition flex justify-center items-center gap-2 cursor-pointer"
         disabled={loading}
+        className="mt-5 w-full cursor-pointer rounded-lg bg-[#166534] py-2.5 text-sm font-semibold text-white hover:bg-[#14532d] disabled:opacity-60 dark:bg-[#39FF88] dark:text-[#0B132B] dark:hover:bg-[#2eeb78]"
       >
-        {loading ? "Uploading..." : "Submit"}
+        {loading ? "Uploading..." : "Upload lines"}
       </button>
 
-      {/* Upload Response */}
       {uploadResponse && (
-        <div className="mt-4 text-green-600">
+        <p className="mt-4 text-sm text-green-700">
           {uploadResponse.message} — Inserted: {uploadResponse.inserted}
-        </div>
+        </p>
       )}
 
-      {/* Error */}
       {error && (
-        <div className="mt-3 text-red-500 text-sm">
+        <p className="mt-3 text-sm text-red-600">
           {typeof error.message === "string"
             ? error.message
             : error?.message?.message || "Error uploading file"}
-        </div>
+        </p>
       )}
 
-      {/* Row errors */}
       {uploadResponse?.errors?.length > 0 && (
-        <div className="mt-4 bg-red-50 p-3 rounded">
-          <h3 className="font-semibold text-red-700">Row Errors:</h3>
+        <div className="mt-4 rounded-xl bg-red-50 p-3">
+          <h3 className="font-semibold text-red-700">Row errors</h3>
           {uploadResponse.errors.map((err, i) => (
             <p key={i} className="text-sm text-red-600">
               Row {err.row}: {err.error}

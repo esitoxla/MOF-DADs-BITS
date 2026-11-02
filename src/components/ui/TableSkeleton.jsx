@@ -11,19 +11,21 @@ export default function TableSkeleton({
   const isReport = variant === "report";
   const tableClass = isReport
     ? "min-w-full table-auto border border-gray-400 text-sm"
-    : "min-w-full shadow-lg bg-white text-sm";
+    : "data-table min-w-full text-sm";
   const theadClass = isReport
     ? "bg-blue-50 text-gray-800 font-semibold"
-    : "bg-green-100 text-green-800 font-semibold";
+    : "";
   const thClass = isReport
     ? "border border-gray-400 px-3 py-2 text-left"
-    : "border px-2 py-2 text-left";
-  const tdClass = isReport
-    ? "border border-gray-400 px-3 py-3"
-    : "border px-2 py-3";
+    : "text-left";
+  const tdClass = isReport ? "border border-gray-400 px-3 py-3" : "";
 
   return (
-    <div className="w-full overflow-x-auto bg-white">
+    <div
+      className={
+        isReport ? "w-full overflow-x-auto bg-white" : "data-table-wrap w-full"
+      }
+    >
       <table className={tableClass}>
         <thead className={theadClass}>
           <tr>

@@ -1,6 +1,7 @@
 @config "../tailwind.config.js";
 @import "tailwindcss";
 @plugin "daisyui";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --color-positive: #059669;
@@ -10,4 +11,258 @@
   --color-surface-card: #ffffff;
   --color-ink-primary: #1e293b;
   --color-ink-secondary: #64748b;
+}
+
+/* Dark theme: Prompt Blue #0B132B, AI Green #39FF88 */
+.dark .bits-main {
+  background-color: #0b132b;
+  color: #e8fff3;
+  color-scheme: dark;
+}
+
+.dark .bits-main .bg-green-50,
+.dark .bits-main .bg-slate-50 {
+  background-color: #0b132b;
+}
+
+.dark .bits-main .bg-white {
+  background-color: #121b36;
+}
+
+.dark .bits-main .bg-green-100 {
+  background-color: rgba(57, 255, 136, 0.14);
+  color: #39ff88;
+}
+
+.dark .bits-main .bg-gray-50,
+.dark .bits-main .bg-gray-100,
+.dark .bits-main .bg-gray-200,
+.dark .bits-main .bg-\[\#F7F7F7\] {
+  background-color: #182444;
+}
+
+.dark .bits-main .bg-green-50\/50,
+.dark .bits-main .hover\:bg-green-50:hover,
+.dark .bits-main .hover\:bg-gray-50:hover {
+  background-color: rgba(57, 255, 136, 0.1);
+}
+
+.dark .bits-main .text-green-600,
+.dark .bits-main .text-green-700,
+.dark .bits-main .text-green-800,
+.dark .bits-main .text-positive {
+  color: #39ff88;
+}
+
+.dark .bits-main .report-card-muted {
+  color: #0b132b;
+}
+
+.dark .bits-main .border-l-green-700 {
+  border-left-color: #39ff88;
+}
+
+.dark .bits-main .text-gray-900,
+.dark .bits-main .text-gray-800,
+.dark .bits-main .text-gray-700,
+.dark .bits-main .text-slate-800 {
+  color: #e8fff3;
+}
+
+.dark .bits-main .text-gray-600,
+.dark .bits-main .text-gray-500,
+.dark .bits-main .text-slate-500 {
+  color: #a9b8c9;
+}
+
+.dark .bits-main .text-gray-400 {
+  color: #8b9bb0;
+}
+
+.dark .bits-main .border-gray-50,
+.dark .bits-main .border-gray-100,
+.dark .bits-main .border-gray-200,
+.dark .bits-main .border-gray-300,
+.dark .bits-main .border-gray-400,
+.dark .bits-main .border-black {
+  border-color: rgba(57, 255, 136, 0.28);
+}
+
+.dark .bits-main .bg-green-500,
+.dark .bits-main .bg-green-600,
+.dark .bits-main .bg-green-700,
+.dark .bits-main .bg-\[\#0f9b80\],
+.dark .bits-main .bg-\[\#166534\] {
+  background-color: #39ff88;
+  color: #0b132b;
+}
+
+.dark .bits-main .hover\:bg-green-700:hover,
+.dark .bits-main .hover\:bg-green-600:hover,
+.dark .bits-main .hover\:bg-\[\#0c846c\]:hover {
+  background-color: #2eeb78;
+  color: #0b132b;
+}
+
+.dark .bits-main input,
+.dark .bits-main select,
+.dark .bits-main textarea {
+  background-color: #0b132b;
+  color: #e8fff3;
+  border-color: rgba(57, 255, 136, 0.45);
+  outline-color: rgba(57, 255, 136, 0.45);
+}
+
+.dark .bits-main input::placeholder,
+.dark .bits-main textarea::placeholder {
+  color: #8ea0b8;
+}
+
+.dark .bits-main div[class$="-control"] {
+  background-color: #0b132b !important;
+  border-color: rgba(57, 255, 136, 0.45) !important;
+  box-shadow: none !important;
+}
+
+.dark .bits-main div[class$="-singleValue"],
+.dark .bits-main div[class$="-placeholder"],
+.dark .bits-main div[class$="-Input"] input {
+  color: #e8fff3 !important;
+}
+
+.dark .bits-main div[class$="-indicatorContainer"] {
+  color: #39ff88 !important;
+}
+
+.dark div[class$="-menu"] {
+  background-color: #121b36 !important;
+  color: #e8fff3 !important;
+  border: 1px solid rgba(57, 255, 136, 0.28) !important;
+}
+
+.dark div[class$="-option"] {
+  background-color: transparent !important;
+  color: #e8fff3 !important;
+}
+
+.dark div[class$="-option"]:hover {
+  background-color: rgba(57, 255, 136, 0.16) !important;
+}
+
+.dark .bits-main .recharts-default-tooltip {
+  background-color: #121b36 !important;
+  border-color: rgba(57, 255, 136, 0.35) !important;
+  color: #e8fff3 !important;
+}
+
+.dark .bits-main .recharts-cartesian-grid line {
+  stroke: rgba(57, 255, 136, 0.16);
+}
+
+.dark .bits-main .recharts-text,
+.dark .bits-main .recharts-legend-item-text {
+  fill: #c5d4e4;
+  color: #c5d4e4 !important;
+}
+
+.data-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: transparent;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: #1e293b;
+}
+
+.data-table thead th {
+  background: #e8f6ee;
+  color: #166534;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 0.85rem 0.95rem;
+  border: none;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.data-table tbody td {
+  padding: 0.8rem 0.95rem;
+  border: none;
+  border-bottom: 1px solid #eef2f6;
+  background: #fff;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table tbody tr:nth-child(even) td {
+  background: #f8fafc;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr:hover td {
+  background: #f0fdf4;
+}
+
+.data-table tbody tr.bg-green-100 td,
+.data-table tbody tr.bg-green-100:hover td {
+  background: #dcfce7;
+}
+
+.dark .bits-main .data-table-wrap {
+  background: #121b36;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+}
+
+.dark .bits-main .data-table {
+  color: #e8fff3;
+}
+
+.dark .bits-main .data-table thead th {
+  background: rgba(57, 255, 136, 0.12);
+  color: #39ff88;
+}
+
+.data-table.data-table-strong thead th {
+  background: #166534;
+  color: #f0fdf4;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 1rem 0.95rem;
+}
+
+.dark .bits-main .data-table.data-table-strong thead th {
+  background: #14532d;
+  color: #ecfdf5;
+}
+
+.dark .bits-main .data-table tbody td {
+  background: #121b36;
+  border-bottom-color: rgba(57, 255, 136, 0.12);
+}
+
+.dark .bits-main .data-table tbody tr:nth-child(even) td {
+  background: #182444;
+}
+
+.dark .bits-main .data-table tbody tr:hover td {
+  background: rgba(57, 255, 136, 0.1);
+}
+
+.dark .bits-main .data-table tbody tr.bg-green-100 td,
+.dark .bits-main .data-table tbody tr.bg-green-100:hover td {
+  background: rgba(57, 255, 136, 0.18);
 }

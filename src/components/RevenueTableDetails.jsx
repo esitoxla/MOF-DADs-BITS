@@ -1,7 +1,7 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 import { PencilSquare } from "../helpers/edit";
 import { Trash } from "../helpers/trash";
 import { Check } from "../helpers/check";
@@ -9,7 +9,10 @@ import { CheckFill } from "../helpers/checkFill";
 import { Clipboard } from "../helpers/review";
 import { refreshNotifications } from "./NotificationBell";
 import toast from "react-hot-toast";
+import Pagination from "./Pagination";
 import TableSkeleton from "./ui/TableSkeleton";
+import StatusBadge from "./ui/StatusBadge";
+import IconAction, { IconActionGroup } from "./ui/IconAction";
 import {
   fetchRevenues,
   startEditing,
@@ -18,9 +21,37 @@ import {
   approveRevenue,
 } from "../store/features/revenueSlice";
 
-export default function RevenueTableDetails({ searchQuery }) {
+const PAGE_SIZE = 10;
+
+export function filterRevenueRecords(
+  records = [],
+  { searchQuery = "", categoryFilter = "", statusFilter = "" } = {},
+) {
+  const query = searchQuery.trim().toLowerCase();
+  const list = Array.isArray(records) ? records : [];
+
+  return list.filter((record) => {
+    if (categoryFilter && record.revenue_category !== categoryFilter) {
+      return false;
+    }
+    if (statusFilter && record.status !== statusFilter) return false;
+    if (!query) return true;
+
+    return Object.values(record)
+      .map((value) => String(value ?? ""))
+      .join(" ")
+      .toLowerCase()
+      .includes(query);
+  });
+}
+
+export default function RevenueTableDetails({
+  searchQuery = "",
+  categoryFilter = "",
+  statusFilter = "",
+  onOpenForm,
+}) {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { records, loading, error } = useSelector((store) => store.revenue);
   const { authUser } = useSelector((state) => state.auth);
@@ -33,16 +64,45 @@ export default function RevenueTableDetails({ searchQuery }) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
   const [serialToDelete, setSerialToDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const filteredRecords = filterRevenueRecords(records, {
+    searchQuery,
+    categoryFilter,
+    statusFilter,
+  });
+  const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const paginatedRecords = filteredRecords.slice(pageStart, pageStart + PAGE_SIZE);
+
+  const filtersKey = `${searchQuery}|${categoryFilter}|${statusFilter}`;
+  const previousFilters = useRef(filtersKey);
 
   useEffect(() => {
     dispatch(fetchRevenues());
   }, [dispatch]);
 
   useEffect(() => {
+    if (previousFilters.current === filtersKey) return;
+    previousFilters.current = filtersKey;
+    setCurrentPage(1);
+  }, [filtersKey]);
+
+  useEffect(() => {
     if (loading || !highlightId) return;
 
     const id = Number(highlightId);
     if (!Number.isFinite(id)) return;
+
+    const recordIndex = filteredRecords.findIndex(
+      (record) => Number(record.id) === id,
+    );
+    if (recordIndex === -1) return;
+
+    const page = Math.floor(recordIndex / PAGE_SIZE) + 1;
+    if (page !== currentPage) {
+      setCurrentPage(page);
+      return;
+    }
 
     const row = rowRefs.current[id];
     if (!row) return;
@@ -52,43 +112,20 @@ export default function RevenueTableDetails({ searchQuery }) {
 
     const timeoutId = setTimeout(() => setHighlightedId(null), 3500);
     return () => clearTimeout(timeoutId);
-  }, [loading, records, highlightId]);
+  }, [loading, records, highlightId, currentPage, filtersKey]);
 
-  //    console.log(records);
-
-  // Filter records (case-insensitive)
-  const filteredRecords = records.filter((record) => {
-    if (!searchQuery) return true;
-    return (
-      Object.values(record)
-        //Convert every value into a string safely.
-        .map((v) => String(v || ""))
-        .join(" ")
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase())
-    );
-  });
-
-  const handleEditClick = (index, record) => {
+  const openRecordForm = (index, record, mode) => {
     const serialNumber = index + 1;
 
-    dispatch(startEditing({ index, record }));
+    if (mode === "review") {
+      dispatch(startReviewing({ index, record }));
+      toast.success(`Ready to review record ${serialNumber}`);
+    } else {
+      dispatch(startEditing({ index, record }));
+      toast.success(`Ready to edit record ${serialNumber}`);
+    }
 
-    toast.success(`Ready to edit record ${serialNumber}`);
-
-    navigate("/dashboard/revenue&cash/revenue");
-  };
-
-
-
-  const handleReviewClick = (index, record) => {
-    const serialNumber = index + 1;
-
-    dispatch(startReviewing({ index, record }));
-
-    toast.success(`Ready to review record ${serialNumber}`);
-
-    navigate("/dashboard/revenue&cash/revenue");
+    onOpenForm?.();
   };
 
 
@@ -146,33 +183,39 @@ export default function RevenueTableDetails({ searchQuery }) {
   };
 
   return (
-    <div className="w-full overflow-x-auto lg:px-4">
-      <table className="min-w-full shadow-lg bg-white">
-        <thead className="bg-green-100 text-green-800 font-semibold">
+    <>
+    <div className="w-full">
+      <div className="data-table-wrap">
+      <table className="data-table data-table-strong min-w-full">
+        <thead>
           <tr>
-            <th className="border px-2 py-1">S.N</th>
-            <th className="border px-2 py-1">Date</th>
-            <th className="border px-2 py-1">Revenue Categories</th>
-            <th className="border px-2 py-1">Budget Projections</th>
-            <th className="border px-2 py-1">Actual Collections</th>
-            <th className="border px-2 py-1">Payment into Consolidated Fund</th>
-            <th className="border px-2 py-1">Retention Rate (%)</th>
-            <th className="border px-2 py-1">Retention</th>
-            <th className="border px-2 py-1">Remarks</th>
-            <th className="border px-2 py-1">Status</th>
-            <th className="border px-2 py-1">Actions</th>
+            <th className="px-3 py-3">S.N</th>
+            <th className="px-3 py-3">Date</th>
+            <th className="px-3 py-3">Revenue Categories</th>
+            <th className="px-3 py-3">Budget Projections</th>
+            <th className="px-3 py-3">Actual Collections</th>
+            <th className="px-3 py-3">Payment into Consolidated Fund</th>
+            <th className="px-3 py-3">Retention Rate (%)</th>
+            <th className="px-3 py-3">Retention</th>
+            <th className="px-3 py-3">Remarks</th>
+            <th className="px-3 py-3">Status</th>
+            <th className="px-3 py-3">Actions</th>
           </tr>
         </thead>
 
         <tbody>
-          {records.length === 0 ? (
+          {filteredRecords.length === 0 ? (
             <tr>
-              <td colSpan="8" className="text-center text-gray-500 py-4 italic">
-                No data available
+              <td colSpan="11" className="text-center text-gray-500 py-4 italic">
+                {records.length === 0
+                  ? "No data available"
+                  : "No records match your search or filters."}
               </td>
             </tr>
           ) : (
-            filteredRecords.map((record, index) => (
+            paginatedRecords.map((record, index) => {
+              const serialNumber = pageStart + index + 1;
+              return (
               <tr
                 key={record.id || index}
                 ref={(el) => {
@@ -182,85 +225,84 @@ export default function RevenueTableDetails({ searchQuery }) {
                   highlightedId === record.id ? "bg-green-100" : ""
                 }`}
               >
-                <td className="border px-2 py-1">{index + 1}</td>
-                <td className="border px-2 py-1">{record?.date}</td>
-                <td className="border px-2 py-1">{record.revenue_category}</td>
-                <td className="border px-2 py-1">{record.budgetProjections}</td>
-                <td className="border px-2 py-1">{record.actual_collection}</td>
-                <td className="border px-2 py-1">{record.payment_amount}</td>
-                <td className="border px-2 py-1">{record.retention_rate}</td>
-                <td className="border px-2 py-1">{record.retention_amount}</td>
-                <td className="border px-2 py-1">{record.remarks}</td>
+                <td className="px-3 py-3">{serialNumber}</td>
+                <td className="px-3 py-3">{record?.date}</td>
+                <td className="px-3 py-3">{record.revenue_category}</td>
+                <td className="px-3 py-3">{record.budgetProjections}</td>
+                <td className="px-3 py-3">{record.actual_collection}</td>
+                <td className="px-3 py-3">{record.payment_amount}</td>
+                <td className="px-3 py-3">{record.retention_rate}</td>
+                <td className="px-3 py-3">{record.retention_amount}</td>
+                <td className="px-3 py-3">{record.remarks}</td>
 
-                <td className="border px-2 py-1 font-semibold text-blue-900 border-black">
-                  {record.status}
+                <td className="bg-transparent px-3 py-3">
+                  <StatusBadge status={record.status} />
                 </td>
 
-                <td className="px-2 py-1 border text-center">
-                  <ul className="menu bg-base-100 w-32 z-10">
-                    {/* === DATA ENTRY USER === */}
+                <td className="px-3 py-3 text-center">
+                  <IconActionGroup colored>
                     {(userRole === "data_entry" || userRole === "admin") &&
                       record.status === "Pending" && (
                         <>
-                          <li>
-                            <a
-                              onClick={() => handleEditClick(index, record)}
-                              className="text-yellow-600 font-semibold cursor-pointer"
-                            >
-                              <PencilSquare /> Edit
-                            </a>
-                          </li>
-
-                          <li>
-                            <span
-                              onClick={() => openDeleteModal(record, index)}
-                              className="text-red-600 font-semibold cursor-pointer"
-                            >
-                              <Trash /> Delete
-                            </span>
-                          </li>
+                          <IconAction
+                            label="Edit"
+                            tone="edit"
+                            onClick={() =>
+                              openRecordForm(serialNumber - 1, record, "edit")
+                            }
+                          >
+                            <PencilSquare />
+                          </IconAction>
+                          <IconAction
+                            label="Delete"
+                            tone="delete"
+                            onClick={() =>
+                              openDeleteModal(record, serialNumber - 1)
+                            }
+                          >
+                            <Trash />
+                          </IconAction>
                         </>
                       )}
 
-                    {/* === REVIEWER === */}
                     {(userRole === "reviewer" || userRole === "admin") &&
                       record.status === "Pending" && (
-                        <li>
-                          <span
-                            onClick={() => handleReviewClick(index, record)}
-                            className="text-blue-700 font-semibold cursor-pointer"
-                          >
-                            <Clipboard /> Review
-                          </span>
-                        </li>
+                        <IconAction
+                          label="Review"
+                          tone="review"
+                          onClick={() =>
+                            openRecordForm(serialNumber - 1, record, "review")
+                          }
+                        >
+                          <Clipboard />
+                        </IconAction>
                       )}
 
                     {(userRole === "approver" || userRole === "admin") &&
                       record.status === "Reviewed" && (
-                        <li>
-                          <a
-                            onClick={() => handleApprove(record)}
-                            className="text-green-800 font-semibold cursor-pointer"
-                          >
-                            <Check /> Approve
-                          </a>
-                        </li>
+                        <IconAction
+                          label="Approve"
+                          tone="approve"
+                          onClick={() => handleApprove(record)}
+                        >
+                          <Check />
+                        </IconAction>
                       )}
 
                     {record.status === "Approved" && (
-                      <li>
-                        <a className="text-green-800 font-semibold cursor-pointer">
-                          <CheckFill /> Approved
-                        </a>
-                      </li>
+                      <IconAction label="Approved" tone="done">
+                        <CheckFill />
+                      </IconAction>
                     )}
-                  </ul>
+                  </IconActionGroup>
                 </td>
               </tr>
-            ))
+              );
+            })
           )}
         </tbody>
       </table>
+      </div>
 
       {/*      DELETE MODAL    */}
 
@@ -296,5 +338,12 @@ export default function RevenueTableDetails({ searchQuery }) {
         </dialog>
       )}
     </div>
+    <Pagination
+      currentPage={currentPage}
+      totalItems={filteredRecords.length}
+      pageSize={PAGE_SIZE}
+      onPageChange={setCurrentPage}
+    />
+    </>
   );
 }

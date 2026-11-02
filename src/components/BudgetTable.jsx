@@ -1,33 +1,89 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router";
+import toast from "react-hot-toast";
 import { PencilSquare } from "../helpers/edit";
 import { Trash } from "../helpers/trash";
 import { Check } from "../helpers/check";
 import { CheckFill } from "../helpers/checkFill";
 import { Clipboard } from "../helpers/review";
 import { refreshNotifications } from "./NotificationBell";
-import toast from "react-hot-toast";
 import Pagination from "./Pagination";
 import TableSkeleton from "./ui/TableSkeleton";
-import { useDispatch, useSelector } from "react-redux";
+import StatusBadge from "./ui/StatusBadge";
+import IconAction, { IconActionGroup } from "./ui/IconAction";
 import {
+  approveExpenditure,
+  deleteExpenditure,
+  fetchExpenditures,
   startEditing,
   startReviewing,
-  fetchExpenditures,
-  deleteExpenditure,
-  approveExpenditure,
 } from "../store/features/budgetSlice";
 
+const PAGE_SIZE = 10;
+
+const TABLE_HEADERS = [
+  "S.N",
+  "Activity",
+  "Date",
+  "Economic Class",
+  "Funding Source",
+  "Natural Account",
+  "Description",
+  "Appropriation",
+  "Allotment",
+  "Allotment Balance",
+  "Appropriation Balance",
+  "Releases",
+  "Actual Expenditure",
+  "Actual Payment",
+  "Status",
+  "Actions",
+];
+
+export function filterExpenditureRecords(
+  records = [],
+  {
+    searchQuery = "",
+    economicClassFilter = "",
+    fundingFilter = "",
+    statusFilter = "",
+  } = {},
+) {
+  const query = searchQuery.trim().toLowerCase();
+  const list = Array.isArray(records) ? records : [];
+
+  return list.filter((record) => {
+    if (
+      economicClassFilter &&
+      record.economicClassification !== economicClassFilter
+    ) {
+      return false;
+    }
+    if (fundingFilter && record.sourceOfFunding !== fundingFilter) return false;
+    if (statusFilter && record.status !== statusFilter) return false;
+    if (!query) return true;
+
+    return Object.values(record)
+      .map((value) => String(value ?? ""))
+      .join(" ")
+      .toLowerCase()
+      .includes(query);
+  });
+}
+
 export default function BudgetTable({
-  searchQuery,
-  onEdit,
-  setRecordToReview,
-  setIsReviewModalOpen,
+  searchQuery = "",
+  economicClassFilter = "",
+  fundingFilter = "",
+  statusFilter = "",
+  onOpenForm,
 }) {
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
   const { records, loading, error } = useSelector((store) => store.budget);
   const { authUser } = useSelector((state) => state.auth);
+
   const userRole = authUser?.role;
   const highlightId = searchParams.get("highlight");
   const rowRefs = useRef({});
@@ -35,27 +91,33 @@ export default function BudgetTable({
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
-
-  // Filter records (case-insensitive)
-  const filteredRecords = records.filter((record) =>
-    Object.values(record)
-      .join(" ")
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase())
-  );
-
-  /* =========================
-       PAGINATION
-    ========================== */
-  const PAGE_SIZE = 10;
+  const [serialToDelete, setSerialToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const index = (currentPage - 1) * PAGE_SIZE;
-  const paginatedRecords = filteredRecords.slice(index, index + PAGE_SIZE);
+  const filteredRecords = filterExpenditureRecords(records, {
+    searchQuery,
+    economicClassFilter,
+    fundingFilter,
+    statusFilter,
+  });
+  const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const paginatedRecords = filteredRecords.slice(
+    pageStart,
+    pageStart + PAGE_SIZE,
+  );
+
+  const filtersKey = `${searchQuery}|${economicClassFilter}|${fundingFilter}|${statusFilter}`;
+  const previousFilters = useRef(filtersKey);
 
   useEffect(() => {
     dispatch(fetchExpenditures());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (previousFilters.current === filtersKey) return;
+    previousFilters.current = filtersKey;
+    setCurrentPage(1);
+  }, [filtersKey]);
 
   useEffect(() => {
     if (loading || !highlightId) return;
@@ -82,36 +144,39 @@ export default function BudgetTable({
 
     const timeoutId = setTimeout(() => setHighlightedId(null), 3500);
     return () => clearTimeout(timeoutId);
-  }, [loading, records, highlightId, currentPage, searchQuery]);
+  }, [loading, records, highlightId, currentPage, filtersKey]);
 
-  if (loading)
-    return (
-      <TableSkeleton
-        headers={[
-          "S.N",
-          "Activity",
-          "Date",
-          "Economic Class",
-          "Funding Source",
-          "Natural Account",
-          "Description",
-          "Appropriation",
-          "Allotment",
-          "Allotment Balance",
-          "Appropriation Balance",
-          "Releases",
-          "Actual Expenditure",
-          "Actual Payment",
-          "Status",
-          "Actions",
-        ]}
-      />
-    );
+  const openRecordForm = (index, record, mode) => {
+    const serialNumber = index + 1;
+
+    if (mode === "review") {
+      dispatch(startReviewing({ index, record }));
+      toast.success(`Ready to review record ${serialNumber}`);
+    } else {
+      dispatch(startEditing({ index, record }));
+      toast.success(`Ready to edit record ${serialNumber}`);
+    }
+
+    onOpenForm?.();
+  };
+
+  if (loading) return <TableSkeleton headers={TABLE_HEADERS} />;
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
-  //delete
-  const openDeleteModal = (record) => {
+  const handleApprove = async (record) => {
+    try {
+      await dispatch(approveExpenditure(record.id)).unwrap();
+      toast.success("Record approved successfully!");
+      dispatch(fetchExpenditures());
+      refreshNotifications();
+    } catch (err) {
+      toast.error(err || "Failed to approve record.");
+    }
+  };
+
+  const openDeleteModal = (record, index) => {
     setRecordToDelete(record);
+    setSerialToDelete(index + 1);
     setIsDeleteModalOpen(true);
   };
 
@@ -128,189 +193,151 @@ export default function BudgetTable({
     }
   };
 
-  ///review
-  const handleReviewClick = (record, index) => {
-    // Set reviewing mode and populate the form in the main page
-    dispatch(startReviewing({ index, record }));
-    onEdit(record);
-    toast.success(`You are now reviewing "${record.activity}"`);
-  };
-
-  //approve
-  const handleApprove = async (record) => {
-    try {
-      await dispatch(approveExpenditure(record.id)).unwrap();
-      toast.success("Record approved successfully!");
-      dispatch(fetchExpenditures());
-      refreshNotifications();
-    } catch (err) {
-      toast.error(err || "Failed to approve record.");
-    }
-  };
-
-  //
-  const handleEditClick = (record, index) => {
-    dispatch(startEditing({ index, record }));
-    onEdit(record);
-  };
+  const recordList = Array.isArray(records) ? records : [];
 
   return (
     <>
-      <div className="w-full overflow-x-auto lg:px-4">
-        <table className="min-w-full shadow-lg bg-white">
-          <thead className="bg-green-100 text-green-800 font-semibold">
-            <tr>
-              <th className="border px-2 py-1">S.N</th>
-              <th className="border px-2 py-1">Activity</th>
-              <th className="border px-2 py-1">Date</th>
-              <th className="border px-2 py-1">Economic Class</th>
-              <th className="border px-2 py-1">Funding Source</th>
-              <th className="border px-2 py-1">Natural Account</th>
-              <th className="border px-2 py-1">Description</th>
-              <th className="border px-2 py-1">Appropriation</th>
-              <th className="border px-2 py-1">Allotment</th>
-              <th className="border px-2 py-1">Allotment Balance</th>
-              <th className="border px-2 py-1">Appropriation Balance</th>
-              <th className="border px-2 py-1">Releases</th>
-              <th className="border px-2 py-1">Actual Expenditure</th>
-              <th className="border px-2 py-1">Actual Payment</th>
-              <th className="border px-2 py-1">Status</th>
-              <th className="border px-2 py-1">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredRecords.length === 0 ? (
+      <div className="w-full">
+        <div className="data-table-wrap">
+          <table className="data-table data-table-strong min-w-full">
+            <thead>
               <tr>
-                <td
-                  colSpan="15"
-                  className="text-center text-gray-500 py-3 italic"
-                >
-                  No matching records found.
-                </td>
+                {TABLE_HEADERS.map((header) => (
+                  <th key={header} className="px-3 py-3">
+                    {header}
+                  </th>
+                ))}
               </tr>
-            ) : (
-              paginatedRecords.map((record, index) => (
-                <tr
-                  key={record.id || index}
-                  ref={(el) => {
-                    if (record.id != null) rowRefs.current[record.id] = el;
-                  }}
-                  className={`text-center ${
-                    highlightedId === record.id ? "bg-green-100" : ""
-                  }`}
-                >
-                  <td className="border px-2 py-1">{index + 1}</td>
-                  <td className="border px-2 py-1">{record.activity}</td>
-                  <td className="border px-2 py-1">{record.date}</td>
-                  <td className="border px-2 py-1">
-                    {record.economicClassification}
-                  </td>
-                  <td className="border px-2 py-1">{record.sourceOfFunding}</td>
-                  <td className="border px-2 py-1">{record.naturalAccount}</td>
-                  <td className="border px-2 py-1">{record.description}</td>
-                  <td className="border px-2 py-1">{record.appropriation}</td>
-                  <td className="border px-2 py-1">{record.allotment}</td>
-                  <td className="border px-2 py-1">
-                    {record.allotmentBalance}
-                  </td>
-                  <td className="border px-2 py-1">
-                    {record.appropriationBalance}
-                  </td>
-                  <td className="border px-2 py-1">{record.releases}</td>
-                  <td className="border px-2 py-1">
-                    {record.actualExpenditure}
-                  </td>
-                  <td className="border px-2 py-1">{record.actualPayment}</td>
-                  <td className="border px-2 py-1 font-semibold text-blue-900 border-black">
-                    {record.status}
-                  </td>
+            </thead>
 
-                  <td className="px-2 py-1 border text-center">
-                    <ul className="menu bg-base-100 w-32 z-10">
-                      {/* === DATA ENTRY USER === */}
-                      {(userRole === "data_entry" || userRole === "admin") &&
-                        record.status === "Pending" && (
-                          <>
-                            <li>
-                              <a
-                                onClick={() => handleEditClick(record, index)}
-                                className="text-yellow-600 font-semibold cursor-pointer"
-                              >
-                                <PencilSquare /> Edit
-                              </a>
-                            </li>
-
-                            <li>
-                              <span
-                                onClick={() => openDeleteModal(record)}
-                                className="text-red-600 font-semibold cursor-pointer"
-                              >
-                                <Trash /> Delete
-                              </span>
-                            </li>
-                          </>
-                        )}
-
-                      {/* === REVIEWER === */}
-                      {(userRole === "reviewer" || userRole === "admin") &&
-                        record.status === "Pending" && (
-                          <li>
-                            <a
-                              onClick={() => {
-                                // Set Redux to reviewing mode and populate the form
-                                dispatch(startReviewing({ record, index }));
-                                onEdit(record);
-
-                                // Notify the reviewer
-                                toast.success(
-                                  `Ready to review "${record.activity}"`
-                                );
-                              }}
-                              className="text-blue-700 font-semibold cursor-pointer"
-                            >
-                              <Clipboard /> Review
-                            </a>
-                          </li>
-                        )}
-
-                      {/* === APPROVER === */}
-                      {(userRole === "approver" || userRole === "admin") &&
-                        record.status === "Reviewed" && (
-                          <li>
-                            <a
-                              onClick={() => handleApprove(record)}
-                              className="text-green-800 font-semibold cursor-pointer"
-                            >
-                              <Check /> Approve
-                            </a>
-                          </li>
-                        )}
-
-                      {record.status === "Approved" && (
-                        <li>
-                          <a className="text-green-800 font-semibold cursor-pointer">
-                            <CheckFill /> Approved
-                          </a>
-                        </li>
-                      )}
-                    </ul>
+            <tbody>
+              {filteredRecords.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={TABLE_HEADERS.length}
+                    className="py-4 text-center italic text-gray-500"
+                  >
+                    {recordList.length === 0
+                      ? "No data available"
+                      : "No records match your search or filters."}
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                paginatedRecords.map((record, index) => {
+                  const serialNumber = pageStart + index + 1;
+                  return (
+                    <tr
+                      key={record.id || index}
+                      ref={(el) => {
+                        if (record.id != null) rowRefs.current[record.id] = el;
+                      }}
+                      className={`text-center ${
+                        highlightedId === record.id ? "bg-green-100" : ""
+                      }`}
+                    >
+                      <td className="px-3 py-3">{serialNumber}</td>
+                      <td className="px-3 py-3">{record.activity}</td>
+                      <td className="px-3 py-3">{record.date}</td>
+                      <td className="px-3 py-3">
+                        {record.economicClassification}
+                      </td>
+                      <td className="px-3 py-3">{record.sourceOfFunding}</td>
+                      <td className="px-3 py-3">{record.naturalAccount}</td>
+                      <td className="px-3 py-3">{record.description}</td>
+                      <td className="px-3 py-3">{record.appropriation}</td>
+                      <td className="px-3 py-3">{record.allotment}</td>
+                      <td className="px-3 py-3">{record.allotmentBalance}</td>
+                      <td className="px-3 py-3">
+                        {record.appropriationBalance}
+                      </td>
+                      <td className="px-3 py-3">{record.releases}</td>
+                      <td className="px-3 py-3">{record.actualExpenditure}</td>
+                      <td className="px-3 py-3">{record.actualPayment}</td>
+                      <td className="bg-transparent px-3 py-3">
+                        <StatusBadge status={record.status} />
+                      </td>
+                      <td className="px-3 py-3 text-center">
+                        <IconActionGroup colored>
+                          {(userRole === "data_entry" ||
+                            userRole === "admin") &&
+                            record.status === "Pending" && (
+                              <>
+                                <IconAction
+                                  label="Edit"
+                                  tone="edit"
+                                  onClick={() =>
+                                    openRecordForm(
+                                      serialNumber - 1,
+                                      record,
+                                      "edit",
+                                    )
+                                  }
+                                >
+                                  <PencilSquare />
+                                </IconAction>
+                                <IconAction
+                                  label="Delete"
+                                  tone="delete"
+                                  onClick={() =>
+                                    openDeleteModal(record, serialNumber - 1)
+                                  }
+                                >
+                                  <Trash />
+                                </IconAction>
+                              </>
+                            )}
 
-        {/*                              DELETE MODAL                                  */}
+                          {(userRole === "reviewer" || userRole === "admin") &&
+                            record.status === "Pending" && (
+                              <IconAction
+                                label="Review"
+                                tone="review"
+                                onClick={() =>
+                                  openRecordForm(
+                                    serialNumber - 1,
+                                    record,
+                                    "review",
+                                  )
+                                }
+                              >
+                                <Clipboard />
+                              </IconAction>
+                            )}
+
+                          {(userRole === "approver" || userRole === "admin") &&
+                            record.status === "Reviewed" && (
+                              <IconAction
+                                label="Approve"
+                                tone="approve"
+                                onClick={() => handleApprove(record)}
+                              >
+                                <Check />
+                              </IconAction>
+                            )}
+
+                          {record.status === "Approved" && (
+                            <IconAction label="Approved" tone="done">
+                              <CheckFill />
+                            </IconAction>
+                          )}
+                        </IconActionGroup>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {isDeleteModalOpen && (
           <dialog open className="modal">
             <div className="modal-box">
-              <h3 className="font-bold text-lg text-red-400">Confirm Delete</h3>
+              <h3 className="text-lg font-bold text-red-400">Confirm Delete</h3>
               <p className="py-4">
-                Are you sure you want to delete{" "}
+                Are you sure you want to delete item{" "}
                 <span className="font-semibold text-green-800">
-                  “{recordToDelete?.activity}”
+                  “{serialToDelete}”
                 </span>
                 ?
               </p>
@@ -335,7 +362,6 @@ export default function BudgetTable({
           </dialog>
         )}
       </div>
-      {/* Pagination (EXTERNAL COMPONENT) */}
       <Pagination
         currentPage={currentPage}
         totalItems={filteredRecords.length}

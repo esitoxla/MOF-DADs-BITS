@@ -1,13 +1,12 @@
-import React from "react";
 import { useState, useEffect } from "react";
 import Select from "react-select";
+import { X } from "lucide-react";
 import {
   revenueCategoriesOptions,
   revenueBudgetProjections,
   organizationRetentionRates,
 } from "../data/RevenueFormsData";
-import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import {
   addRevenue,
   updateRevenue,
@@ -17,40 +16,52 @@ import {
 import toast from "react-hot-toast";
 import ReviewModal from "./ReviewModal";
 
-export default function RevenueForm() {
+const fieldClass =
+  "w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 outline-none focus:border-green-700 focus:ring-2 focus:ring-green-700/20 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-600";
+
+export default function RevenueForm({ isOpen = false, onClose = () => {} }) {
   const [selectedDate, setSelectedDate] = useState("");
   const [revenue, setRevenue] = useState(null);
-  const [projectionB, setProjectionB] = useState(null);
+  const [projectionB, setProjectionB] = useState("");
   const [collections, setCollections] = useState("");
   const [payment, setPayment] = useState("");
   const [retention, setRetention] = useState("");
-  // const [projectionYear, setProjectionYear] = useState(null);
   const [remarks, setRemarks] = useState("");
   const [retentionRate, setRetentionRate] = useState(0);
 
-  //review logic
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [recordToReview, setRecordToReview] = useState(null);
 
   const { authUser: user } = useSelector((state) => state.auth);
-
   const { formValues, isEditing, isReviewing } = useSelector(
     (state) => state.revenue,
   );
-
   const dispatch = useDispatch();
 
-  //Load the retention rate from the logged-in user
   useEffect(() => {
     if (user?.organization) {
       const rate = organizationRetentionRates[user.organization];
-      console.log(rate);
       setRetentionRate(rate);
-      
     }
   }, [user]);
 
-  // Auto-calculate logic based on retention rate
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event) => {
+      if (event.key === "Escape" && !isReviewModalOpen) onClose();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isOpen, isReviewModalOpen, onClose]);
+
   const handleCollectionsChange = (value) => {
     setCollections(value);
 
@@ -74,8 +85,6 @@ export default function RevenueForm() {
     setPayment(D.toFixed(2));
   };
 
-
-
   const clearForm = () => {
     setSelectedDate("");
     setRevenue(null);
@@ -86,7 +95,6 @@ export default function RevenueForm() {
     setRemarks("");
   };
 
-  //update your form component to load formValues when editing, or reviewing and reset branch to Revenue
   useEffect(() => {
     if (!isEditing && !isReviewing) {
       clearForm();
@@ -109,6 +117,7 @@ export default function RevenueForm() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (isReviewing) return;
 
     if (!selectedDate) {
       toast.error("Date is required!");
@@ -141,9 +150,6 @@ export default function RevenueForm() {
       remarks,
     };
 
-    // console.log("Submitting Revenue Data:", formData);
-
-    //edit functionality
     if (isEditing) {
       dispatch(updateRevenue({ id: formValues.id, formData }))
         .unwrap()
@@ -151,6 +157,7 @@ export default function RevenueForm() {
           toast.success("Revenue updated successfully!");
           clearForm();
           dispatch(cancelEditing());
+          onClose();
         })
         .catch((err) => toast.error(err));
       return;
@@ -160,225 +167,232 @@ export default function RevenueForm() {
       .unwrap()
       .then(() => {
         toast.success("Revenue added successfully!");
-        clearForm(); // RESET FORM
+        clearForm();
+        onClose();
       })
       .catch((err) => toast.error(err));
   };
 
   const handleRevenueReview = async ({ id, comment }) => {
     await dispatch(reviewRevenue({ id, reviewComment: comment })).unwrap();
-
     clearForm();
     dispatch(cancelEditing());
+    onClose();
   };
 
-  return (
-    <div className="flex flex-col gap-6 justify-center">
-      <form
-        onSubmit={handleSubmit}
-        className="min-h-screen w-full p-4 sm:p-6 flex flex-col"
-      >
-        <div className=" text-center text-2xl font-bold text-green-800 mb-8 border-0 shadow bg-white px-4 py-4 w-full">
-          IGF Revenue Collections
-        </div>
+  if (!isOpen) return null;
 
-        <div className=" cursor-pointer shadow bg-white h-full py-8 px-4 mb-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
-            <div className="flex flex-col gap-2">
-              <label className="block text-gray-600 mb-1 font-semibold">
-                DATE
-              </label>
-              <div className="">
-                <input
-                  type="date"
-                  value={selectedDate}
-                  disabled={isReviewing}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  // disabled={isReviewing}
-                  className="border border-black w-full py-[0.7rem] px-2 rounded"
-                />
+  const title = isReviewing
+    ? "Review Revenue Record"
+    : isEditing
+      ? "Edit Revenue Record"
+      : "Add Revenue Record";
+
+  const subtitle = isReviewing
+    ? "These fields are filled from the selected record. Submit a review when the details look right."
+    : isEditing
+      ? "Update the collection details, then save the record."
+      : "Payment into the consolidated fund and retention are calculated from your organization's retention rate.";
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4"
+        onClick={onClose}
+      >
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="revenue-form-title"
+          className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-4">
+            <div>
+              <h2
+                id="revenue-form-title"
+                className="text-xl font-bold text-green-800"
+              >
+                {title}
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="cursor-pointer rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+            <div className="overflow-y-auto px-6 py-5">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    disabled={isReviewing}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className={fieldClass}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Revenue categories
+                  </label>
+                  <Select
+                    options={revenueCategoriesOptions}
+                    value={revenue}
+                    onChange={(value) => {
+                      setRevenue(value);
+                      setProjectionB(revenueBudgetProjections[value.value]);
+                    }}
+                    placeholder="Select revenue category"
+                    isSearchable
+                    isDisabled={isReviewing}
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                    filterOption={(option, inputValue) =>
+                      option.label
+                        .toLowerCase()
+                        .includes(inputValue.toLowerCase())
+                    }
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        minHeight: "42px",
+                        borderColor: "#d1d5db",
+                        boxShadow: "none",
+                        borderRadius: "0.5rem",
+                        backgroundColor: state.isDisabled ? "#f3f4f6" : "white",
+                        fontSize: "0.875rem",
+                      }),
+                      menuPortal: (base) => ({ ...base, zIndex: 80 }),
+                    }}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Budget projections
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    className={fieldClass}
+                    value={projectionB || ""}
+                    onChange={(e) => setProjectionB(e.target.value)}
+                    disabled={isReviewing}
+                    placeholder="Enter budget projections here..."
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Actual collections
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    className={fieldClass}
+                    value={collections}
+                    disabled={isReviewing}
+                    onChange={(e) => handleCollectionsChange(e.target.value)}
+                    placeholder="Enter actual collection here..."
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Payment into consolidated fund
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    className={`${fieldClass} bg-gray-50`}
+                    value={payment}
+                    readOnly
+                    placeholder="Auto calculated..."
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Retention
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    className={`${fieldClass} bg-gray-50`}
+                    value={retention}
+                    readOnly
+                    placeholder="Auto calculated..."
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2 sm:col-span-2">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Remarks
+                  </label>
+                  <input
+                    type="text"
+                    className={fieldClass}
+                    value={remarks}
+                    disabled={isReviewing}
+                    onChange={(e) => setRemarks(e.target.value)}
+                    placeholder="Enter a remark..."
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="block text-gray-600 mb-1 font-semibold">
-                REVENUE CATEGORIES
-              </label>
+            <div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="cursor-pointer rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300"
+              >
+                Cancel
+              </button>
 
-              <Select
-                options={revenueCategoriesOptions}
-                value={revenue}
-                onChange={(value) => {
-                  setRevenue(value);
-                  setProjectionB(revenueBudgetProjections[value.value]); // <-- Auto-fill
+              <button
+                type={isReviewing ? "button" : "submit"}
+                onClick={() => {
+                  if (!isReviewing) return;
+                  setRecordToReview(formValues);
+                  setIsReviewModalOpen(true);
                 }}
-                // disabled={isReviewing}
-                placeholder="Select revenue category"
-                isSearchable
-                isDisabled={isReviewing}
-                filterOption={(option, inputValue) =>
-                  option.label.toLowerCase().includes(inputValue.toLowerCase())
-                }
-                styles={{
-                  control: (base) => ({
-                    ...base,
-                    padding: ".3rem .2rem",
-                    boxShadow: "none",
-                    borderColor: "black",
-                    fontSize: "1rem",
-                    backgroundColor: "white",
-                  }),
-                  // placeholder: (base) => ({
-                  //   ...base,
-                  //   color: "#000000",
-                  // }),
-                }}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor=""
-                className="block text-gray-600 mb-1 font-semibold"
+                className={`${
+                  isReviewing
+                    ? "bg-blue-600 hover:bg-blue-700"
+                    : isEditing
+                      ? "bg-yellow-600 hover:bg-yellow-700"
+                      : "bg-green-600 hover:bg-green-700"
+                } cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold text-white`}
               >
-                BUDGET PROJECTIONS
-              </label>
-              <input
-                type="number"
-                min="0"
-                className="py-[0.7rem] px-2 w-full outline rounded "
-                value={projectionB || ""}
-                onChange={(e) => setProjectionB(e.target.value)}
-                disabled={isReviewing}
-                placeholder="Enter budget projections here..."
-              />
+                {isEditing ? "OK" : isReviewing ? "Review" : "Submit"}
+              </button>
             </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="block text-gray-600 mb-1 font-semibold">
-                ACTUAL COLLECTIONS
-              </label>
-              <input
-                type="number"
-                min="0"
-                className="py-[0.7rem] px-2 w-full outline rounded "
-                value={collections}
-                disabled={isReviewing}
-                onChange={(e) => handleCollectionsChange(e.target.value)}
-                // disabled={isReviewing}
-                placeholder="Enter actual collection here..."
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor=""
-                className="block text-gray-600 mb-1 font-semibold"
-              >
-                PAYMENT INTO CONSOLIDATED FUND
-              </label>
-              <input
-                type="number"
-                min="0"
-                className="py-[0.7rem] px-2 w-full outline rounded"
-                value={payment}
-                readOnly
-                placeholder="Auto calculated..."
-              />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor=""
-                className="block text-gray-600 mb-1 font-semibold"
-              >
-                RETENTION
-              </label>
-              <input
-                type="number"
-                min="0"
-                className="py-[0.7rem] px-2 w-full outline rounded "
-                value={retention}
-                readOnly
-                placeholder="Auto calculated..."
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10  w-full px-4 mb-8">
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor=""
-                className="block text-gray-600 mb-1 font-semibold"
-              >
-                REMARKS
-              </label>
-              <input
-                type="text"
-                className="py-[0.7rem] px-2 w-full outline rounded "
-                value={remarks}
-                disabled={isReviewing}
-                onChange={(e) => setRemarks(e.target.value)}
-                placeholder="Enter a remark..."
-              />
-            </div>
-          </div>
+          </form>
         </div>
+      </div>
 
-        <div className="text-right flex justify-end gap-4">
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedDate("");
-              setRevenue(null);
-              setProjectionB("");
-              setCollections("");
-              setPayment("");
-              setRetention("");
-              setRemarks("");
-              dispatch(cancelEditing());
-              toast.success("Form reset successfully!");
-            }}
-            className="bg-gray-400 text-white px-4 py-2 font-semibold hover:bg-gray-500 transition duration-300 shadow-md cursor-pointer lg:w-[10%]"
-          >
-            Cancel
-          </button>
-
-          <button
-            type={isReviewing ? "button" : "submit"}
-            onClick={(e) => {
-              if (isReviewing) {
-                e.preventDefault();
-                setRecordToReview(formValues);
-                setIsReviewModalOpen(true);
-              } else {
-                handleSubmit(e);
-              }
-            }}
-            className={`${
-              isReviewing
-                ? "bg-blue-600 hover:bg-blue-700"
-                : isEditing
-                  ? "bg-yellow-600 hover:bg-yellow-700"
-                  : "bg-green-600 hover:bg-green-700"
-            } text-white px-4 py-2 font-semibold transition duration-300 shadow-md cursor-pointer lg:w-[10%]`}
-          >
-            {isEditing ? "OK" : isReviewing ? "Review" : "Submit"}
-          </button>
-        </div>
-      </form>
-
-      <ReviewModal
-        isOpen={isReviewModalOpen}
-        onClose={() => setIsReviewModalOpen(false)}
-        record={recordToReview}
-        onSubmit={handleRevenueReview}
-        title="Review Revenue Record"
-      />
-    </div>
+      <div className="relative z-[60]">
+        <ReviewModal
+          isOpen={isReviewModalOpen}
+          onClose={() => setIsReviewModalOpen(false)}
+          record={recordToReview}
+          onSubmit={handleRevenueReview}
+          title="Review Revenue Record"
+        />
+      </div>
+    </>
   );
 }

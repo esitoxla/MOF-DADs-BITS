@@ -19,7 +19,7 @@ export default function Reports() {
         {/* Summary Report */}
         <button
           onClick={() => navigate("summaryReport")}
-          className="flex flex-col gap-3 w-full h-full bg-green-600 text-white text-xl font-semibold rounded-2xl shadow-lg hover:bg-green-700 transition duration-300 cursor-pointer  items-center justify-center"
+          className="flex flex-col gap-3 w-full h-full bg-green-600 text-white text-xl font-semibold rounded-2xl shadow-lg hover:bg-green-700 transition duration-300 cursor-pointer items-center justify-center"
         >
           <div>
             <img
@@ -35,7 +35,7 @@ export default function Reports() {
         {/* Detailed Report */}
         <button
           onClick={() => navigate("detailedReport")}
-          className="w-full h-full bg-green-200 text-green-600 text-xl font-semibold rounded-2xl shadow-lg hover:bg-white transition duration-300 cursor-pointer flex flex-col gap-3 items-center justify-center"
+          className="report-card-muted w-full h-full bg-green-200 text-green-700 text-xl font-semibold rounded-2xl shadow-lg hover:bg-white transition duration-300 cursor-pointer flex flex-col gap-3 items-center justify-center"
         >
           <div>
             <img

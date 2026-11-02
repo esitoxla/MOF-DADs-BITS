@@ -1,28 +1,28 @@
-import React from 'react'
-
 const tabItems = [
-  { key: "single", label: "Single" },
-  { key: "upload", label: "Upload CSV" },
+  { key: "single", label: "Single entry" },
+  { key: "upload", label: "Upload spreadsheet" },
 ];
 
 export default function ActivityTab({ activeTab, changeTab }) {
   return (
-    <div className="mx-auto w-full">
-      <div className="flex justify-center gap-6 border-b border-gray-300 md:w-[21%] ">
-        {tabItems.map((tab) => (
+    <div className="inline-flex flex-wrap gap-1 rounded-xl border border-gray-200 bg-white p-1 shadow-sm">
+      {tabItems.map((tab) => {
+        const isActive = activeTab === tab.key;
+        return (
           <button
-            onClick={() => changeTab(tab.key)}
+            type="button"
             key={tab.key}
-            className={`inline-flex pb-1 font-medium transition-all cursor-pointer ${
-              activeTab === tab.key
-                ? "border-b-2 border-green-600 text-green-600"
-                : "text-gray-500"
+            onClick={() => changeTab(tab.key)}
+            className={`cursor-pointer rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors ${
+              isActive
+                ? "bg-[#166534] text-white dark:bg-[#39FF88] dark:text-[#0B132B]"
+                : "text-gray-500 hover:bg-[#f3faf6] hover:text-[#166534]"
             }`}
           >
             {tab.label}
           </button>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 }

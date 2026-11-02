@@ -10,7 +10,38 @@ import Select from "react-select";
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 
-
+const reportSelectStyles = {
+  control: (base, state) => ({
+    ...base,
+    borderRadius: "0.5rem",
+    borderColor: state.isFocused ? "#16a34a" : "#d1d5db",
+    boxShadow: state.isFocused ? "0 0 0 1px #16a34a" : "none",
+    minHeight: "42px",
+    "&:hover": { borderColor: "#16a34a" },
+  }),
+  menu: (base) => ({
+    ...base,
+    borderRadius: "0.75rem",
+    overflow: "hidden",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.12)",
+    marginTop: 6,
+    marginBottom: 6,
+    zIndex: 30,
+  }),
+  menuList: (base) => ({
+    ...base,
+    maxHeight: 180,
+  }),
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isSelected
+      ? "#16a34a"
+      : state.isFocused
+      ? "#dcfce7"
+      : "white",
+    color: state.isSelected ? "white" : "#111827",
+  }),
+};
 
 export default function DetailedReport() {
   const navigate = useNavigate();
@@ -117,6 +148,9 @@ export default function DetailedReport() {
                 placeholder="Search or select organization"
                 value={organization}
                 onChange={setOrganization}
+                menuPlacement="auto"
+                maxMenuHeight={180}
+                styles={reportSelectStyles}
                 filterOption={(option, inputValue) =>
                   option.label.toLowerCase().includes(inputValue.toLowerCase())
                 }
@@ -133,6 +167,9 @@ export default function DetailedReport() {
               value={reportType}
               onChange={setReportType}
               placeholder="Search or select a report type"
+              menuPlacement="auto"
+              maxMenuHeight={180}
+              styles={reportSelectStyles}
               filterOption={(option, inputValue) =>
                 option.label.toLowerCase().includes(inputValue.toLowerCase())
               }
@@ -149,6 +186,9 @@ export default function DetailedReport() {
               value={quarter}
               onChange={setQuarter}
               placeholder="Select Quarter"
+              menuPlacement="top"
+              maxMenuHeight={180}
+              styles={reportSelectStyles}
             />
 
             <input
@@ -171,13 +211,16 @@ export default function DetailedReport() {
               value={status}
               onChange={setStatus}
               placeholder="Select status"
+              menuPlacement="top"
+              maxMenuHeight={180}
+              styles={reportSelectStyles}
             />
           </div>
           {/* Action Button */}
           <div className="flex justify-end mt-4">
             <button
               onClick={handleGenerate}
-              className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition duration-300 shadow-md cursor-pointer"
+              className="bg-[#2d8f66] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#246f50] transition duration-300 shadow-md cursor-pointer dark:bg-[#39FF88] dark:text-[#0B132B] dark:hover:bg-[#2eeb78]"
             >
               Generate Report
             </button>
