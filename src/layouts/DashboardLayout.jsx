@@ -26,8 +26,21 @@ export default function DashboardLayout() {
     return () => media.removeEventListener("change", onChange);
   }, []);
 
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const previousHtml = html.style.overflow;
+    const previousBody = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    return () => {
+      html.style.overflow = previousHtml;
+      body.style.overflow = previousBody;
+    };
+  }, []);
+
   return (
-    <div className="flex h-screen w-full bg-green-50 dark:bg-[#0B132B]">
+    <div className="flex h-dvh w-full overflow-hidden bg-green-50 dark:bg-[#0B132B]">
       {isSidebarOpen && !isDesktop && (
         <button
           type="button"
@@ -48,7 +61,7 @@ export default function DashboardLayout() {
         </div>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <header className="flex min-h-20 shrink-0 items-center justify-between border-b-2 border-[#0f9b80] bg-white px-3 pt-6 pb-3 sm:px-4 dark:border-[#39FF88] dark:bg-[#0B132B]">
           <button
             type="button"

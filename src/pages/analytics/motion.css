@@ -1,0 +1,176 @@
+/* Visual motion for the Analytics dashboard only.
+   Opacity, transform, and bar width. Nothing here loops unless a reload is in progress. */
+
+@keyframes analytics-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes analytics-risk-pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  40% {
+    opacity: 0.45;
+    transform: scale(1.12);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes analytics-alert-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes analytics-loading {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(380%);
+  }
+}
+
+.analytics-kpi {
+  animation: analytics-rise 480ms ease-out backwards;
+}
+
+.analytics-kpi-face {
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+}
+
+.dark .analytics-kpi-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow:
+    0 0 0 1px rgba(57, 255, 136, 0.16),
+    0 0 18px rgba(57, 255, 136, 0.14);
+  transition: opacity 200ms ease-out;
+}
+
+.dark .analytics-kpi-face:hover::after {
+  opacity: 1;
+}
+
+.analytics-risk-pulse {
+  display: inline-flex;
+  transform-origin: center;
+  animation: analytics-risk-pulse 360ms ease-out 2;
+}
+
+.analytics-grow {
+  transition: width 700ms ease-out;
+}
+
+.analytics-marker {
+  opacity: 0;
+  transition: opacity 260ms ease-out;
+}
+
+.analytics-marker.is-in {
+  opacity: 1;
+}
+
+.analytics-reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 560ms ease-out, transform 560ms ease-out;
+}
+
+.analytics-reveal.is-shown {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.analytics-reveal.is-settled {
+  transform: none;
+}
+
+.analytics-alert-row {
+  animation: analytics-alert-in 400ms ease-out backwards;
+}
+
+.analytics-dad-table tbody td {
+  transition: background-color 150ms ease-out;
+}
+
+.analytics-motion button {
+  transition:
+    color 150ms ease-out,
+    background-color 150ms ease-out,
+    border-color 150ms ease-out;
+}
+
+.analytics-loading-track {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 30;
+  height: 2px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.analytics-loading-bar {
+  height: 100%;
+  width: 35%;
+  background: linear-gradient(90deg, transparent, #15803d 45%, transparent);
+  animation: analytics-loading 750ms ease-out infinite;
+}
+
+.dark .analytics-loading-bar {
+  background: linear-gradient(90deg, transparent, #39ff88 45%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .analytics-motion *,
+  .analytics-motion *::before,
+  .analytics-motion *::after,
+  .analytics-skeleton .animate-pulse {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .analytics-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .analytics-marker {
+    opacity: 1 !important;
+  }
+
+  .analytics-loading-bar {
+    animation: none !important;
+    transform: none !important;
+    width: 100% !important;
+    background: #15803d !important;
+  }
+
+  .dark .analytics-loading-bar {
+    background: #39ff88 !important;
+  }
+}

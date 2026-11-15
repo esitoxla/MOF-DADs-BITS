@@ -13,6 +13,18 @@
   --color-ink-secondary: #64748b;
 }
 
+/* Keep dashboard scrolling, without a visible vertical bar on the main page. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 /* Dark theme: Prompt Blue #0B132B, AI Green #39FF88 */
 .dark .bits-main {
   background-color: #0b132b;
@@ -167,6 +179,8 @@
 
 .data-table-wrap {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   overflow-x: auto;
   background: #fff;
   border-radius: 1rem;

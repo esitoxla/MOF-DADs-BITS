@@ -1,20 +1,17 @@
-import React, { useState } from "react";
-import { NavLink } from "react-router";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import toast, { Toaster } from "react-hot-toast";
-import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { X } from "lucide-react";
 import { addUser } from "../store/features/userSlice";
 import { organizationOptions } from "../data/BudgetExpenditureData";
 
-
+const fieldClass =
+  "w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 outline-none focus:border-green-700 focus:ring-2 focus:ring-green-700/20";
 
 export default function NewUser({ isOpen, onClose }) {
-  if (!isOpen) return null;
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  const { successMessage } = useSelector((store) => store.user);
 
   const [userDetails, setUserDetails] = useState({
     name: "",
@@ -74,52 +71,89 @@ export default function NewUser({ isOpen, onClose }) {
 
     dispatch(addUser(userDetails))
       .unwrap()
-      .then((res) => {
+      .then(() => {
         toast.success("User added successfully!");
 
-        // give the toast time to show before unmounting
         setTimeout(() => {
-          onClose(); // close modal
+          onClose();
           navigate("/dashboard/users", { replace: true });
-        }, 1000); // 1second delay
+        }, 1000);
       })
       .catch((err) => {
         toast.error(err || "Failed to add user");
         console.error(err);
       });
-
   }
 
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-xs transition-all duration-300">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4"
+      onClick={onClose}
+    >
       <div
-        className="absolute inset-0"
-        onClick={onClose} // closes modal when background is clicked
-      ></div>
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="new-user-title"
+        className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-4">
+          <div>
+            <h2
+              id="new-user-title"
+              className="text-xl font-bold text-green-800"
+            >
+              Add a new user
+            </h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Create an account and assign a role, organization, and
+              designation.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="cursor-pointer rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
 
-      <div className="relative flex flex-col m-6 bg-white shadow-2xl rounded-2xl md:flex-row md:space-y-0">
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-6 text-gray-500 hover:text-black cursor-pointer"
+        <form
+          className="flex min-h-0 flex-1 flex-col"
+          onSubmit={handleAddUser}
         >
-          ✕
-        </button>
-
-        <div className="flex flex-col justify-center py-4 px-4 md:px-8 w-full">
-          <span className="mb-6 text-2xl font-semibold">Add a new user</span>
-
-          <form className="space-y-8" onSubmit={handleAddUser}>
-            {/* First row: Name & Email */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
+          <div className="overflow-y-auto px-6 py-5">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Name
                 </label>
                 <input
                   type="text"
                   name="name"
                   placeholder="Enter full name"
-                  className="w-full p-3 border border-gray-300 rounded-lg  outline-none"
+                  className={fieldClass}
                   value={userDetails.name}
                   onChange={(e) =>
                     setUserDetails({ ...userDetails, name: e.target.value })
@@ -127,69 +161,67 @@ export default function NewUser({ isOpen, onClose }) {
                 />
               </div>
 
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Email
                 </label>
                 <input
                   type="email"
                   name="email"
                   placeholder="Enter email address"
-                  className="w-full p-3 border border-gray-300 rounded-lg  outline-none"
+                  className={fieldClass}
                   value={userDetails.email}
                   onChange={(e) =>
                     setUserDetails({ ...userDetails, email: e.target.value })
                   }
                 />
               </div>
-            </div>
 
-            {/* Second row: Password & Username */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Password
                 </label>
                 <input
                   type="password"
                   name="password"
                   placeholder="Enter password"
-                  className="w-full p-3 border border-gray-300 rounded-lg  outline-none"
+                  className={fieldClass}
                   value={userDetails.password}
                   onChange={(e) =>
-                    setUserDetails({ ...userDetails, password: e.target.value })
+                    setUserDetails({
+                      ...userDetails,
+                      password: e.target.value,
+                    })
                   }
                 />
               </div>
 
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Username
                 </label>
                 <input
                   type="text"
                   name="username"
                   placeholder="Enter username"
-                  className="w-full p-3 border border-gray-300 rounded-lg  outline-none"
+                  className={fieldClass}
                   value={userDetails.username}
                   onChange={(e) =>
-                    setUserDetails({ ...userDetails, username: e.target.value })
+                    setUserDetails({
+                      ...userDetails,
+                      username: e.target.value,
+                    })
                   }
                 />
               </div>
-            </div>
 
-            {/* Third row: Role & Status */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Role
                 </label>
                 <select
-                  type="text"
                   name="role"
-                  placeholder="Enter role"
-                  className="w-full p-3 border border-gray-300 rounded-lg  outline-none"
+                  className={fieldClass}
                   value={userDetails.role}
                   onChange={(e) =>
                     setUserDetails({ ...userDetails, role: e.target.value })
@@ -197,19 +229,19 @@ export default function NewUser({ isOpen, onClose }) {
                 >
                   {roles.map((r) => (
                     <option key={r} value={r}>
-                      {r.replace("_", " ")} {/* Makes it look nice */}
+                      {r.replace("_", " ")}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Status
                 </label>
                 <select
                   name="status"
-                  className="w-full p-3 border border-gray-300 rounded-lg  outline-none"
+                  className={fieldClass}
                   value={userDetails.status}
                   onChange={(e) =>
                     setUserDetails({ ...userDetails, status: e.target.value })
@@ -222,17 +254,14 @@ export default function NewUser({ isOpen, onClose }) {
                   ))}
                 </select>
               </div>
-            </div>
 
-            {/* Fourth row: Organization & Designation */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Organization
                 </label>
                 <select
                   name="organization"
-                  className="w-full p-3 border border-gray-300 rounded-lg outline-none"
+                  className={fieldClass}
                   value={userDetails.organization}
                   onChange={(e) =>
                     setUserDetails({
@@ -256,15 +285,15 @@ export default function NewUser({ isOpen, onClose }) {
                 </select>
               </div>
 
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Designation
                 </label>
                 <input
                   type="text"
                   name="designation"
                   placeholder="Enter designation"
-                  className="w-full p-3 border border-gray-300 rounded-lg  outline-none"
+                  className={fieldClass}
                   value={userDetails.designation}
                   onChange={(e) =>
                     setUserDetails({
@@ -275,18 +304,24 @@ export default function NewUser({ isOpen, onClose }) {
                 />
               </div>
             </div>
+          </div>
 
-            {/* Submit row */}
-            <div className="text-right">
-              <button
-                type="submit"
-                className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
-              >
-                Add User
-              </button>
-            </div>
-          </form>
-        </div>
+          <div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="cursor-pointer rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="cursor-pointer rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
+            >
+              Add User
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

@@ -148,8 +148,6 @@ export default function Users() {
   const [showModal, setShowModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [search, setSearch] = useState("");
-  const [nameFilter, setNameFilter] = useState("");
-  const [emailFilter, setEmailFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [organizationFilter, setOrganizationFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -180,16 +178,12 @@ export default function Users() {
 
     return (
       matchesSearch &&
-      (!nameFilter || user.name === nameFilter) &&
-      (!emailFilter || user.email === emailFilter) &&
       (!roleFilter || user.role === roleFilter) &&
       (!organizationFilter || user.organization === organizationFilter) &&
       (!statusFilter || user.status === statusFilter)
     );
   });
 
-  const nameOptions = toOptions(userRows.map((user) => user.name));
-  const emailOptions = toOptions(userRows.map((user) => user.email));
   const roleOptions = toOptions(
     [
       ...ROLE_OPTIONS.map((option) => option.value),
@@ -249,19 +243,7 @@ export default function Users() {
           />
         </div>
 
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          <FilterSelect
-            value={nameFilter}
-            onChange={setNameFilter}
-            placeholder="All names"
-            options={nameOptions}
-          />
-          <FilterSelect
-            value={emailFilter}
-            onChange={setEmailFilter}
-            placeholder="All emails"
-            options={emailOptions}
-          />
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <FilterSelect
             value={roleFilter}
             onChange={setRoleFilter}

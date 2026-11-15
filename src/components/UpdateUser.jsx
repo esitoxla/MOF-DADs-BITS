@@ -1,10 +1,11 @@
-import React from 'react'
-import { NavLink } from "react-router";
-import { useNavigate } from "react-router";
-import { useDispatch } from 'react-redux';
-import { useState, useEffect } from 'react';
-import { updateUser } from '../store/features/userSlice';
-import toast from 'react-hot-toast';
+import { useDispatch } from "react-redux";
+import { useState, useEffect } from "react";
+import { X } from "lucide-react";
+import { updateUser } from "../store/features/userSlice";
+import toast from "react-hot-toast";
+
+const fieldClass =
+  "w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 outline-none focus:border-green-700 focus:ring-2 focus:ring-green-700/20";
 
 export default function UpdateUser({ isOpen, onClose, user }) {
 
@@ -56,32 +57,64 @@ export default function UpdateUser({ isOpen, onClose, user }) {
   };
 
 
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
-  //   const navigate = useNavigate();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4"
+      onClick={onClose}
+    >
       <div
-        className="absolute inset-0 bg-black/20 backdrop-blur-xs transition-all duration-300"
-        onClick={onClose} // closes modal when background is clicked
-      ></div>
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="update-user-title"
+        className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-4">
+          <div>
+            <h2
+              id="update-user-title"
+              className="text-xl font-bold text-green-800"
+            >
+              Update user
+            </h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Update this user&apos;s details, then save the changes.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="cursor-pointer rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
 
-      <div className="relative flex flex-col m-6 bg-white shadow-2xl rounded-2xl md:flex-row md:space-y-0">
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-6 text-gray-500 hover:text-black cursor-pointer"
-        >
-          ✕
-        </button>
-
-        <div className="flex flex-col justify-center py-4 px-4 md:px-8 w-full">
-          <span className="mb-6 text-2xl font-semibold">Update user</span>
-
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* First row: Name & Email */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className="overflow-y-auto px-6 py-5">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Name
                 </label>
                 <input
@@ -89,12 +122,12 @@ export default function UpdateUser({ isOpen, onClose, user }) {
                   name="name"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full p-3 border rounded-lg"
+                  className={fieldClass}
                 />
               </div>
 
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Email
                 </label>
                 <input
@@ -102,23 +135,19 @@ export default function UpdateUser({ isOpen, onClose, user }) {
                   name="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full p-3 border rounded-lg"
+                  className={fieldClass}
                 />
               </div>
-            </div>
 
-            {/* Second row: Role & Status */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Role
                 </label>
                 <select
-                  type="text"
                   name="role"
                   value={form.role}
                   onChange={(e) => setForm({ ...form, role: e.target.value })}
-                  className="w-full p-3 border rounded-lg"
+                  className={fieldClass}
                 >
                   <option value="">Select Role</option>
                   <option value="admin">Admin</option>
@@ -128,15 +157,17 @@ export default function UpdateUser({ isOpen, onClose, user }) {
                 </select>
               </div>
 
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Status
                 </label>
                 <select
                   name="status"
                   value={form.status}
-                  onChange={(e) => setForm({ ...form, status: e.target.value })}
-                  className="w-full p-3 border rounded-lg"
+                  onChange={(e) =>
+                    setForm({ ...form, status: e.target.value })
+                  }
+                  className={fieldClass}
                 >
                   <option value="">Select Status</option>
                   <option value="active">Active</option>
@@ -144,12 +175,9 @@ export default function UpdateUser({ isOpen, onClose, user }) {
                   <option value="suspended">Suspended</option>
                 </select>
               </div>
-            </div>
 
-            {/* Fourth row: Organization & Designation */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Organization
                 </label>
                 <input
@@ -159,12 +187,12 @@ export default function UpdateUser({ isOpen, onClose, user }) {
                   onChange={(e) =>
                     setForm({ ...form, organization: e.target.value })
                   }
-                  className="w-full p-3 border rounded-lg"
+                  className={fieldClass}
                 />
               </div>
 
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Designation
                 </label>
                 <input
@@ -174,22 +202,28 @@ export default function UpdateUser({ isOpen, onClose, user }) {
                   onChange={(e) =>
                     setForm({ ...form, designation: e.target.value })
                   }
-                  className="w-full p-3 border rounded-lg"
+                  className={fieldClass}
                 />
               </div>
             </div>
+          </div>
 
-            {/* Submit row */}
-            <div className="text-right">
-              <button
-                type="submit"
-                className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
-              >
-                Update
-              </button>
-            </div>
-          </form>
-        </div>
+          <div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="cursor-pointer rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="cursor-pointer rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
+            >
+              Update
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

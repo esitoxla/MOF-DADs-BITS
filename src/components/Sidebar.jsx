@@ -46,7 +46,7 @@ export default function Sidebar() {
 
   const { authUser } = useSelector((store) => store.auth);
 
-  useEffect(() => {
+  useEffect(() => { 
     dispatch(getUser()); // automatically fetch user from cookie if valid
   }, [dispatch]);
 
