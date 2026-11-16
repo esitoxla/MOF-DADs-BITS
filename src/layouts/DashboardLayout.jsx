@@ -62,7 +62,7 @@ export default function DashboardLayout() {
       )}
 
       <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex min-h-20 shrink-0 items-center justify-between border-b-2 border-[#0f9b80] bg-white px-3 pt-6 pb-3 sm:px-4 dark:border-[#39FF88] dark:bg-[#0B132B]">
+        <header className="relative z-30 flex min-h-20 shrink-0 items-center justify-between border-b-2 border-[#0f9b80] bg-white px-3 pt-6 pb-3 sm:px-4 dark:border-[#39FF88] dark:bg-[#0B132B]">
           <button
             type="button"
             onClick={() => setIsSidebarOpen((open) => !open)}

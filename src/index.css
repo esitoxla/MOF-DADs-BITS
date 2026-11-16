@@ -25,6 +25,49 @@
   height: 0;
 }
 
+@keyframes bell-wiggle {
+  0%,
+  70%,
+  100% {
+    transform: rotate(0);
+  }
+  75% {
+    transform: rotate(16deg);
+  }
+  82% {
+    transform: rotate(-14deg);
+  }
+  88% {
+    transform: rotate(8deg);
+  }
+  94% {
+    transform: rotate(-4deg);
+  }
+}
+
+@keyframes attention-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.94);
+  }
+  70% {
+    transform: translateY(3px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.bell-wiggle {
+  animation: bell-wiggle 1.15s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+.attention-pop {
+  animation: attention-pop 0.45s ease-out;
+}
+
 /* Dark theme: Prompt Blue #0B132B, AI Green #39FF88 */
 .dark .bits-main {
   background-color: #0b132b;

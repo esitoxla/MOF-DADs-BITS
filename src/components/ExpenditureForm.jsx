@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Select from "react-select";
 import { X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import ReviewModal from "./ReviewModal";
+import { markRecordViewed } from "../helpers/recordView";
 import {
   capitalExpenditureAccounts,
   economicClassOptions,
@@ -49,8 +50,15 @@ function FieldLabel({ children }) {
 
 export default function ExpenditureForm({ isOpen = false, onClose = () => {} }) {
   const dispatch = useDispatch();
-  const { isEditing, isReviewing, formValues, editingIndex, records } =
+  const { isEditing, isReviewing, isViewing, formValues, editingIndex, records } =
     useSelector((state) => state.budget);
+
+  const dismiss = useCallback(() => {
+    if (isReviewing && formValues?.id) {
+      markRecordViewed("expense", formValues.id);
+    }
+    onClose();
+  }, [isReviewing, formValues, onClose]);
   const { naturalAccounts, budgetValues, loading: budgetLoading } =
     useSelector((state) => state.budgetDynamic);
   const { activities, loading: activitiesLoading } = useSelector(
@@ -119,7 +127,7 @@ export default function ExpenditureForm({ isOpen = false, onClose = () => {} }) 
     document.body.style.overflow = "hidden";
 
     const onKeyDown = (event) => {
-      if (event.key === "Escape" && !isReviewModalOpen) onClose();
+      if (event.key === "Escape" && !isReviewModalOpen) dismiss();
     };
 
     window.addEventListener("keydown", onKeyDown);
@@ -127,7 +135,7 @@ export default function ExpenditureForm({ isOpen = false, onClose = () => {} }) 
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [isOpen, isReviewModalOpen, onClose]);
+  }, [isOpen, isReviewModalOpen, dismiss]);
 
   useEffect(() => {
     if (!economicClass || !fundingSource) return;
@@ -384,14 +392,18 @@ export default function ExpenditureForm({ isOpen = false, onClose = () => {} }) 
 
   if (!isOpen) return null;
 
-  const title = isReviewing
-    ? "Review Expenditure Record"
-    : isEditing
-      ? "Edit Expenditure Record"
-      : "Add Expenditure Record";
+  const title = isViewing
+    ? "View Expenditure Record"
+    : isReviewing
+      ? "Review Expenditure Record"
+      : isEditing
+        ? "Edit Expenditure Record"
+        : "Add Expenditure Record";
 
-  const subtitle = isReviewing
-    ? "These fields are filled from the selected record. Submit a review when the details look right."
+  const subtitle = isViewing
+    ? "You are looking at this record. Close it if you are not taking action yet."
+    : isReviewing
+      ? "These fields are filled from the selected record. Submit a review when the details look right."
     : isEditing
       ? "Update the expenditure details, then save the record."
       : "Appropriation, allotment, and balances are filled from the selected natural account.";
@@ -400,7 +412,7 @@ export default function ExpenditureForm({ isOpen = false, onClose = () => {} }) 
     <>
       <div
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4"
-        onClick={onClose}
+        onClick={dismiss}
       >
         <div
           role="dialog"
@@ -421,7 +433,7 @@ export default function ExpenditureForm({ isOpen = false, onClose = () => {} }) 
             </div>
             <button
               type="button"
-              onClick={onClose}
+              onClick={dismiss}
               aria-label="Close"
               className="cursor-pointer rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
             >
@@ -633,11 +645,12 @@ export default function ExpenditureForm({ isOpen = false, onClose = () => {} }) 
             <div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={dismiss}
                 className="cursor-pointer rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300"
               >
-                Cancel
+                {isViewing ? "Close" : "Cancel"}
               </button>
+              {!isViewing && (
               <button
                 type={isReviewing ? "button" : "submit"}
                 onClick={() => {
@@ -655,6 +668,7 @@ export default function ExpenditureForm({ isOpen = false, onClose = () => {} }) 
               >
                 {isEditing ? "OK" : isReviewing ? "Review" : "Submit"}
               </button>
+              )}
             </div>
           </form>
         </div>

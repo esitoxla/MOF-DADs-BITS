@@ -6,6 +6,7 @@ import { PencilSquare } from "../helpers/edit";
 import { Trash } from "../helpers/trash";
 import { Check } from "../helpers/check";
 import { CheckFill } from "../helpers/checkFill";
+import { Eye } from "lucide-react";
 import { Clipboard } from "../helpers/review";
 import { refreshNotifications } from "./NotificationBell";
 import toast from "react-hot-toast";
@@ -17,6 +18,7 @@ import {
   fetchRevenues,
   startEditing,
   startReviewing,
+  startViewing,
   deleteRevenue,
   approveRevenue,
 } from "../store/features/revenueSlice";
@@ -120,6 +122,8 @@ export default function RevenueTableDetails({
     if (mode === "review") {
       dispatch(startReviewing({ index, record }));
       toast.success(`Ready to review record ${serialNumber}`);
+    } else if (mode === "view") {
+      dispatch(startViewing({ index, record }));
     } else {
       dispatch(startEditing({ index, record }));
       toast.success(`Ready to edit record ${serialNumber}`);
@@ -280,13 +284,24 @@ export default function RevenueTableDetails({
 
                     {(userRole === "approver" || userRole === "admin") &&
                       record.status === "Reviewed" && (
-                        <IconAction
-                          label="Approve"
-                          tone="approve"
-                          onClick={() => handleApprove(record)}
-                        >
-                          <Check />
-                        </IconAction>
+                        <>
+                          <IconAction
+                            label="View"
+                            tone="view"
+                            onClick={() =>
+                              openRecordForm(serialNumber - 1, record, "view")
+                            }
+                          >
+                            <Eye />
+                          </IconAction>
+                          <IconAction
+                            label="Approve"
+                            tone="approve"
+                            onClick={() => handleApprove(record)}
+                          >
+                            <Check />
+                          </IconAction>
+                        </>
                       )}
 
                     {record.status === "Approved" && (

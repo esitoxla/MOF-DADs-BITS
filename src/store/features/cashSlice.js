@@ -96,6 +96,7 @@ const initialState = {
   editingIndex: null,
   isEditing: false,
   isReviewing: false,
+  isViewing: false,
   formValues: {},
 };
 
@@ -109,10 +110,19 @@ const cashSlice = createSlice({
     startEditing: (state, action) => {
       state.isEditing = true;
       state.isReviewing = false;
+      state.isViewing = false;
       state.editingIndex = action.payload.index;
       state.formValues = action.payload.record;
     },
     startReviewing: (state, action) => {
+      state.isReviewing = true;
+      state.isViewing = false;
+      state.isEditing = false;
+      state.formValues = action.payload.record;
+      state.editingIndex = action.payload.index;
+    },
+    startViewing: (state, action) => {
+      state.isViewing = true;
       state.isReviewing = true;
       state.isEditing = false;
       state.formValues = action.payload.record;
@@ -121,6 +131,7 @@ const cashSlice = createSlice({
     cancelEditing: (state) => {
       state.isEditing = false;
       state.isReviewing = false;
+      state.isViewing = false;
       state.editingIndex = null;
       state.formValues = {};
     },
@@ -198,7 +209,12 @@ const cashSlice = createSlice({
   },
 });
 
-export const { startEditing, startReviewing, cancelEditing, setFormValues } =
-  cashSlice.actions;
+export const {
+  startEditing,
+  startReviewing,
+  startViewing,
+  cancelEditing,
+  setFormValues,
+} = cashSlice.actions;
 
 export default cashSlice.reducer;

@@ -6,6 +6,7 @@ const tones = {
     "hover:border-rose-400 hover:text-rose-600 dark:hover:border-rose-400 dark:hover:text-rose-300",
   review:
     "hover:border-sky-500 hover:text-sky-700 dark:hover:border-sky-300 dark:hover:text-sky-300",
+  view: "hover:border-amber-500 hover:text-amber-700 dark:hover:border-amber-300 dark:hover:text-amber-200",
   approve:
     "hover:border-green-600 hover:text-green-700 dark:hover:border-[#39FF88] dark:hover:text-[#39FF88]",
   done: "border-green-600 text-green-700 dark:border-[#39FF88] dark:text-[#39FF88]",
@@ -15,6 +16,7 @@ const coloredTones = {
   edit: "text-yellow-600 hover:border-yellow-500 dark:text-[#fbbf24]",
   delete: "text-red-600 hover:border-rose-400 dark:text-[#fca5a5]",
   review: "text-blue-700 hover:border-sky-500 dark:text-[#7dd3fc]",
+  view: "text-amber-700 hover:border-amber-500 dark:text-amber-200",
   approve: "text-green-800 hover:border-green-700",
   done: "border-green-600 text-green-800",
 };

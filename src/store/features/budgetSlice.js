@@ -107,6 +107,7 @@ const initialState = {
   editingIndex: null,
   isEditing: false,
   isReviewing: false,
+  isViewing: false,
   formValues: {},
 };
 
@@ -121,10 +122,19 @@ const budgetSlice = createSlice({
     startEditing: (state, action) => {
       state.isEditing = true;
       state.isReviewing = false;
+      state.isViewing = false;
       state.editingIndex = action.payload.index;
       state.formValues = action.payload.record;
     },
     startReviewing: (state, action) => {
+      state.isReviewing = true;
+      state.isViewing = false;
+      state.isEditing = false;
+      state.formValues = action.payload.record;
+      state.editingIndex = action.payload.index;
+    },
+    startViewing: (state, action) => {
+      state.isViewing = true;
       state.isReviewing = true;
       state.isEditing = false;
       state.formValues = action.payload.record;
@@ -133,6 +143,7 @@ const budgetSlice = createSlice({
     cancelEditing: (state) => {
       state.isEditing = false;
       state.isReviewing = false;
+      state.isViewing = false;
       state.editingIndex = null;
       state.formValues = {};
     },
@@ -213,6 +224,7 @@ const budgetSlice = createSlice({
 export const {
   startEditing,
   startReviewing,
+  startViewing,
   cancelEditing,
   setFormValues,
 } = budgetSlice.actions;

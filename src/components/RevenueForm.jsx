@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Select from "react-select";
 import { X } from "lucide-react";
 import {
@@ -15,6 +15,7 @@ import {
 } from "../store/features/revenueSlice";
 import toast from "react-hot-toast";
 import ReviewModal from "./ReviewModal";
+import { markRecordViewed } from "../helpers/recordView";
 
 const fieldClass =
   "w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 outline-none focus:border-green-700 focus:ring-2 focus:ring-green-700/20 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-600";
@@ -33,10 +34,17 @@ export default function RevenueForm({ isOpen = false, onClose = () => {} }) {
   const [recordToReview, setRecordToReview] = useState(null);
 
   const { authUser: user } = useSelector((state) => state.auth);
-  const { formValues, isEditing, isReviewing } = useSelector(
+  const { formValues, isEditing, isReviewing, isViewing } = useSelector(
     (state) => state.revenue,
   );
   const dispatch = useDispatch();
+
+  const dismiss = useCallback(() => {
+    if (isReviewing && formValues?.id) {
+      markRecordViewed("revenue", formValues.id);
+    }
+    onClose();
+  }, [isReviewing, formValues, onClose]);
 
   useEffect(() => {
     if (user?.organization) {
@@ -52,7 +60,7 @@ export default function RevenueForm({ isOpen = false, onClose = () => {} }) {
     document.body.style.overflow = "hidden";
 
     const onKeyDown = (event) => {
-      if (event.key === "Escape" && !isReviewModalOpen) onClose();
+      if (event.key === "Escape" && !isReviewModalOpen) dismiss();
     };
 
     window.addEventListener("keydown", onKeyDown);
@@ -60,7 +68,7 @@ export default function RevenueForm({ isOpen = false, onClose = () => {} }) {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [isOpen, isReviewModalOpen, onClose]);
+  }, [isOpen, isReviewModalOpen, dismiss]);
 
   const handleCollectionsChange = (value) => {
     setCollections(value);
@@ -182,14 +190,18 @@ export default function RevenueForm({ isOpen = false, onClose = () => {} }) {
 
   if (!isOpen) return null;
 
-  const title = isReviewing
-    ? "Review Revenue Record"
-    : isEditing
-      ? "Edit Revenue Record"
-      : "Add Revenue Record";
+  const title = isViewing
+    ? "View Revenue Record"
+    : isReviewing
+      ? "Review Revenue Record"
+      : isEditing
+        ? "Edit Revenue Record"
+        : "Add Revenue Record";
 
-  const subtitle = isReviewing
-    ? "These fields are filled from the selected record. Submit a review when the details look right."
+  const subtitle = isViewing
+    ? "You are looking at this record. Close it if you are not taking action yet."
+    : isReviewing
+      ? "These fields are filled from the selected record. Submit a review when the details look right."
     : isEditing
       ? "Update the collection details, then save the record."
       : "Payment into the consolidated fund and retention are calculated from your organization's retention rate.";
@@ -198,7 +210,7 @@ export default function RevenueForm({ isOpen = false, onClose = () => {} }) {
     <>
       <div
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4"
-        onClick={onClose}
+        onClick={dismiss}
       >
         <div
           role="dialog"
@@ -219,7 +231,7 @@ export default function RevenueForm({ isOpen = false, onClose = () => {} }) {
             </div>
             <button
               type="button"
-              onClick={onClose}
+              onClick={dismiss}
               aria-label="Close"
               className="cursor-pointer rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
             >
@@ -356,12 +368,13 @@ export default function RevenueForm({ isOpen = false, onClose = () => {} }) {
             <div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={dismiss}
                 className="cursor-pointer rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300"
               >
-                Cancel
+                {isViewing ? "Close" : "Cancel"}
               </button>
 
+              {!isViewing && (
               <button
                 type={isReviewing ? "button" : "submit"}
                 onClick={() => {
@@ -379,6 +392,7 @@ export default function RevenueForm({ isOpen = false, onClose = () => {} }) {
               >
                 {isEditing ? "OK" : isReviewing ? "Review" : "Submit"}
               </button>
+              )}
             </div>
           </form>
         </div>

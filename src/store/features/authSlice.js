@@ -1,6 +1,7 @@
 import { api } from "../../config/axios";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
+import { applyTheme } from "../../utils/themePreference";
 
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
@@ -84,6 +85,7 @@ export const changePassword = createAsyncThunk(
 export const logoutUser = createAsyncThunk(
   "auth/logout",
   async (_, thunkAPI) => {
+    applyTheme("light");
     try {
       const res = await api.post("/auth/logout");
       return res.data;

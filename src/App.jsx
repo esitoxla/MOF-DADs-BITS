@@ -24,8 +24,9 @@ import AdminDashboard from "./pages/AdminDashboard";
 import DetailedReport from "./pages/DetailedReport";
 import DetailedEC from "./pages/DetailedEC";
 import DetailedRevenue from "./pages/DetailedRevenue";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { refreshSession } from "./store/features/authSlice";
+import { applyTheme, readUserTheme } from "./utils/themePreference";
 import CashPage from "./pages/CashPage";
 import DetailedCash from "./pages/DetailedCash";
 import BudgetReallocationLayout from "./layouts/BudgetReallocationLayout";
@@ -35,6 +36,16 @@ import DetailedReallocation from "./pages/DetailedReallocation";
 
 
 
+
+function ThemeSync() {
+  const userId = useSelector((state) => state.auth.authUser?.id ?? null);
+
+  useEffect(() => {
+    applyTheme(readUserTheme(userId));
+  }, [userId]);
+
+  return null;
+}
 
 function App() {
 
@@ -172,6 +183,7 @@ function App() {
 
   return (
     <LoaderProvider>
+      <ThemeSync />
       <RouterProvider router={router} />
 
       <Toaster

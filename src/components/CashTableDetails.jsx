@@ -6,6 +6,7 @@ import { PencilSquare } from "../helpers/edit";
 import { Trash } from "../helpers/trash";
 import { Check } from "../helpers/check";
 import { CheckFill } from "../helpers/checkFill";
+import { Eye } from "lucide-react";
 import { Clipboard } from "../helpers/review";
 import { refreshNotifications } from "./NotificationBell";
 import toast from "react-hot-toast";
@@ -15,6 +16,7 @@ import {
   deleteCashRecord,
   startEditing,
   startReviewing,
+  startViewing,
   approveCashRecord,
 } from "../store/features/cashSlice";
 import TableSkeleton from "./ui/TableSkeleton";
@@ -130,6 +132,8 @@ export default function CashTableDetails({
     if (mode === "review") {
       dispatch(startReviewing({ index, record }));
       toast.success(`Ready to review record ${serialNumber}`);
+    } else if (mode === "view") {
+      dispatch(startViewing({ index, record }));
     } else {
       dispatch(startEditing({ index, record }));
       toast.success(`Ready to edit record ${serialNumber}`);
@@ -284,13 +288,28 @@ export default function CashTableDetails({
 
                           {(userRole === "approver" || userRole === "admin") &&
                             record.status === "Reviewed" && (
-                              <IconAction
-                                label="Approve"
-                                tone="approve"
-                                onClick={() => handleApprove(record)}
-                              >
-                                <Check />
-                              </IconAction>
+                              <>
+                                <IconAction
+                                  label="View"
+                                  tone="view"
+                                  onClick={() =>
+                                    openRecordForm(
+                                      serialNumber - 1,
+                                      record,
+                                      "view",
+                                    )
+                                  }
+                                >
+                                  <Eye />
+                                </IconAction>
+                                <IconAction
+                                  label="Approve"
+                                  tone="approve"
+                                  onClick={() => handleApprove(record)}
+                                >
+                                  <Check />
+                                </IconAction>
+                              </>
                             )}
 
                           {record.status === "Approved" && (
